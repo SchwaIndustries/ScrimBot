@@ -1,0 +1,26 @@
+{
+  "name": "scrimbot",
+  "version": "1.0.0",
+  "description": "A Discord bot for organizing Valorant custom games.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thecodeweaver/ScrimBot.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/thecodeweaver/ScrimBot/issues"
+  },
+  "homepage": "https://github.com/thecodeweaver/ScrimBot#readme",
+  "dependencies": {
+    "discord.js": "^12.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4",
+    "standard": "^14.3.4"
+  }
+}
