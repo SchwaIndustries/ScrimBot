@@ -1,8 +1,10 @@
 'use strict'
 
+/* eslint-disable indent */
 const Discord = require('discord.js')
-const client = new Discord.Client()
+  const client = new Discord.Client()
 require('dotenv').config()
+/* eslint-enable indent */
 
 const activeUserRegistration = new Discord.Collection()
 const userRegistrationSteps = [
@@ -12,21 +14,17 @@ const userRegistrationSteps = [
 ]
 
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`)
+  console.log(`Logged in as ${client.user.tag}! All systems online.`)
   client.user.setActivity('for matches', { type: 'WATCHING' })
 })
 
 client.on('message', message => {
-  if (message.author === client.user) return // ignore messages from the bot itself
+  if (message.author === client.user || message.author.bot === true) return // ignore messages from the bot itself or other bots
   if (activeUserRegistration.has(message.author.id)) {
     handleUserRegistration(activeUserRegistration.get(message.author.id), message)
     return
   }
   if (message.guild.id !== '704495983542796338' && message.guild.id !== '350855731609600000') return // ignore message if not from "Fun Valorant Times"
-
-  if (message.content === 'ping') {
-    message.reply('pong')
-  }
 
   if (message.content === '!register') {
     const embed = new RegistrationEmbed({
@@ -44,8 +42,6 @@ client.on('message', message => {
             discordID: message.author.id
           }
         }) // add user to the list of users who are currently registering, and set their progress to 0 (none)
-        await registrationMessage.react('◀️')
-        await registrationMessage.react('▶️')
         await registrationMessage.react('❌')
       })
   }
@@ -74,7 +70,7 @@ const handleUserRegistration = (userRecord, userMessage) => {
     const embed = userRecord.botMessage.embeds[0]
 
     const previousField = embed.fields[userRecord.step - 1]
-    previousField.name = 'COMPLETE ' + previousField.name
+    previousField.name = '✅ ' + previousField.name
 
     const stepInfo = userRegistrationSteps[userRecord.step]
     embed.addField(stepInfo[0], stepInfo[1])
