@@ -4,7 +4,34 @@
 const Discord = require('discord.js')
   const client = new Discord.Client()
 require('dotenv').config()
+const admin = require('firebase-admin')
+  const serviceAccount = require('../' + process.env.FIR_SERVICEACCOUNT)
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: 'https://fun-valorant-times.firebaseio.com'
+  })
+const Express = require('express')
+  const app = Express()
+const https = require('https')
 /* eslint-enable indent */
+
+// \\
+// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+// Heroku Init \\
+
+app.set('port', (process.env.PORT || 2500))
+
+app.get('/', function (request, response) {
+  response.send(`
+    Hey.
+  `)
+}).listen(app.get('port'), function () {
+  console.log(`Hey Norman, we got uptime! Actively porting on ${app.get('port')}`)
+})
+
+setInterval(() => {
+  https.get('https://valorant-scrim-bot.herokuapp.com')
+}, 5 * 60 * 1000) // 5 minutes in milliseconds
 
 const activeUserRegistration = new Discord.Collection()
 const userRegistrationSteps = [
@@ -32,7 +59,7 @@ client.on('message', message => {
       iconURL: message.author.avatarURL()
     })
     embed.addField('1. Valorant Username', 'What is your FULL Valorant username?')
-    message.reply('Let\'s begin your registration process!', embed)
+    message.reply('Welcome to ScrimBot!', embed)
       .then(async registrationMessage => {
         activeUserRegistration.set(message.author.id, {
           step: 0,
@@ -44,6 +71,19 @@ client.on('message', message => {
         }) // add user to the list of users who are currently registering, and set their progress to 0 (none)
         await registrationMessage.react('❌')
       })
+  }
+})
+
+client.on('messageReactionAdd', (reaction, user) => {
+  if (activeUserRegistration.has(user.id) === false) return
+  if (reaction.emoji.name === '❌') {
+    const userRecord = activeUserRegistration.get(user.id)
+    const embed = new Discord.MessageEmbed()
+      .setTitle('ScrimBot Registration Canceled')
+      .setDescription('Your registration has been cancelled. If you want to try again, just type !register.')
+    userRecord.botMessage.edit(embed)
+    activeUserRegistration.delete(userRecord.userID)
+    reaction.remove()
   }
 })
 
