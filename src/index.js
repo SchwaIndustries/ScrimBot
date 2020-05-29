@@ -72,6 +72,17 @@ client.on('message', message => {
         await registrationMessage.react('❌')
       })
   }
+
+  else if (message.content === '!match create') {
+    const embed = new Discord.MessageEmbed()
+      .setTitle('Create a Match')
+      .setDescription('Let\'s start a match!')
+    message.reply(embed)
+  }
+
+  else if (message.content === '!match join') {
+    message.reply('cool')
+  }
 })
 
 client.on('messageReactionAdd', (reaction, user) => {
@@ -79,7 +90,7 @@ client.on('messageReactionAdd', (reaction, user) => {
   if (reaction.emoji.name === '❌') {
     const userRecord = activeUserRegistration.get(user.id)
     const embed = new Discord.MessageEmbed()
-      .setTitle('ScrimBot Registration Canceled')
+      .setTitle('ScrimBot Registration Cancelled')
       .setDescription('Your registration has been cancelled. If you want to try again, just type !register.')
     userRecord.botMessage.edit(embed)
     activeUserRegistration.delete(userRecord.userID)
@@ -122,6 +133,7 @@ const handleUserRegistration = (userRecord, userMessage) => {
       .setTitle('ScrimBot Registration Complete')
       .setDescription('Thanks for registering! Now it\'s time to get playing!')
     userRecord.botMessage.edit(embed)
+    userRecord.botMessage.reactions.removeAll()
     activeUserRegistration.delete(userRecord.userID)
   }
 }
