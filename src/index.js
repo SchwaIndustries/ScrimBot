@@ -10,6 +10,7 @@ const admin = require('firebase-admin')
     credential: admin.credential.cert(serviceAccount),
     databaseURL: 'https://fun-valorant-times.firebaseio.com'
   })
+  const db = admin.firestore()
 const Express = require('express')
   const app = Express()
 const https = require('https')
@@ -45,7 +46,7 @@ client.on('ready', () => {
   client.user.setActivity('for matches', { type: 'WATCHING' })
 })
 
-client.on('message', message => {
+client.on('message', async message => {
   if (message.author === client.user || message.author.bot === true) return // ignore messages from the bot itself or other bots
   if (activeUserRegistration.has(message.author.id)) {
     handleUserRegistration(activeUserRegistration.get(message.author.id), message)
@@ -53,9 +54,17 @@ client.on('message', message => {
   }
   if (message.guild.id !== '704495983542796338' && message.guild.id !== '350855731609600000') return // ignore message if not from "Fun Valorant Times"
 
-  if (message.content === '!register') {
+  /* eslint-disable brace-style */
+  if (message.content === 'v!register') {
+    const existingRecord = await db.collection('users').doc(message.author.id).get()
+      .catch(console.error)
+    if (existingRecord.exists) {
+      message.reply('You have already registered!')
+      return
+    }
+
     const embed = new RegistrationEmbed({
-      name: message.author.username + '#' + message.author.discriminator,
+      name: message.author.tag,
       iconURL: message.author.avatarURL()
     })
     embed.addField('1. Valorant Username', 'What is your FULL Valorant username?')
@@ -73,16 +82,27 @@ client.on('message', message => {
       })
   }
 
-  else if (message.content === '!match create') {
+  else if (message.content === 'v!match create') {
     const embed = new Discord.MessageEmbed()
       .setTitle('Create a Match')
       .setDescription('Let\'s start a match!')
     message.reply(embed)
   }
 
-  else if (message.content === '!match join') {
-    message.reply('cool')
+  else if (message.content === 'v!match join') {
+    const embed = new Discord.MessageEmbed()
+      .setTitle('Join a Match')
+      .setDescription('React with the match you want to join!')
+    message.reply(embed)
   }
+
+  else if (message.content === 'v!help') {
+    const embed = new Discord.MessageEmbed()
+      .setTitle('Help')
+      .setDescription('v!register: Register to join matches.\nv!match create: Start a match.\nv!match join: Join a match.')
+    message.channel.send(embed)
+  }
+  /* eslint-enable brace-style */
 })
 
 client.on('messageReactionAdd', (reaction, user) => {
@@ -116,12 +136,25 @@ class RegistrationEmbed {
 
 const handleUserRegistration = (userRecord, userMessage) => {
   if (userMessage.channel.type !== 'dm' && userMessage.channel !== userRecord.botMessage.channel) return
-  userRecord.step = userRecord.step + 1
-  if (userRecord.step < userRegistrationSteps.length) {
+  if (userRecord.step < userRegistrationSteps.length - 1) {
+    switch (userRecord.step) {
+      case 0:
+        userRecord.registrationInformation.valorantUsername = userMessage.content
+        break
+      case 1:
+        userRecord.registrationInformation.valorantRank = userMessage.content
+        break
+      case 2:
+        userRecord.registrationInformation.notifications = userMessage.content === 'yes'
+        break
+    }
+
     const embed = userRecord.botMessage.embeds[0]
 
-    const previousField = embed.fields[userRecord.step - 1]
+    const previousField = embed.fields[userRecord.step]
     previousField.name = '✅ ' + previousField.name
+
+    userRecord.step = userRecord.step + 1
 
     const stepInfo = userRegistrationSteps[userRecord.step]
     embed.addField(stepInfo[0], stepInfo[1])
@@ -134,6 +167,9 @@ const handleUserRegistration = (userRecord, userMessage) => {
       .setDescription('Thanks for registering! Now it\'s time to get playing!')
     userRecord.botMessage.edit(embed)
     userRecord.botMessage.reactions.removeAll()
+    userRecord.registrationInformation.timestamp = new Date()
+    db.collection('users').doc(userRecord.userID).set(userRecord.registrationInformation)
+    console.log(userRecord)
     activeUserRegistration.delete(userRecord.userID)
   }
 }

@@ -116,4 +116,4 @@ dist
 .pnp.*
 
 # Firebase
-*firebase-adminsdk*.json
+# *firebase-adminsdk*.json
