@@ -38,7 +38,7 @@ const activeUserRegistration = new Discord.Collection()
 const userRegistrationSteps = [
   ['1. Valorant Username', 'What is your FULL Valorant username?'],
   ['2. Valorant Rank', 'What rank are you in Valorant? If you don\'t have a rank, type "N/A"'],
-  ['3. Notifications', 'Do you want to be notified when LFG starts? Respond "yes" or "no".']
+  ['3. Notifications', 'Do you want to be notified when LFG starts? Respond "yes" if you would like to opt-in.']
 ]
 
 client.on('ready', () => {
@@ -102,6 +102,14 @@ client.on('message', async message => {
       .setDescription('v!register: Register to join matches.\nv!match create: Start a match.\nv!match join: Join a match.')
     message.channel.send(embed)
   }
+
+  else if (message.content === 'v!ping') {
+    const embed = new Discord.MessageEmbed()
+      .setTitle('You have pinged me')
+      .setDescription('Who\'s down for a game of ping pong? ')
+      .setURL('https://pong-2.com/')
+    message.reply(embed)
+  }
   /* eslint-enable brace-style */
 })
 
@@ -136,19 +144,20 @@ class RegistrationEmbed {
 
 const handleUserRegistration = (userRecord, userMessage) => {
   if (userMessage.channel.type !== 'dm' && userMessage.channel !== userRecord.botMessage.channel) return
-  if (userRecord.step < userRegistrationSteps.length - 1) {
-    switch (userRecord.step) {
-      case 0:
-        userRecord.registrationInformation.valorantUsername = userMessage.content
-        break
-      case 1:
-        userRecord.registrationInformation.valorantRank = userMessage.content
-        break
-      case 2:
-        userRecord.registrationInformation.notifications = userMessage.content === 'yes'
-        break
-    }
 
+  switch (userRecord.step) {
+    case 0:
+      userRecord.registrationInformation.valorantUsername = userMessage.content
+      break
+    case 1:
+      userRecord.registrationInformation.valorantRank = userMessage.content
+      break
+    case 2:
+      userRecord.registrationInformation.notifications = (userMessage.content === 'yes')
+      break
+  }
+
+  if (userRecord.step < userRegistrationSteps.length - 1) {
     const embed = userRecord.botMessage.embeds[0]
 
     const previousField = embed.fields[userRecord.step]
