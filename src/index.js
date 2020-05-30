@@ -153,7 +153,7 @@ const handleUserRegistration = (userRecord, userMessage) => {
       userRecord.registrationInformation.valorantRank = userMessage.content
       break
     case 2:
-      userRecord.registrationInformation.notifications = (userMessage.content === 'yes')
+      userRecord.registrationInformation.notifications = (userMessage.content === 'yes' || userMessage.content === 'true' || userMessage.content === '1' || userMessage.content === 'si')
       break
   }
 
