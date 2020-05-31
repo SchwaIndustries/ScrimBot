@@ -338,9 +338,10 @@ const handleMatchCreation = (userRecord, userMessage) => {
     userRecord.creationInformation.timestamp = new Date()
 
     const matchEmbed = new Discord.MessageEmbed()
-      .setTitle('New Match')
+      .setTitle('Join Match')
       .setColor('PURPLE')
-      .setDescription('New match here')
+      .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and react with 🇸 to be a spectator.')
+      .setTimestamp(new Date(userRecord.creationInformation.date))
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .addField('Creator', userMessage.author.tag, true)
       .addField('Date', userRecord.creationInformation.date, true)
