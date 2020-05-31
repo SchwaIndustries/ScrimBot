@@ -129,7 +129,7 @@ client.on('messageReactionAdd', (reaction, user) => {
 if (process.env.TOKEN) {
   client.login(process.env.TOKEN)
 } else {
-  console.error('Bot token not found! Ensure environment variable TOKEN contains the bot token.')
+  console.error('Bot token not found! Ensure environment variable TOKEN contains the bot token. If you don\'t understand this, go read the documentation.')
 }
 
 class RegistrationEmbed {
