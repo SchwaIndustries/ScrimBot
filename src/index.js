@@ -180,7 +180,7 @@ client.on('message', async message => {
   else if (message.content === 'v!help') {
     const embed = new Discord.MessageEmbed()
       .setTitle('Help')
-      .setDescription('v!register: Register to join matches.\nv!match create: Start a match.\nv!match join: Join a match.\nv!match score <match id> <score>')
+      .setDescription('v!help: Show this help menu.\nv!register: Register to join matches.\nv!match create: Create a match.\nv!match join: Join a match.\nv!match start <match id>: Start a match (only for match creator)\nv!match score <match id> <score>: Report final match score (only for match creator)')
     message.channel.send(embed)
   }
 
@@ -475,7 +475,7 @@ const handleMatchCreation = (userRecord, userMessage) => {
   } else {
     const embed = new Discord.MessageEmbed()
       .setTitle('Match Creation Complete')
-      .setDescription('Your match has been made! To start it, type `v!match start <match id>`')
+      .setDescription('Your match has been made! To start it, type `v!match start <match id>`', { timeout: 60000 })
     userRecord.botMessage.edit(embed)
     if (userMessage.guild.me.hasPermission('MANAGE_MESSAGES')) userRecord.botMessage.reactions.removeAll()
     else userRecord.botReaction.remove()
