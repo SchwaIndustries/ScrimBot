@@ -144,9 +144,11 @@ client.on('message', async message => {
       .addField(matchCreationSteps[0][0], matchCreationSteps[0][1])
     message.channel.send(embed)
       .then(async creationMessage => {
+        const reaction = await creationMessage.react('❌')
         activeMatchCreation.set(message.author.id, {
           step: 0,
           botMessage: creationMessage,
+          botReaction: reaction,
           userID: message.author.id,
           creationInformation: {
             players: { 1: [], 2: [] },
@@ -158,7 +160,6 @@ client.on('message', async message => {
             creator: message.author.id
           }
         }) // add user to the list of users who are currently registering, and set their progress to 0 (none)
-        await creationMessage.react('❌')
       })
   }
 
@@ -418,7 +419,7 @@ const handleUserRegistration = (userRecord, userMessage) => {
 const handleMatchCreation = (userRecord, userMessage) => {
   if (userMessage.channel !== userRecord.botMessage.channel) return
 
-  userMessage.delete()
+  if (userMessage.guild.me.hasPermission('MANAGE_MESSAGES')) userMessage.delete()
   switch (userRecord.step) {
     case 0:
       userRecord.creationInformation.date = userMessage.content
@@ -433,6 +434,8 @@ const handleMatchCreation = (userRecord, userMessage) => {
     case 2:
       if (!RANKS[userMessage.content]) {
         return userMessage.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
+      } else if (RANKS[userMessage.content] < userRecord.creationInformation.rankMinimum) {
+        return userMessage.reply('the maximum rank cannot be below the minimum rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
         userRecord.creationInformation.rankMaximum = RANKS[userMessage.content] // TODO: cover edge cases
         break
@@ -472,15 +475,16 @@ const handleMatchCreation = (userRecord, userMessage) => {
   } else {
     const embed = new Discord.MessageEmbed()
       .setTitle('Match Creation Complete')
-      .setDescription('Your match has been made!')
+      .setDescription('Your match has been made! To start it, type `v!match start <match id>`')
     userRecord.botMessage.edit(embed)
-    userRecord.botMessage.reactions.removeAll()
+    if (userMessage.guild.me.hasPermission('MANAGE_MESSAGES')) userRecord.botMessage.reactions.removeAll()
+    else userRecord.botReaction.remove()
     userRecord.creationInformation.timestamp = new Date()
 
     const matchEmbed = new Discord.MessageEmbed()
       .setTitle('Join Match')
       .setColor('PURPLE')
-      .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and react with 🇸 to be a spectator.')
+      .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and, if enabled, react with 🇸 to be a spectator.')
       .setTimestamp(new Date(userRecord.creationInformation.date))
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .addField('Creator', userMessage.author.tag, true)
@@ -497,6 +501,8 @@ const handleMatchCreation = (userRecord, userMessage) => {
         message.react('🇦')
         message.react('🇧')
         if (userRecord.creationInformation.spectators) message.react('🇸')
+        matchEmbed.setFooter(`match id: ${message.id}`)
+        message.edit(matchEmbed)
         db.collection('matches').doc(message.id).set(userRecord.creationInformation)
         activeMatchCreation.delete(userRecord.userID)
       })
