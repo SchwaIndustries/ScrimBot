@@ -225,6 +225,7 @@ client.on('message', async message => {
 })
 
 client.on('messageReactionAdd', (reaction, user) => {
+  if (reaction.message.author.bot) return // ignore messages from the bot itself or other bots
   if (activeUserRegistration.has(user.id) === false) return
   if (reaction.emoji.name === '❌') {
     const userRecord = activeUserRegistration.get(user.id)
@@ -238,6 +239,7 @@ client.on('messageReactionAdd', (reaction, user) => {
 })
 
 client.on('messageReactionAdd', (reaction, user) => {
+  if (reaction.message.author.bot) return // ignore messages from the bot itself or other bots
   if (activeMatchCreation.has(user.id) === false) return
   if (reaction.emoji.name === '❌') {
     const userRecord = activeMatchCreation.get(user.id)
@@ -250,12 +252,13 @@ client.on('messageReactionAdd', (reaction, user) => {
   }
 })
 
-client.on('messageReactionAdd', (reaction, user) => {
-  const matchInformationRef = db.collection('matches').doc(reaction.message.id).get()
-  if (!matchInformationRef.exists) return
+client.on('messageReactionAdd', async (reaction, user) => {
+  if (user.bot) return console.log('Reaction added, but user is a bot') // ignore messages from the bot itself or other bots
+  const matchInformationRef = await db.collection('matches').doc(reaction.message.id).get()
+  if (!matchInformationRef.exists) return console.log('Reaction added, but match not found')
   const matchInformation = matchInformationRef.data()
 
-  const playerInformationRef = db.collection('users').doc(user.id).get()
+  const playerInformationRef = await db.collection('users').doc(user.id).get()
   if (!playerInformationRef.exists) {
     reaction.message.channel.send(`<@${user.id}>, you are not registered with ScrimBot. Please type v!register before reacting!`)
     reaction.users.remove(user.id)
@@ -269,22 +272,26 @@ client.on('messageReactionAdd', (reaction, user) => {
     return
   }
 
+  const messageEmbed = reaction.message.embeds[0]
+
   switch (reaction.emoji.name) {
     case '🇦':
       matchInformation.players['1'].push(playerInformationRef)
+      messageEmbed.fields[6].value += `\n• ${playerInformation.valorantUsername}`
       break
     case '�':
       matchInformation.players['2'].push(playerInformationRef)
+      messageEmbed.fields[7].value += `\n• ${playerInformation.valorantUsername}`
       break
     case '�':
       if (!matchInformation.spectators) {
         reaction.message.channel.send(`<@${user.id}>, this match does not allow spectators! Either join a team or ask the match creator to start a new one.`)
         reaction.users.remove(user.id)
-        return
       } else {
         matchInformation.spectators.push(playerInformationRef)
-        break
+        messageEmbed.fields[8].value += `\n• ${playerInformation.valorantUsername}`
       }
+      break
   }
 
   // if (reaction.emoji.name === '❌') {
@@ -321,7 +328,7 @@ const handleUserRegistration = (userRecord, userMessage) => {
     const embed = userRecord.botMessage.embeds[0]
 
     const previousField = embed.fields[userRecord.step]
-    previousField.name = '✅' + previousField.name
+    previousField.name = '✅ ' + previousField.name
 
     userRecord.step = userRecord.step + 1
 
@@ -388,7 +395,7 @@ const handleMatchCreation = (userRecord, userMessage) => {
     const embed = userRecord.botMessage.embeds[0]
 
     const previousField = embed.fields[userRecord.step]
-    previousField.name = '✅' + previousField.name
+    previousField.name = '✅ ' + previousField.name
 
     userRecord.step = userRecord.step + 1
 
