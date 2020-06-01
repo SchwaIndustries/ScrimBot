@@ -258,8 +258,12 @@ const handleUserRegistration = (userRecord, userMessage) => {
       userRecord.registrationInformation.valorantUsername = userMessage.content
       break
     case 1:
-      userRecord.registrationInformation.valorantRank = RANKS[userMessage.content] // TODO: cover edge cases
-      break
+      if (!RANKS[userMessage.content]) {
+        return userMessage.reply('Please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
+      } else {
+        userRecord.registrationInformation.valorantRank = RANKS[userMessage.content] // TODO: cover edge cases
+        break
+      }
     case 2:
       userRecord.registrationInformation.notifications = (userMessage.content === 'yes' || userMessage.content === 'true' || userMessage.content === '1' || userMessage.content === 'si')
       break
