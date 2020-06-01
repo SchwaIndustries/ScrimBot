@@ -250,6 +250,54 @@ client.on('messageReactionAdd', (reaction, user) => {
   }
 })
 
+client.on('messageReactionAdd', (reaction, user) => {
+  const matchInformationRef = db.collection('matches').doc(reaction.message.id).get()
+  if (!matchInformationRef.exists) return
+  const matchInformation = matchInformationRef.data()
+
+  const playerInformationRef = db.collection('users').doc(user.id).get()
+  if (!playerInformationRef.exists) {
+    reaction.message.channel.send(`<@${user.id}>, you are not registered with ScrimBot. Please type v!register before reacting!`)
+    reaction.users.remove(user.id)
+    return
+  }
+  const playerInformation = playerInformationRef.data()
+
+  if (matchInformation.players['1'].includes(playerInformationRef) || matchInformation.players['2'].includes(playerInformationRef)) {
+    reaction.message.channel.send(`<@${user.id}>, you have already joined a team! Please remove that reaction before joining a new one.`)
+    reaction.users.remove(user.id)
+    return
+  }
+
+  switch (reaction.emoji.name) {
+    case '🇦':
+      matchInformation.players['1'].push(playerInformationRef)
+      break
+    case '�':
+      matchInformation.players['2'].push(playerInformationRef)
+      break
+    case '�':
+      if (!matchInformation.spectators) {
+        reaction.message.channel.send(`<@${user.id}>, this match does not allow spectators! Either join a team or ask the match creator to start a new one.`)
+        reaction.users.remove(user.id)
+        return
+      } else {
+        matchInformation.spectators.push(playerInformationRef)
+        break
+      }
+  }
+
+  // if (reaction.emoji.name === '❌') {
+  //   const userRecord = activeMatchCreation.get(user.id)
+  //   const embed = new Discord.MessageEmbed()
+  //     .setTitle('ScrimBot Match Creation Cancelled')
+  //     .setDescription('Your Match Creation has been cancelled. If you want to try again, just type !match create.')
+  //   userRecord.botMessage.edit(embed)
+  //   activeMatchCreation.delete(userRecord.userID)
+  //   // reaction.remove()
+  // }
+})
+
 const handleUserRegistration = (userRecord, userMessage) => {
   if (userMessage.channel.type !== 'dm') return
 
@@ -376,7 +424,7 @@ const handleMatchCreation = (userRecord, userMessage) => {
       .then(message => {
         message.react('🇦')
         message.react('🇧')
-        message.react('🇸')
+        if (userRecord.creationInformation.spectators) message.react('🇸')
         db.collection('matches').doc(message.id).set(userRecord.creationInformation)
         activeMatchCreation.delete(userRecord.userID)
       })
