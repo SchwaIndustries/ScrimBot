@@ -253,21 +253,24 @@ client.on('messageReactionAdd', (reaction, user) => {
 })
 
 client.on('messageReactionAdd', async (reaction, user) => {
-  if (user.bot) return console.log('Reaction added, but user is a bot') // ignore messages from the bot itself or other bots
-  const matchInformationRef = await db.collection('matches').doc(reaction.message.id).get()
-  if (!matchInformationRef.exists) return console.log('Reaction added, but match not found')
-  const matchInformation = matchInformationRef.data()
+  if (user.bot) return // ignore messages from the bot itself or other bots
 
-  const playerInformationRef = await db.collection('users').doc(user.id).get()
-  if (!playerInformationRef.exists) {
-    reaction.message.channel.send(`<@${user.id}>, you are not registered with ScrimBot. Please type v!register before reacting!`)
+  const matchInformationRef = db.collection('matches').doc(reaction.message.id)
+  let matchInformation = await matchInformationRef.get()
+  if (!matchInformation.exists) return
+  matchInformation = matchInformation.data()
+
+  const playerInformationRef = db.collection('users').doc(user.id)
+  let playerInformation = await playerInformationRef.get()
+  if (!playerInformation.exists) {
+    reaction.message.channel.send(`<@${user.id}>, you are not registered with ScrimBot. Please type v!register before reacting!`, { timeout: 5000 })
     reaction.users.remove(user.id)
     return
   }
-  const playerInformation = playerInformationRef.data()
+  playerInformation = playerInformation.data()
 
-  if (matchInformation.players['1'].includes(playerInformationRef) || matchInformation.players['2'].includes(playerInformationRef)) {
-    reaction.message.channel.send(`<@${user.id}>, you have already joined a team! Please remove that reaction before joining a new one.`)
+  if (matchInformation.players['1'].find(e => e.id === playerInformationRef.id) || matchInformation.players['2'].find(e => e.id === playerInformationRef.id) || (matchInformation.spectators && matchInformation.spectators.find(e => e.id === playerInformationRef.id))) {
+    reaction.message.channel.send(`<@${user.id}>, you have already joined a team! Please remove that reaction before joining a new one.`, { timeout: 5000 })
     reaction.users.remove(user.id)
     return
   }
@@ -277,32 +280,94 @@ client.on('messageReactionAdd', async (reaction, user) => {
   switch (reaction.emoji.name) {
     case '🇦':
       matchInformation.players['1'].push(playerInformationRef)
-      messageEmbed.fields[6].value += `\n• ${playerInformation.valorantUsername}`
+      messageEmbed.fields[6].value === 'None' ? messageEmbed.fields[6].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[6].value += `\n• ${playerInformation.valorantUsername}`
       break
-    case '�':
+    case '🇧':
       matchInformation.players['2'].push(playerInformationRef)
-      messageEmbed.fields[7].value += `\n• ${playerInformation.valorantUsername}`
+      messageEmbed.fields[7].value === 'None' ? messageEmbed.fields[7].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[7].value += `\n• ${playerInformation.valorantUsername}`
       break
-    case '�':
+    case '🇸':
       if (!matchInformation.spectators) {
-        reaction.message.channel.send(`<@${user.id}>, this match does not allow spectators! Either join a team or ask the match creator to start a new one.`)
+        reaction.message.channel.send(`<@${user.id}>, this match does not allow spectators! Either join a team or ask the match creator to start a new one.`, { timeout: 5000 })
         reaction.users.remove(user.id)
       } else {
         matchInformation.spectators.push(playerInformationRef)
-        messageEmbed.fields[8].value += `\n• ${playerInformation.valorantUsername}`
+        messageEmbed.fields[8].value === 'None' ? messageEmbed.fields[8].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[8].value += `\n• ${playerInformation.valorantUsername}`
+      }
+      break
+    default:
+      console.log('other emoji')
+  }
+
+  reaction.message.edit(messageEmbed)
+  matchInformationRef.update(matchInformation)
+})
+
+client.on('messageReactionRemove', async (reaction, user) => {
+  if (user.bot) return // ignore messages from the bot itself or other bots
+
+  const matchInformationRef = db.collection('matches').doc(reaction.message.id)
+  let matchInformation = await matchInformationRef.get()
+  if (!matchInformation.exists) return
+  matchInformation = matchInformation.data()
+
+  const playerInformationRef = db.collection('users').doc(user.id)
+  let playerInformation = await playerInformationRef.get()
+  if (!playerInformation.exists) return
+  playerInformation = playerInformation.data()
+
+  // if (matchInformation.players['1'].find(e => e.id === playerInformationRef.id) || matchInformation.players['2'].find(e => e.id === playerInformationRef.id) || (matchInformation.spectators && matchInformation.spectators.find(e => e.id === playerInformationRef.id))) {
+  //   reaction.message.channel.send(`<@${user.id}>, you have already joined a team! Please remove that reaction before joining a new one.`, { timeout: 5000 })
+  //   reaction.users.remove(user.id)
+  //   return
+  // }
+
+  const messageEmbed = reaction.message.embeds[0]
+
+  let playersArrayIndex
+  switch (reaction.emoji.name) {
+    case '🇦':
+      playersArrayIndex = matchInformation.players['1'].findIndex(e => e.id === playerInformationRef.id)
+      if (playersArrayIndex > -1) matchInformation.players['1'].splice(playersArrayIndex, 1)
+
+      messageEmbed.fields[6].value = ''
+      matchInformation.players['1'].forEach(async playerRef => {
+        let playerDoc = await playerRef.get()
+        playerDoc = playerRef.data()
+        messageEmbed.fields[6].value += `\n• ${playerDoc.valorantUsername}`
+      })
+      if (messageEmbed.fields[6].value === '') messageEmbed.fields[6].value = 'None'
+      break
+    case '🇧':
+      playersArrayIndex = matchInformation.players['2'].findIndex(e => e.id === playerInformationRef.id)
+      if (playersArrayIndex > -1) matchInformation.players['2'].splice(playersArrayIndex, 1)
+
+      messageEmbed.fields[7].value = ''
+      matchInformation.players['2'].forEach(async playerRef => {
+        let playerDoc = await playerRef.get()
+        playerDoc = playerRef.data()
+        messageEmbed.fields[7].value += `\n• ${playerDoc.valorantUsername}`
+      })
+      if (messageEmbed.fields[7].value === '') messageEmbed.fields[7].value = 'None'
+      break
+    case '🇸':
+      if (matchInformation.spectators) {
+        playersArrayIndex = matchInformation.spectators.findIndex(e => e.id === playerInformationRef.id)
+        if (playersArrayIndex > -1) matchInformation.spectators.splice(playersArrayIndex, 1)
+
+        messageEmbed.fields[8].value = ''
+        matchInformation.spectators.forEach(async playerRef => {
+          let playerDoc = await playerRef.get()
+          playerDoc = playerRef.data()
+          messageEmbed.fields[8].value += `\n• ${playerDoc.valorantUsername}`
+        })
+        if (messageEmbed.fields[8].value === '') messageEmbed.fields[8].value = 'None'
       }
       break
   }
 
-  // if (reaction.emoji.name === '❌') {
-  //   const userRecord = activeMatchCreation.get(user.id)
-  //   const embed = new Discord.MessageEmbed()
-  //     .setTitle('ScrimBot Match Creation Cancelled')
-  //     .setDescription('Your Match Creation has been cancelled. If you want to try again, just type !match create.')
-  //   userRecord.botMessage.edit(embed)
-  //   activeMatchCreation.delete(userRecord.userID)
-  //   // reaction.remove()
-  // }
+  reaction.message.edit(messageEmbed)
+  matchInformationRef.update(matchInformation)
 })
 
 const handleUserRegistration = (userRecord, userMessage) => {
