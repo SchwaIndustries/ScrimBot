@@ -137,6 +137,7 @@ client.on('message', async message => {
   }
 
   else if (message.content === 'v!match create') {
+    if (message.guild) return message.reply('This command can only be run in a server!')
     const embed = new Discord.MessageEmbed()
       .setTitle('Create a Match')
       .setDescription('Let\'s start a match!')
@@ -264,14 +265,14 @@ client.on('messageReactionAdd', async (reaction, user) => {
   const playerInformationRef = db.collection('users').doc(user.id)
   let playerInformation = await playerInformationRef.get()
   if (!playerInformation.exists) {
-    reaction.message.channel.send(`<@${user.id}>, you are not registered with ScrimBot. Please type v!register before reacting!`, { timeout: 5000 })
+    reaction.message.channel.send(`<@${user.id}>, you are not registered with ScrimBot. Please type v!register before reacting!`).then(msg => msg.delete({ timeout: 5000 }))
     reaction.users.remove(user.id)
     return
   }
   playerInformation = playerInformation.data()
 
   if (matchInformation.players['1'].find(e => e.id === playerInformationRef.id) || matchInformation.players['2'].find(e => e.id === playerInformationRef.id) || (matchInformation.spectators && matchInformation.spectators.find(e => e.id === playerInformationRef.id))) {
-    reaction.message.channel.send(`<@${user.id}>, you have already joined a team! Please remove that reaction before joining a new one.`, { timeout: 5000 })
+    reaction.message.channel.send(`<@${user.id}>, you have already joined a team! Please remove that reaction before joining a new one.`).then(msg => msg.delete({ timeout: 5000 }))
     reaction.users.remove(user.id)
     return
   }
@@ -280,24 +281,35 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
   switch (reaction.emoji.name) {
     case '🇦':
-      matchInformation.players['1'].push(playerInformationRef)
-      messageEmbed.fields[6].value === 'None' ? messageEmbed.fields[6].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[6].value += `\n• ${playerInformation.valorantUsername}`
-      break
+      if (matchInformation.players['1'].length >= matchInformation.maxTeamCount) {
+        reaction.message.channel.send(`<@${user.id}>, the selected team is full! Please choose a different one.`).then(msg => msg.delete({ timeout: 5000 }))
+        reaction.users.remove(user.id)
+        return
+      } else {
+        matchInformation.players['1'].push(playerInformationRef)
+        messageEmbed.fields[6].value === 'None' ? messageEmbed.fields[6].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[6].value += `\n• ${playerInformation.valorantUsername}`
+        break
+      }
     case '🇧':
-      matchInformation.players['2'].push(playerInformationRef)
-      messageEmbed.fields[7].value === 'None' ? messageEmbed.fields[7].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[7].value += `\n• ${playerInformation.valorantUsername}`
-      break
+      if (matchInformation.players['2'].length >= matchInformation.maxTeamCount) {
+        reaction.message.channel.send(`<@${user.id}>, the selected team is full! Please choose a different one.`).then(msg => msg.delete({ timeout: 5000 }))
+        reaction.users.remove(user.id)
+        return
+      } else {
+        matchInformation.players['2'].push(playerInformationRef)
+        messageEmbed.fields[7].value === 'None' ? messageEmbed.fields[7].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[7].value += `\n• ${playerInformation.valorantUsername}`
+        break
+      }
     case '🇸':
       if (!matchInformation.spectators) {
-        reaction.message.channel.send(`<@${user.id}>, this match does not allow spectators! Either join a team or ask the match creator to start a new one.`, { timeout: 5000 })
+        reaction.message.channel.send(`<@${user.id}>, this match does not allow spectators! Either join a team or ask the match creator to start a new one.`).then(msg => msg.delete({ timeout: 5000 }))
         reaction.users.remove(user.id)
+        return
       } else {
         matchInformation.spectators.push(playerInformationRef)
         messageEmbed.fields[8].value === 'None' ? messageEmbed.fields[8].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[8].value += `\n• ${playerInformation.valorantUsername}`
+        break
       }
-      break
-    default:
-      console.log('other emoji')
   }
 
   reaction.message.edit(messageEmbed)
@@ -474,9 +486,12 @@ const handleMatchCreation = (userRecord, userMessage) => {
     activeMatchCreation.set(userRecord.userID, userRecord)
   } else {
     const embed = new Discord.MessageEmbed()
+      .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .setTitle('Match Creation Complete')
-      .setDescription('Your match has been made! To start it, type `v!match start <match id>`', { timeout: 60000 })
+      .setDescription('Your match has been made! To start it, type `v!match start <match id>`')
+      .setFooter('This message will self-destruct in 60 seconds.')
     userRecord.botMessage.edit(embed)
+    userRecord.botMessage.delete({ timeout: 60000 })
     if (userMessage.guild.me.hasPermission('MANAGE_MESSAGES')) userRecord.botMessage.reactions.removeAll()
     else userRecord.botReaction.remove()
     userRecord.creationInformation.timestamp = new Date()
