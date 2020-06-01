@@ -329,12 +329,6 @@ client.on('messageReactionRemove', async (reaction, user) => {
   if (!playerInformation.exists) return
   playerInformation = playerInformation.data()
 
-  // if (matchInformation.players['1'].find(e => e.id === playerInformationRef.id) || matchInformation.players['2'].find(e => e.id === playerInformationRef.id) || (matchInformation.spectators && matchInformation.spectators.find(e => e.id === playerInformationRef.id))) {
-  //   reaction.message.channel.send(`<@${user.id}>, you have already joined a team! Please remove that reaction before joining a new one.`, { timeout: 5000 })
-  //   reaction.users.remove(user.id)
-  //   return
-  // }
-
   const messageEmbed = reaction.message.embeds[0]
 
   let playersArrayIndex
