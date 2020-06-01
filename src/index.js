@@ -48,6 +48,14 @@ const RANKS = {
   'Valorant': 81 // eslint-disable-line quote-props
 }
 
+const RANKS_REVERSED = {}
+for (const key in RANKS) {
+  const element = RANKS[key]
+  RANKS_REVERSED[element] = key
+}
+
+const MAPS = ['Split', 'Bind', 'Haven', 'Training Grounds']
+
 // \\
 // \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
 // Heroku Init \\
@@ -78,7 +86,7 @@ const matchCreationSteps = [
   ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
   ['4. Player Count', 'How many players should be on each team? Max 5.'],
   ['5. Spectators', 'Are spectators allowed?'],
-  ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven.']
+  ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Training Grounds.']
 ]
 
 client.on('ready', () => {
@@ -292,14 +300,22 @@ const handleMatchCreation = (userRecord, userMessage) => {
       userRecord.creationInformation.date = userMessage.content
       break
     case 1:
-      userRecord.creationInformation.rankMinimum = RANKS[userMessage.content] // TODO: cover edge cases
-      break
+      if (!RANKS[userMessage.content]) {
+        return userMessage.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
+      } else {
+        userRecord.creationInformation.rankMinimum = RANKS[userMessage.content] // TODO: cover edge cases
+        break
+      }
     case 2:
-      userRecord.creationInformation.rankMaximum = RANKS[userMessage.content] // TODO: cover edge cases
-      break
+      if (!RANKS[userMessage.content]) {
+        return userMessage.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
+      } else {
+        userRecord.creationInformation.rankMaximum = RANKS[userMessage.content] // TODO: cover edge cases
+        break
+      }
     case 3:
       if (!Number(userMessage.content) || Number(userMessage.content) > 5) {
-        return userMessage.reply('please give a valid number!')
+        return userMessage.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
         userRecord.creationInformation.maxTeamCount = Number(userMessage.content)
         break
@@ -308,10 +324,10 @@ const handleMatchCreation = (userRecord, userMessage) => {
       userRecord.creationInformation.spectators = (userMessage.content === 'yes' || userMessage.content === 'true' || userMessage.content === '1' || userMessage.content === 'si') ? [] : false
       break
     case 5:
-      if (!Number(userMessage.content) || Number(userMessage.content) > 3) {
-        return userMessage.reply('please give a valid number!')
+      if (!Number(userMessage.content) || Number(userMessage.content) > MAPS.length) {
+        return userMessage.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
-        userRecord.creationInformation.map = Number(userMessage.content)
+        userRecord.creationInformation.map = MAPS[Number(userMessage.content - 1)]
         break
       }
   }
@@ -347,8 +363,8 @@ const handleMatchCreation = (userRecord, userMessage) => {
       .addField('Date', userRecord.creationInformation.date, true)
       .addField('Map', userRecord.creationInformation.map, true)
       .addField('Max Team Count', userRecord.creationInformation.maxTeamCount, true)
-      .addField('Minimum Rank', RANKS[userRecord.creationInformation.rankMinimum], true)
-      .addField('Maximum Rank', RANKS[userRecord.creationInformation.rankMaximum], true)
+      .addField('Minimum Rank', RANKS_REVERSED[userRecord.creationInformation.rankMinimum], true)
+      .addField('Maximum Rank', RANKS_REVERSED[userRecord.creationInformation.rankMaximum], true)
       .addField('Team A', 'None', true)
       .addField('Team B', 'None', true)
       .addField('Spectators', userRecord.creationInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
