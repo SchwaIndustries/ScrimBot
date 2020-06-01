@@ -17,35 +17,35 @@ const https = require('https')
 /* eslint-enable indent */
 
 const RANKS = {
-  'Iron 1': 11,
-  'Iron 2': 12,
-  'Iron 3': 13,
+  'IRON 1': 11,
+  'IRON 2': 12,
+  'IRON 3': 13,
 
-  'Bronze 1': 21,
-  'Bronze 2': 22,
-  'Bronze 3': 23,
+  'BRONZE 1': 21,
+  'BRONZE 2': 22,
+  'BRONZE 3': 23,
 
-  'Silver 1': 31,
-  'Silver 2': 32,
-  'Silver 3': 33,
+  'SILVER 1': 31,
+  'SILVER 2': 32,
+  'SILVER 3': 33,
 
-  'Gold 1': 41,
-  'Gold 2': 42,
-  'Gold 3': 43,
+  'GOLD 1': 41,
+  'GOLD 2': 42,
+  'GOLD 3': 43,
 
-  'Platinum 1': 51,
-  'Platinum 2': 52,
-  'Platinum 3': 53,
+  'PLATINUM 1': 51,
+  'PLATINUM 2': 52,
+  'PLATINUM 3': 53,
 
-  'Diamond 1': 61,
-  'Diamond 2': 62,
-  'Diamond 3': 63,
+  'DIAMOND 1': 61,
+  'DIAMOND 2': 62,
+  'DIAMOND 3': 63,
 
-  'Immortal 1': 71,
-  'Immortal 2': 72,
-  'Immortal 3': 73,
+  'IMMORTAL 1': 71,
+  'IMMORTAL 2': 72,
+  'IMMORTAL 3': 73,
 
-  'Valorant': 81 // eslint-disable-line quote-props
+  'VALORANT': 81 // eslint-disable-line quote-props
 }
 
 const RANKS_REVERSED = {}
@@ -385,10 +385,10 @@ const handleUserRegistration = (userRecord, userMessage) => {
       userRecord.registrationInformation.valorantUsername = userMessage.content
       break
     case 1:
-      if (!RANKS[userMessage.content]) {
+      if (!RANKS[userMessage.content.toUpperCase()]) {
         return userMessage.reply('Please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
-        userRecord.registrationInformation.valorantRank = RANKS[userMessage.content] // TODO: cover edge cases
+        userRecord.registrationInformation.valorantRank = RANKS[userMessage.content.toUpperCase()] // TODO: cover edge cases
         break
       }
     case 2:
@@ -431,19 +431,19 @@ const handleMatchCreation = (userRecord, userMessage) => {
       userRecord.creationInformation.date = userMessage.content
       break
     case 1:
-      if (!RANKS[userMessage.content]) {
+      if (!RANKS[userMessage.content.toUpperCase()]) {
         return userMessage.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
-        userRecord.creationInformation.rankMinimum = RANKS[userMessage.content] // TODO: cover edge cases
+        userRecord.creationInformation.rankMinimum = RANKS[userMessage.content.toUpperCase()] // TODO: cover edge cases
         break
       }
     case 2:
-      if (!RANKS[userMessage.content]) {
+      if (!RANKS[userMessage.content.toUpperCase()]) {
         return userMessage.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else if (RANKS[userMessage.content] < userRecord.creationInformation.rankMinimum) {
         return userMessage.reply('the maximum rank cannot be below the minimum rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
-        userRecord.creationInformation.rankMaximum = RANKS[userMessage.content] // TODO: cover edge cases
+        userRecord.creationInformation.rankMaximum = RANKS[userMessage.content.toUpperCase()] // TODO: cover edge cases
         break
       }
     case 3:
