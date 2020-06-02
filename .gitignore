@@ -117,3 +117,4 @@ dist
 
 # Firebase
 # *firebase-adminsdk*.json
+.vscode/launch.json

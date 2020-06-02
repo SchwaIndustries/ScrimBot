@@ -54,7 +54,7 @@ for (const key in RANKS) {
   RANKS_REVERSED[element] = key
 }
 
-const MAPS = ['Split', 'Bind', 'Haven', 'Training Grounds']
+const MAPS = ['Split', 'Bind', 'Haven', 'Ascend']
 
 // \\
 // \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
@@ -65,7 +65,7 @@ app.set('port', (process.env.PORT || 6969))
 app.get('/', function (request, response) {
   response.send('Hey')
 }).listen(app.get('port'), function () {
-  console.log(`ScrimBot Initilized | Running on port ${app.get('port')}`)
+  console.log(`ScrimBot Initialized | Running on port ${app.get('port')}`)
 })
 
 setInterval(() => {
@@ -86,7 +86,7 @@ const matchCreationSteps = [
   ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
   ['4. Player Count', 'How many players should be on each team? Max 5.'],
   ['5. Spectators', 'Are spectators allowed?'],
-  ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Training Grounds.']
+  ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascend.']
 ]
 
 client.on('ready', () => {
@@ -137,7 +137,7 @@ client.on('message', async message => {
   }
 
   else if (message.content === 'v!match create') {
-    if (message.guild) return message.reply('This command can only be run in a server!')
+    if (!message.guild) return message.reply('This command can only be run in a server!')
     const embed = new Discord.MessageEmbed()
       .setTitle('Create a Match')
       .setDescription('Let\'s start a match!')
@@ -158,17 +158,31 @@ client.on('message', async message => {
             rankMinimum: '',
             rankMaximum: '',
             date: undefined,
-            creator: message.author.id
+            creator: message.author.id,
+            status: 'created'
           }
         }) // add user to the list of users who are currently registering, and set their progress to 0 (none)
       })
   }
 
-  else if (message.content === 'v!match join') {
+  else if (message.content.startsWith('v!match start')) {
+    const matchID = message.content.substring(('v!match start' + 1).length)
+
+    const matchInformationRef = db.collection('matches').doc(matchID)
+    let matchInformation = await matchInformationRef.get()
+    if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+    matchInformation = matchInformation.data()
+
+    matchInformation.status = 'started'
+
+    matchInformationRef.update(matchInformation)
+
     const embed = new Discord.MessageEmbed()
-      .setTitle('Join a Match')
-      .setDescription('React with the match you want to join!')
-    message.reply(embed)
+      .setTitle('Match Started')
+      .setDescription(`Match with ID ${matchID} has been started. Once complete, use v!score <match id> <score> to report the score!`)
+      .setFooter('This message will self-destruct in 30 seconds.')
+    // userRecord.botMessage.edit(embed)
+    message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
   }
 
   else if (message.content.startsWith('v!match score')) {
@@ -181,7 +195,7 @@ client.on('message', async message => {
   else if (message.content === 'v!help') {
     const embed = new Discord.MessageEmbed()
       .setTitle('Help')
-      .setDescription('v!help: Show this help menu.\nv!register: Register to join matches.\nv!match create: Create a match.\nv!match join: Join a match.\nv!match start <match id>: Start a match (only for match creator)\nv!match score <match id> <score>: Report final match score (only for match creator)')
+      .setDescription('v!help: Show this help menu.\nv!ping: Play a game of ping pong.\nv!register: Register to join matches.\nv!match create: Create a match.\nv!match join: Join a match.\nv!match start <match id>: Start a match (only for match creator)\nv!match score <match id> <score>: Report final match score (only for match creator)')
     message.channel.send(embed)
   }
 
@@ -338,11 +352,11 @@ client.on('messageReactionRemove', async (reaction, user) => {
       if (playersArrayIndex > -1) matchInformation.players['1'].splice(playersArrayIndex, 1)
 
       messageEmbed.fields[6].value = ''
-      matchInformation.players['1'].forEach(async playerRef => {
+      for (const playerRef of matchInformation.players['1']) {
         let playerDoc = await playerRef.get()
-        playerDoc = playerRef.data()
+        playerDoc = playerDoc.data()
         messageEmbed.fields[6].value += `\n• ${playerDoc.valorantUsername}`
-      })
+      }
       if (messageEmbed.fields[6].value === '') messageEmbed.fields[6].value = 'None'
       break
     case '🇧':
@@ -350,11 +364,11 @@ client.on('messageReactionRemove', async (reaction, user) => {
       if (playersArrayIndex > -1) matchInformation.players['2'].splice(playersArrayIndex, 1)
 
       messageEmbed.fields[7].value = ''
-      matchInformation.players['2'].forEach(async playerRef => {
+      for (const playerRef of matchInformation.players['2']) {
         let playerDoc = await playerRef.get()
-        playerDoc = playerRef.data()
+        playerDoc = playerDoc.data()
         messageEmbed.fields[7].value += `\n• ${playerDoc.valorantUsername}`
-      })
+      }
       if (messageEmbed.fields[7].value === '') messageEmbed.fields[7].value = 'None'
       break
     case '🇸':
@@ -363,11 +377,11 @@ client.on('messageReactionRemove', async (reaction, user) => {
         if (playersArrayIndex > -1) matchInformation.spectators.splice(playersArrayIndex, 1)
 
         messageEmbed.fields[8].value = ''
-        matchInformation.spectators.forEach(async playerRef => {
+        for (const playerRef of matchInformation.spectators) {
           let playerDoc = await playerRef.get()
-          playerDoc = playerRef.data()
+          playerDoc = playerDoc.data()
           messageEmbed.fields[8].value += `\n• ${playerDoc.valorantUsername}`
-        })
+        }
         if (messageEmbed.fields[8].value === '') messageEmbed.fields[8].value = 'None'
       }
       break
@@ -422,98 +436,98 @@ const handleUserRegistration = (userRecord, userMessage) => {
   }
 }
 
-const handleMatchCreation = (userRecord, userMessage) => {
-  if (userMessage.channel !== userRecord.botMessage.channel) return
+const handleMatchCreation = async (matchRecord, userMessage) => {
+  if (userMessage.channel !== matchRecord.botMessage.channel) return
 
   if (userMessage.guild.me.hasPermission('MANAGE_MESSAGES')) userMessage.delete()
-  switch (userRecord.step) {
+  switch (matchRecord.step) {
     case 0:
-      userRecord.creationInformation.date = userMessage.content
+      matchRecord.creationInformation.date = userMessage.content
       break
     case 1:
       if (!RANKS[userMessage.content.toUpperCase()]) {
         return userMessage.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
-        userRecord.creationInformation.rankMinimum = RANKS[userMessage.content.toUpperCase()] // TODO: cover edge cases
+        matchRecord.creationInformation.rankMinimum = RANKS[userMessage.content.toUpperCase()] // TODO: cover edge cases
         break
       }
     case 2:
       if (!RANKS[userMessage.content.toUpperCase()]) {
         return userMessage.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
-      } else if (RANKS[userMessage.content] < userRecord.creationInformation.rankMinimum) {
+      } else if (RANKS[userMessage.content.toUpperCase()] < matchRecord.creationInformation.rankMinimum) {
         return userMessage.reply('the maximum rank cannot be below the minimum rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
-        userRecord.creationInformation.rankMaximum = RANKS[userMessage.content.toUpperCase()] // TODO: cover edge cases
+        matchRecord.creationInformation.rankMaximum = RANKS[userMessage.content.toUpperCase()] // TODO: cover edge cases
         break
       }
     case 3:
       if (!Number(userMessage.content) || Number(userMessage.content) > 5) {
         return userMessage.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
-        userRecord.creationInformation.maxTeamCount = Number(userMessage.content)
+        matchRecord.creationInformation.maxTeamCount = Number(userMessage.content)
         break
       }
     case 4:
-      userRecord.creationInformation.spectators = (userMessage.content === 'yes' || userMessage.content === 'true' || userMessage.content === '1' || userMessage.content === 'si') ? [] : false
+      matchRecord.creationInformation.spectators = (userMessage.content === 'yes' || userMessage.content === 'true' || userMessage.content === '1' || userMessage.content === 'si') ? [] : false
       break
     case 5:
       if (!Number(userMessage.content) || Number(userMessage.content) > MAPS.length) {
         return userMessage.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
-        userRecord.creationInformation.map = MAPS[Number(userMessage.content - 1)]
+        matchRecord.creationInformation.map = MAPS[Number(userMessage.content - 1)]
         break
       }
   }
 
-  if (userRecord.step < matchCreationSteps.length - 1) {
-    const embed = userRecord.botMessage.embeds[0]
+  if (matchRecord.step < matchCreationSteps.length - 1) {
+    const embed = matchRecord.botMessage.embeds[0]
 
-    const previousField = embed.fields[userRecord.step]
+    const previousField = embed.fields[matchRecord.step]
     previousField.name = '✅ ' + previousField.name
 
-    userRecord.step = userRecord.step + 1
+    matchRecord.step = matchRecord.step + 1
 
-    const stepInfo = matchCreationSteps[userRecord.step]
+    const stepInfo = matchCreationSteps[matchRecord.step]
     embed.addField(stepInfo[0], stepInfo[1])
-    userRecord.botMessage.edit(embed)
+    matchRecord.botMessage.edit(embed)
 
-    activeMatchCreation.set(userRecord.userID, userRecord)
+    activeMatchCreation.set(matchRecord.userID, matchRecord)
   } else {
     const embed = new Discord.MessageEmbed()
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .setTitle('Match Creation Complete')
       .setDescription('Your match has been made! To start it, type `v!match start <match id>`')
-      .setFooter('This message will self-destruct in 60 seconds.')
-    userRecord.botMessage.edit(embed)
-    userRecord.botMessage.delete({ timeout: 60000 })
-    if (userMessage.guild.me.hasPermission('MANAGE_MESSAGES')) userRecord.botMessage.reactions.removeAll()
-    else userRecord.botReaction.remove()
-    userRecord.creationInformation.timestamp = new Date()
+      .setFooter('This message will self-destruct in 30 seconds.')
+    matchRecord.botMessage.edit(embed)
+    matchRecord.botMessage.delete({ timeout: 30000 })
+    if (userMessage.guild.me.hasPermission('MANAGE_MESSAGES')) matchRecord.botMessage.reactions.removeAll()
+    else matchRecord.botReaction.remove()
+    matchRecord.creationInformation.timestamp = new Date()
 
     const matchEmbed = new Discord.MessageEmbed()
       .setTitle('Join Match')
       .setColor('PURPLE')
       .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and, if enabled, react with 🇸 to be a spectator.')
-      .setTimestamp(new Date(userRecord.creationInformation.date))
+      .setTimestamp(new Date(matchRecord.creationInformation.date))
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
-      .addField('Creator', userMessage.author.tag, true)
-      .addField('Date', userRecord.creationInformation.date, true)
-      .addField('Map', userRecord.creationInformation.map, true)
-      .addField('Max Team Count', userRecord.creationInformation.maxTeamCount, true)
-      .addField('Minimum Rank', RANKS_REVERSED[userRecord.creationInformation.rankMinimum], true)
-      .addField('Maximum Rank', RANKS_REVERSED[userRecord.creationInformation.rankMaximum], true)
+      .addField('Status', capitalizeFirstLetter(matchRecord.creationInformation.status), true)
+      .addField('Date', matchRecord.creationInformation.date, true)
+      .addField('Map', matchRecord.creationInformation.map, true)
+      .addField('Max Team Count', matchRecord.creationInformation.maxTeamCount, true)
+      .addField('Minimum Rank', capitalizeFirstLetter(RANKS_REVERSED[matchRecord.creationInformation.rankMinimum]), true)
+      .addField('Maximum Rank', capitalizeFirstLetter(RANKS_REVERSED[matchRecord.creationInformation.rankMaximum]), true)
       .addField('Team A', 'None', true)
       .addField('Team B', 'None', true)
-      .addField('Spectators', userRecord.creationInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
-    userRecord.botMessage.channel.send(matchEmbed)
+      .addField('Spectators', matchRecord.creationInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
+    matchRecord.botMessage.channel.send(matchEmbed)
       .then(message => {
         message.react('🇦')
         message.react('🇧')
-        if (userRecord.creationInformation.spectators) message.react('🇸')
+        if (matchRecord.creationInformation.spectators) message.react('🇸')
         matchEmbed.setFooter(`match id: ${message.id}`)
         message.edit(matchEmbed)
-        db.collection('matches').doc(message.id).set(userRecord.creationInformation)
-        activeMatchCreation.delete(userRecord.userID)
+        db.collection('matches').doc(message.id).set(matchRecord.creationInformation)
+        activeMatchCreation.delete(matchRecord.userID)
       })
   }
 }
@@ -522,6 +536,11 @@ if (process.env.TOKEN) {
   client.login(process.env.TOKEN)
 } else {
   console.error('Bot token not found! Ensure environment variable TOKEN contains the bot token. If you don\'t understand this, go read the documentation.')
+}
+
+const capitalizeFirstLetter = string => {
+  string = string.toLowerCase()
+  return string.charAt(0).toUpperCase() + string.slice(1)
 }
 
 process.on('unhandledRejection', console.error)
