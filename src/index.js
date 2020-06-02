@@ -54,13 +54,13 @@ for (const key in RANKS) {
   RANKS_REVERSED[element] = key
 }
 
-const MAPS = ['Split', 'Bind', 'Haven', 'Ascend']
+const MAPS = ['Split', 'Bind', 'Haven', 'Ascent']
 
 // \\
 // \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
 // Heroku Init \\
 
-app.set('port', (process.env.PORT || 6969))
+app.set('port', (process.env.PORT || 12500))
 
 app.get('/', function (request, response) {
   response.send('Hey')
@@ -81,12 +81,12 @@ const userRegistrationSteps = [
 
 const activeMatchCreation = new Discord.Collection()
 const matchCreationSteps = [
-  ['1. Date & Time', 'When will the match be? Respond in the format YYYY-MM-DD/HH:MM'],
+  ['1. Date & Time', 'When will the match be? Respond in the format YYYY-MM-DD/HH:MM (Time must be in 24 hour format.'],
   ['2. Rank Minimum', 'What is the **MINIMUM** rank you are allowing into your tournament? If any, type "any"'],
   ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
   ['4. Player Count', 'How many players should be on each team? Max 5.'],
   ['5. Spectators', 'Are spectators allowed?'],
-  ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascend.']
+  ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent.']
 ]
 
 client.on('ready', () => {
@@ -117,6 +117,7 @@ client.on('message', async message => {
 
     const embed = new Discord.MessageEmbed()
       .setTitle('ScrimBot Registration')
+      .setColor('PURPLE')
       .setAuthor(message.author.tag, message.author.avatarURL())
       .setDescription('Welcome to ScrimBot! We will ask you a set of questions to get started. At any time, you can cancel by reacting with the x below. You can either respond to these questions in the current channel or through DMs with the bot.')
       .addField(userRegistrationSteps[0][0], userRegistrationSteps[0][1])
@@ -140,6 +141,7 @@ client.on('message', async message => {
     if (!message.guild) return message.reply('This command can only be run in a server!')
     const embed = new Discord.MessageEmbed()
       .setTitle('Create a Match')
+      .setColor('PURPLE')
       .setDescription('Let\'s start a match!')
       .setAuthor(message.author.tag, message.author.avatarURL())
       .addField(matchCreationSteps[0][0], matchCreationSteps[0][1])
@@ -159,14 +161,15 @@ client.on('message', async message => {
             rankMaximum: '',
             date: undefined,
             creator: message.author.id,
-            status: 'created'
+            status: 'created',
+            channel: message.channel.id
           }
         }) // add user to the list of users who are currently registering, and set their progress to 0 (none)
       })
   }
 
   else if (message.content.startsWith('v!match start')) {
-    const matchID = message.content.substring(('v!match start' + 1).length)
+    const matchID = message.content.split(' ')[2]
 
     const matchInformationRef = db.collection('matches').doc(matchID)
     let matchInformation = await matchInformationRef.get()
@@ -179,29 +182,68 @@ client.on('message', async message => {
 
     const embed = new Discord.MessageEmbed()
       .setTitle('Match Started')
+      .setColor('PURPLE')
       .setDescription(`Match with ID ${matchID} has been started. Once complete, use v!score <match id> <score> to report the score!`)
       .setFooter('This message will self-destruct in 30 seconds.')
-    // userRecord.botMessage.edit(embed)
     message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
+
+    const botMessageChannel = await client.channels.fetch(matchInformation.channel)
+    const botMessage = await botMessageChannel.messages.fetch(matchID)
+    const botMessageEmbed = botMessage.embeds[0]
+    botMessageEmbed.fields[0].value = capitalizeFirstLetter(matchInformation.status)
+    botMessage.edit(botMessageEmbed)
   }
 
   else if (message.content.startsWith('v!match score')) {
+    const matchID = message.content.split(' ')[2]
+    const matchScore = message.content.split(' ')[3]
+
+    if (/\d{1,2}-\d{1,2}/.test(matchScore) === false) return message.reply('Ensure your score is reported in the format `<team a>-<team b>` (e.g. `13-7`)')
+
+    const matchInformationRef = db.collection('matches').doc(matchID)
+    let matchInformation = await matchInformationRef.get()
+    if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+    matchInformation = matchInformation.data()
+
+    matchInformation.status = 'scored'
+    matchInformation.score = [matchScore.split('-')[0], matchScore.split('-')[1]]
+
+    matchInformationRef.update(matchInformation)
+
     const embed = new Discord.MessageEmbed()
-      .setTitle('Match Score Report')
-      .setDescription('React with the match you want to join!')
-    message.reply(embed)
+      .setTitle('Match Scored')
+      .setColor('PURPLE')
+      .setDescription(`Match with ID ${matchID} has been scored. Thanks for using ScrimBot, to create a new match type \`v!match create\``)
+      .setFooter('This message will self-destruct in 30 seconds.')
+    message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
+
+    const botMessageChannel = await client.channels.fetch(matchInformation.channel)
+    const botMessage = await botMessageChannel.messages.fetch(matchID)
+    const botMessageEmbed = botMessage.embeds[0]
+    botMessageEmbed.fields[0].value = capitalizeFirstLetter(matchInformation.status)
+    botMessage.edit(botMessageEmbed)
   }
 
   else if (message.content === 'v!help') {
     const embed = new Discord.MessageEmbed()
       .setTitle('Help')
+      .setColor('PURPLE')
       .setDescription('v!help: Show this help menu.\nv!ping: Play a game of ping pong.\nv!register: Register to join matches.\nv!match create: Create a match.\nv!match join: Join a match.\nv!match start <match id>: Start a match (only for match creator)\nv!match score <match id> <score>: Report final match score (only for match creator)')
+    message.channel.send(embed)
+  }
+
+  else if (message.content === 'v!status') {
+    const embed = new Discord.MessageEmbed()
+      .setTitle('Bot Status')
+      .setColor('PURPLE')
+      .setDescription(`Current Uptime: ${Math.floor(client.uptime / 60000)} minutes\nCurrent Ping: ${client.ws.ping}ms\nRunning on Port: ${app.get('port')}`)
     message.channel.send(embed)
   }
 
   else if (message.content === 'v!ping') {
     const embed = new Discord.MessageEmbed()
       .setTitle('You have pinged me')
+      .setColor('PURPLE')
       .setDescription(`Who's down for a game of ping pong?\n${client.ws.ping}ms`)
       .setURL('https://pong-2.com/')
     message.reply(embed)
@@ -210,6 +252,7 @@ client.on('message', async message => {
   else if (message.content === 'v!uptime') {
     const embed = new Discord.MessageEmbed()
       .setTitle('Uptime')
+      .setColor('PURPLE')
       .setDescription(`ScrimBot has been online for ${Math.floor(client.uptime / 60000)} minutes :)`)
     message.reply(embed)
   }
@@ -220,6 +263,7 @@ client.on('message', async message => {
     if (!existingRecord.exists) return message.reply('fuck off')
     const embed = new Discord.MessageEmbed()
       .setTitle('Restarting!')
+      .setColor('PURPLE')
       .setDescription('See you soon!')
     await message.channel.send(embed)
     client.destroy()
@@ -232,6 +276,7 @@ client.on('message', async message => {
     if (!existingRecord.exists) return message.reply('go away you pleb')
     const embed = new Discord.MessageEmbed()
       .setTitle('Shutdown!')
+      .setColor('PURPLE')
       .setDescription('Adios!')
     await message.channel.send(embed)
     client.destroy()
@@ -247,24 +292,26 @@ client.on('messageReactionAdd', (reaction, user) => {
     const userRecord = activeUserRegistration.get(user.id)
     const embed = new Discord.MessageEmbed()
       .setTitle('ScrimBot Registration Cancelled')
+      .setColor('PURPLE')
       .setDescription('Your registration has been cancelled. If you want to try again, just type !register.')
     userRecord.botMessage.edit(embed)
     activeUserRegistration.delete(userRecord.userID)
-    // reaction.remove()
+    reaction.remove()
   }
 })
 
 client.on('messageReactionAdd', (reaction, user) => {
   if (reaction.message.author.bot) return // ignore messages from the bot itself or other bots
-  if (activeMatchCreation.has(user.id) === false) return
+  if (!activeMatchCreation.has(user.id)) return
   if (reaction.emoji.name === '❌') {
     const userRecord = activeMatchCreation.get(user.id)
     const embed = new Discord.MessageEmbed()
       .setTitle('ScrimBot Match Creation Cancelled')
+      .setColor('PURPLE')
       .setDescription('Your Match Creation has been cancelled. If you want to try again, just type !match create.')
     userRecord.botMessage.edit(embed)
     activeMatchCreation.delete(userRecord.userID)
-    // reaction.remove()
+    reaction.remove()
   }
 })
 
@@ -300,8 +347,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
         reaction.users.remove(user.id)
         return
       } else {
-        matchInformation.players['1'].push(playerInformationRef)
         messageEmbed.fields[6].value === 'None' ? messageEmbed.fields[6].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[6].value += `\n• ${playerInformation.valorantUsername}`
+        matchInformation.players['1'].push(playerInformationRef)
         break
       }
     case '🇧':
@@ -310,8 +357,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
         reaction.users.remove(user.id)
         return
       } else {
-        matchInformation.players['2'].push(playerInformationRef)
         messageEmbed.fields[7].value === 'None' ? messageEmbed.fields[7].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[7].value += `\n• ${playerInformation.valorantUsername}`
+        matchInformation.players['2'].push(playerInformationRef)
         break
       }
     case '🇸':
@@ -320,8 +367,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
         reaction.users.remove(user.id)
         return
       } else {
-        matchInformation.spectators.push(playerInformationRef)
         messageEmbed.fields[8].value === 'None' ? messageEmbed.fields[8].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[8].value += `\n• ${playerInformation.valorantUsername}`
+        matchInformation.spectators.push(playerInformationRef)
         break
       }
   }
@@ -426,6 +473,7 @@ const handleUserRegistration = (userRecord, userMessage) => {
   } else {
     const embed = new Discord.MessageEmbed()
       .setTitle('ScrimBot Registration Complete')
+      .setColor('PURPLE')
       .setDescription('Thanks for registering! Now it\'s time to get playing!')
     userRecord.botMessage.edit(embed)
     // userRecord.botMessage.reactions.removeAll()
@@ -496,6 +544,7 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
     const embed = new Discord.MessageEmbed()
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .setTitle('Match Creation Complete')
+      .setColor('PURPLE')
       .setDescription('Your match has been made! To start it, type `v!match start <match id>`')
       .setFooter('This message will self-destruct in 30 seconds.')
     matchRecord.botMessage.edit(embed)
