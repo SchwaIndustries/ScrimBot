@@ -286,8 +286,8 @@ client.on('message', async message => {
 })
 
 client.on('messageReactionAdd', (reaction, user) => {
-  if (reaction.message.author.bot) return // ignore messages from the bot itself or other bots
-  if (activeUserRegistration.has(user.id) === false) return
+  if (user.bot) return // ignore messages from the bot itself or other bots
+  if (!activeUserRegistration.has(user.id)) return
   if (reaction.emoji.name === '❌') {
     const userRecord = activeUserRegistration.get(user.id)
     const embed = new Discord.MessageEmbed()
@@ -301,7 +301,7 @@ client.on('messageReactionAdd', (reaction, user) => {
 })
 
 client.on('messageReactionAdd', (reaction, user) => {
-  if (reaction.message.author.bot) return // ignore messages from the bot itself or other bots
+  if (user.bot) return // ignore messages from the bot itself or other bots
   if (!activeMatchCreation.has(user.id)) return
   if (reaction.emoji.name === '❌') {
     const userRecord = activeMatchCreation.get(user.id)
