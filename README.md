@@ -4,7 +4,7 @@ A Discord bot for organizing Valorant custom games. Based off [Mountainz](https:
 ## Running this yourself
 The bot is pretty simple to set up, it really only needs a Discord bot token and a Firebase project.
 1. First, get your bot token from Discord.
-2. Create a file named .env in the root directory of the bot, with the following contents:
+2. Create a file named `.env` in the root directory of the bot, with the following contents:
 ```
 TOKEN=<discord bot token>
 FIR_SERVICEACCOUNT=<service account file name>
