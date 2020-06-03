@@ -1,4 +1,9 @@
 'use strict'
+// @ts-check
+/* eslint-disable no-multiple-empty-lines */
+
+// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+// MARK: - Imports and global variables
 
 /* eslint-disable indent */
 const Discord = require('discord.js')
@@ -59,11 +64,19 @@ for (const key in RANKS) {
 }
 
 const MAPS = ['Split', 'Bind', 'Haven', 'Ascent']
-const AFFIRMATIVE_WORDS = ['yes', 'yeah', 'sure', 'true', '1', 'si', 'yea']
+const AFFIRMATIVE_WORDS = ['yes', 'yeah', 'sure', 'true', '1', 'si', 'yea', 'ok', 'mhm', 'k']
 
-// \\
+
+
+
+
+
+
+
+
+
 // \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-// Heroku Init \\
+// MARK: - Heroku init
 
 app.set('port', (process.env.PORT || 12500))
 
@@ -76,6 +89,18 @@ app.get('/', function (request, response) {
 setInterval(() => {
   https.get('https://valorant-scrim-bot.herokuapp.com')
 }, 5 * 60 * 1000) // 5 minutes in milliseconds
+
+
+
+
+
+
+
+
+
+
+// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+// MARK: - Special message capturing
 
 const activeUserRegistration = new Discord.Collection()
 const userRegistrationSteps = [
@@ -99,6 +124,18 @@ client.on('ready', () => {
   client.user.setActivity('for matches', { type: 'WATCHING' })
 })
 
+
+
+
+
+
+
+
+
+
+// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+// MARK: - Command handling
+
 client.on('message', async message => {
   if (message.author === client.user || message.author.bot === true) return // ignore messages from the bot itself or other bots
   if (activeUserRegistration.has(message.author.id)) {
@@ -109,7 +146,6 @@ client.on('message', async message => {
     handleMatchCreation(activeMatchCreation.get(message.author.id), message)
     return
   }
-  if (message.guild.id !== '704495983542796338' && message.guild.id !== '350855731609600000') return // ignore message if not from "Fun Valorant Times"
 
   /* eslint-disable brace-style */
   if (message.content === 'v!register') {
@@ -187,6 +223,8 @@ client.on('message', async message => {
     if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
     matchInformation = matchInformation.data()
 
+    if (matchInformation.players['1'].length === 0 && matchInformation.players['2'].length === 0) return message.reply('There are no players in the match!')
+
     matchInformation.status = 'started'
 
     matchInformationRef.update(matchInformation)
@@ -202,7 +240,7 @@ client.on('message', async message => {
     const botMessage = await botMessageChannel.messages.fetch(matchID)
     const botMessageEmbed = botMessage.embeds[0]
     botMessageEmbed.fields[0].value = capitalizeFirstLetter(matchInformation.status)
-    botMessage.edit(botMessageEmbed)
+    botMessage.edit('The match has started! <@233760849381163010> <@521910335888949278>', botMessageEmbed)
     botMessage.reactions.removeAll()
   }
 
@@ -318,6 +356,18 @@ client.on('message', async message => {
   /* eslint-enable brace-style */
 })
 
+
+
+
+
+
+
+
+
+
+// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+// MARK: - Prompt cancellation through reactions
+
 client.on('messageReactionAdd', (reaction, user) => {
   if (user.bot) return // ignore messages from the bot itself or other bots
   if (!activeUserRegistration.has(user.id)) return
@@ -347,6 +397,18 @@ client.on('messageReactionAdd', (reaction, user) => {
     reaction.remove()
   }
 })
+
+
+
+
+
+
+
+
+
+
+// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+// MARK: - Match joining and leaving reactions
 
 client.on('messageReactionAdd', async (reaction, user) => {
   if (user.bot) return // ignore messages from the bot itself or other bots
@@ -473,6 +535,18 @@ client.on('messageReactionRemove', async (reaction, user) => {
   matchInformationRef.update(matchInformation)
 })
 
+
+
+
+
+
+
+
+
+
+// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+// MARK: - User registration prompts
+
 const handleUserRegistration = (userRecord, userMessage) => {
   if (userMessage.channel.type !== 'dm') return
 
@@ -517,6 +591,18 @@ const handleUserRegistration = (userRecord, userMessage) => {
     activeUserRegistration.delete(userRecord.userID)
   }
 }
+
+
+
+
+
+
+
+
+
+
+// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+// MARK: - Match creation prompts
 
 const handleMatchCreation = async (matchRecord, userMessage) => {
   if (userMessage.channel !== matchRecord.botMessage.channel) return
@@ -634,6 +720,18 @@ if (process.env.TOKEN) {
 } else {
   console.error('Bot token not found! Ensure environment variable TOKEN contains the bot token. If you don\'t understand this, go read the documentation.')
 }
+
+
+
+
+
+
+
+
+
+
+// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+// MARK: - Helper functions
 
 const capitalizeFirstLetter = string => {
   string = string.toLowerCase()
