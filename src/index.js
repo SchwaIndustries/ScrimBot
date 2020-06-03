@@ -77,10 +77,6 @@ setInterval(() => {
   https.get('https://valorant-scrim-bot.herokuapp.com')
 }, 5 * 60 * 1000) // 5 minutes in milliseconds
 
-// global declarations
-client.commands = new Discord.Collection()
-client.services = new Discord.Collection()
-
 const activeUserRegistration = new Discord.Collection()
 const userRegistrationSteps = [
   ['1. Valorant Username', 'What is your FULL Valorant username?'],
@@ -518,7 +514,6 @@ const handleUserRegistration = (userRecord, userMessage) => {
     // userRecord.botMessage.reactions.removeAll()
     userRecord.registrationInformation.timestamp = new Date()
     db.collection('users').doc(userRecord.userID).set(userRecord.registrationInformation)
-    console.log(userRecord)
     activeUserRegistration.delete(userRecord.userID)
   }
 }
