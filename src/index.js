@@ -111,7 +111,7 @@ const userRegistrationSteps = [
 
 const activeMatchCreation = new Discord.Collection()
 const matchCreationSteps = [
-  ['1. Date & Time', 'When will the match be? Respond in the format YYYY-MM-DD HH:MM (Time must be in 24 hour format.'],
+  ['1. Date & Time', 'When will the match be? Respond in the format HH:MM YYYY-MM-DD (Time must be in 24 hour format and if no date is specified the current day is assumed.'],
   ['2. Rank Minimum', 'What is the **MINIMUM** rank you are allowing into your tournament? If any, type "any"'],
   ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
   ['4. Player Count', 'How many players should be on each team? Max 5.'],
@@ -287,11 +287,13 @@ client.on('message', async message => {
       playerDoc.matches.push(matchInformationRef)
       playerRef.update(playerDoc)
     }
-    for (const playerRef of matchInformation.spectators) {
-      let playerDoc = await playerRef.get()
-      playerDoc = playerDoc.data()
-      playerDoc.matches.push(matchInformationRef)
-      playerRef.update(playerDoc)
+    if (matchInformation.spectators instanceof Array) {
+      for (const playerRef of matchInformation.spectators) {
+        let playerDoc = await playerRef.get()
+        playerDoc = playerDoc.data()
+        playerDoc.matches.push(matchInformationRef)
+        playerRef.update(playerDoc)
+      }
     }
   }
 
@@ -299,7 +301,13 @@ client.on('message', async message => {
     const embed = new Discord.MessageEmbed()
       .setTitle('Help')
       .setColor('PURPLE')
-      .setDescription('v!help: Show this help menu.\nv!ping: Play a game of ping pong.\nv!register: Register to join matches.\nv!match create: Create a match.\nv!match join: Join a match.\nv!match start <match id>: Start a match (only for match creator)\nv!match score <match id> <score>: Report final match score (only for match creator)')
+      .setDescription(`v!help: Show this help menu.
+      v!ping: Play a game of ping pong.
+      v!register: Register to join matches.
+      v!match create: Create a match.
+      v!match join: Join a match.
+      v!match start <match id>: Start a match (only for match creator)
+      v!match score <match id> <team a score>-<team b score>: Report final match score (only for match creator)`)
     message.channel.send(embed)
   }
 
@@ -610,8 +618,9 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
   if (userMessage.guild.me.hasPermission('MANAGE_MESSAGES')) userMessage.delete()
   switch (matchRecord.step) {
     case 0: {
-      const dateString = userMessage.content.split(' ').join('T')
-      const date = new Date(dateString)
+      const dateString = userMessage.content.split(' ')
+      if (dateString.length === 1) dateString.push(new Date().toDateString())
+      const date = new Date(dateString.reverse().join(' '))
       if (isNaN(date)) return userMessage.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchRecord.creationInformation.date = date
       break
@@ -694,7 +703,7 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
       .setTimestamp(new Date(matchRecord.creationInformation.date))
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .addField('Status', capitalizeFirstLetter(matchRecord.creationInformation.status), true)
-      .addField('Date', matchRecord.creationInformation.date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles', timeZoneName: 'short' }), true)
+      .addField('Date', matchRecord.creationInformation.date.toLocaleString('en-US', { timeZone: process.env.TIME_ZONE || 'America/Los_Angeles', timeZoneName: 'short' }), true)
       .addField('Map', matchRecord.creationInformation.map, true)
       .addField('Max Team Count', matchRecord.creationInformation.maxTeamCount, true)
       .addField('Minimum Rank', capitalizeFirstLetter(RANKS_REVERSED[matchRecord.creationInformation.rankMinimum]), true)
