@@ -194,7 +194,7 @@ client.on('message', async message => {
     const embed = new Discord.MessageEmbed()
       .setTitle('Match Started')
       .setColor('PURPLE')
-      .setDescription('Match with ID `' + matchID + '` has been started. Once complete, use `v!score <match id> <score>` to report the score!')
+      .setDescription('Match with ID `' + matchID + '` has been started. Once complete, use `v!match score <match id> <score>` to report the score!')
       .setFooter('This message will self-destruct in 30 seconds.')
     message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
 
@@ -602,7 +602,7 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
     matchRecord.creationInformation.timestamp = new Date()
 
     const matchEmbed = new Discord.MessageEmbed()
-      .setTitle('Match Summary')
+      .setTitle('Match Information')
       .setColor('PURPLE')
       .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and, if enabled, react with 🇸 to be a spectator.')
       .setTimestamp(new Date(matchRecord.creationInformation.date))
