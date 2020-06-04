@@ -63,7 +63,7 @@ for (const key in RANKS) {
   RANKS_REVERSED[element] = key
 }
 
-const MAPS = ['Split', 'Bind', 'Haven', 'Ascent']
+const MAPS = ['split', 'bind', 'haven', 'ascent']
 const AFFIRMATIVE_WORDS = ['yes', 'yeah', 'sure', 'true', '1', 'si', 'yea', 'ok', 'mhm', 'k']
 
 
@@ -116,7 +116,7 @@ const matchCreationSteps = [
   ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
   ['4. Player Count', 'How many players should be on each team? Max 5.'],
   ['5. Spectators', 'Are spectators allowed?'],
-  ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent.']
+  ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent. If any, type "any"']
 ]
 
 client.on('ready', () => {
@@ -207,8 +207,7 @@ client.on('message', async message => {
             rankMaximum: '',
             date: undefined,
             creator: message.author.id,
-            status: 'created',
-            channel: message.channel.id
+            status: 'created'
           }
         }) // add user to the list of users who are currently registering, and set their progress to 0 (none)
       })
@@ -236,7 +235,7 @@ client.on('message', async message => {
       .setFooter('This message will self-destruct in 30 seconds.')
     message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
 
-    const botMessageChannel = await client.channels.fetch(matchInformation.channel)
+    const botMessageChannel = await client.channels.fetch(matchInformation.message.channel)
     const botMessage = await botMessageChannel.messages.fetch(matchID)
     const botMessageEmbed = botMessage.embeds[0]
     botMessageEmbed.fields[0].value = capitalizeFirstLetter(matchInformation.status)
@@ -267,7 +266,7 @@ client.on('message', async message => {
       .setFooter('This message will self-destruct in 30 seconds.')
     message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
 
-    const botMessageChannel = await client.channels.fetch(matchInformation.channel)
+    const botMessageChannel = await client.channels.fetch(matchInformation.message.channel)
     const botMessage = await botMessageChannel.messages.fetch(matchID)
     const botMessageEmbed = botMessage.embeds[0]
     botMessageEmbed.fields[0].value = capitalizeFirstLetter(matchInformation.status)
@@ -334,6 +333,24 @@ client.on('message', async message => {
       .setColor('PURPLE')
       .setDescription(`ScrimBot has been online for ${Math.floor(client.uptime / 60000)} minutes :)`)
     message.reply(embed)
+  }
+
+  else if (message.content === 'v!coinflip') {
+    const embed = new Discord.MessageEmbed()
+      .setTitle('Flip a Coin')
+      .setColor('PURPLE')
+      .setDescription('A coin will be flipped in 7 seconds, call heads or tails!')
+    const coinflipMessage = await message.reply(embed)
+
+    for (let i = 7; i >= 0; i--) {
+      embed.setDescription(`A coin will be flipped in ${i} seconds, call heads or tails`)
+      coinflipMessage.edit(embed)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+    }
+    const decision = Math.floor(Math.random() * Math.floor(2))
+    console.log(decision)
+    embed.setDescription(`The final decision is ${decision === 0 ? '**HEADS**' : '**TAILS**'}`)
+    coinflipMessage.edit(embed)
   }
 
   else if (message.content === 'v!restart') {
@@ -420,6 +437,7 @@ client.on('messageReactionAdd', (reaction, user) => {
 
 client.on('messageReactionAdd', async (reaction, user) => {
   if (user.bot) return // ignore messages from the bot itself or other bots
+  console.log('message reaction added')
 
   const matchInformationRef = db.collection('matches').doc(reaction.message.id)
   let matchInformation = await matchInformationRef.get()
@@ -615,7 +633,7 @@ const handleUserRegistration = (userRecord, userMessage) => {
 const handleMatchCreation = async (matchRecord, userMessage) => {
   if (userMessage.channel !== matchRecord.botMessage.channel) return
 
-  if (userMessage.guild.me.hasPermission('MANAGE_MESSAGES')) userMessage.delete()
+  if (userMessage.guild.me.hasPermission('MANAGE_MESSAGES')) userMessage.delete({ timeout: 500 })
   switch (matchRecord.step) {
     case 0: {
       const dateString = userMessage.content.split(' ')
@@ -661,7 +679,10 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
       matchRecord.creationInformation.spectators = (AFFIRMATIVE_WORDS.includes(userMessage.content.toLowerCase())) ? [] : false
       break
     case 5: {
-      if (!Number(userMessage.content) || Number(userMessage.content) > MAPS.length) {
+      if (userMessage.content.toLowerCase() === 'any') {
+        matchRecord.creationInformation.map = MAPS[Math.floor(Math.random() * Math.floor(MAPS.length))]
+        break
+      } else if (isNaN(userMessage.content) || Number(userMessage.content) > MAPS.length) {
         return userMessage.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
         matchRecord.creationInformation.map = MAPS[Number(userMessage.content - 1)]
@@ -704,7 +725,7 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .addField('Status', capitalizeFirstLetter(matchRecord.creationInformation.status), true)
       .addField('Date', matchRecord.creationInformation.date.toLocaleString('en-US', { timeZone: process.env.TIME_ZONE || 'America/Los_Angeles', timeZoneName: 'short' }), true)
-      .addField('Map', matchRecord.creationInformation.map, true)
+      .addField('Map', capitalizeFirstLetter(matchRecord.creationInformation.map), true)
       .addField('Max Team Count', matchRecord.creationInformation.maxTeamCount, true)
       .addField('Minimum Rank', capitalizeFirstLetter(RANKS_REVERSED[matchRecord.creationInformation.rankMinimum]), true)
       .addField('Maximum Rank', capitalizeFirstLetter(RANKS_REVERSED[matchRecord.creationInformation.rankMaximum]), true)
@@ -718,6 +739,10 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
         if (matchRecord.creationInformation.spectators) message.react('🇸')
         matchEmbed.setFooter(`match id: ${message.id}`)
         message.edit(matchEmbed)
+        matchRecord.creationInformation.message = {
+          id: message.id,
+          channel: message.channel.id
+        }
         db.collection('matches').doc(message.id).set(matchRecord.creationInformation)
         activeMatchCreation.delete(matchRecord.userID)
       })
@@ -748,3 +773,4 @@ const capitalizeFirstLetter = string => {
 }
 
 process.on('unhandledRejection', console.error)
+process.on('SIGINT', () => { console.log('Bye bye!'); process.exit() })
