@@ -127,6 +127,7 @@ const matchCreationSteps = [
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}! All systems online.`)
   client.user.setActivity('for matches', { type: 'WATCHING' })
+  addOldMessagesToCache()
 })
 
 
@@ -203,7 +204,7 @@ client.on('message', async message => {
           botReaction: reaction,
           userID: message.author.id,
           creationInformation: {
-            players: { 1: [], 2: [] },
+            players: { a: [], b: [] },
             spectators: false,
             map: 0,
             rankMinimum: '',
@@ -225,7 +226,7 @@ client.on('message', async message => {
     if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
     matchInformation = matchInformation.data()
 
-    if (matchInformation.players['1'].length === 0 && matchInformation.players['2'].length === 0) return message.reply('There are no players in the match!')
+    if (matchInformation.players.a.length === 0 && matchInformation.players.b.length === 0) return message.reply('There are no players in the match!')
 
     matchInformation.status = 'started'
 
@@ -275,13 +276,13 @@ client.on('message', async message => {
     botMessage.edit(botMessageEmbed)
     botMessage.reactions.removeAll()
 
-    for (const playerRef of matchInformation.players['1']) {
+    for (const playerRef of matchInformation.players.a) {
       let playerDoc = await playerRef.get()
       playerDoc = playerDoc.data()
       playerDoc.matches.unshift(matchInformationRef)
       playerRef.update(playerDoc)
     }
-    for (const playerRef of matchInformation.players['2']) {
+    for (const playerRef of matchInformation.players.b) {
       let playerDoc = await playerRef.get()
       playerDoc = playerDoc.data()
       playerDoc.matches.unshift(matchInformationRef)
@@ -323,7 +324,7 @@ client.on('message', async message => {
       .addField('Team B', 'None', true)
       .addField('Spectators', matchInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
     matchEmbed.fields[6].value = ''
-    for (const playerRef of matchInformation.players['1']) {
+    for (const playerRef of matchInformation.players.a) {
       let playerDoc = await playerRef.get()
       playerDoc = playerDoc.data()
       matchEmbed.fields[6].value += `\n• ${playerDoc.valorantUsername}`
@@ -331,7 +332,7 @@ client.on('message', async message => {
     if (matchEmbed.fields[6].value === '') matchEmbed.fields[6].value = 'None'
 
     matchEmbed.fields[7].value = ''
-    for (const playerRef of matchInformation.players['2']) {
+    for (const playerRef of matchInformation.players.b) {
       let playerDoc = await playerRef.get()
       playerDoc = playerDoc.data()
       matchEmbed.fields[7].value += `\n• ${playerDoc.valorantUsername}`
@@ -486,7 +487,6 @@ client.on('messageReactionAdd', (reaction, user) => {
 
 client.on('messageReactionAdd', async (reaction, user) => {
   if (user.bot) return // ignore messages from the bot itself or other bots
-  console.log('message reaction added')
 
   const matchInformationRef = db.collection('matches').doc(reaction.message.id)
   let matchInformation = await matchInformationRef.get()
@@ -503,7 +503,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
   }
   playerInformation = playerInformation.data()
 
-  if (matchInformation.players['1'].find(e => e.id === playerInformationRef.id) || matchInformation.players['2'].find(e => e.id === playerInformationRef.id) || (matchInformation.spectators && matchInformation.spectators.find(e => e.id === playerInformationRef.id))) {
+  if (matchInformation.players.a.find(e => e.id === playerInformationRef.id) || matchInformation.players.b.find(e => e.id === playerInformationRef.id) || (matchInformation.spectators && matchInformation.spectators.find(e => e.id === playerInformationRef.id))) {
     reaction.message.channel.send(`<@${user.id}>, you have already joined a team! Please remove that reaction before joining a new one.`).then(msg => msg.delete({ timeout: 5000 }))
     reaction.users.remove(user.id)
     return
@@ -513,23 +513,23 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
   switch (reaction.emoji.name) {
     case '🇦':
-      if (matchInformation.players['1'].length >= matchInformation.maxTeamCount) {
+      if (matchInformation.players.a.length >= matchInformation.maxTeamCount) {
         reaction.message.channel.send(`<@${user.id}>, the selected team is full! Please choose a different one.`).then(msg => msg.delete({ timeout: 5000 }))
         reaction.users.remove(user.id)
         return
       } else {
         messageEmbed.fields[6].value === 'None' ? messageEmbed.fields[6].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[6].value += `\n• ${playerInformation.valorantUsername}`
-        matchInformation.players['1'].push(playerInformationRef)
+        matchInformation.players.a.push(playerInformationRef)
         break
       }
     case '🇧':
-      if (matchInformation.players['2'].length >= matchInformation.maxTeamCount) {
+      if (matchInformation.players.b.length >= matchInformation.maxTeamCount) {
         reaction.message.channel.send(`<@${user.id}>, the selected team is full! Please choose a different one.`).then(msg => msg.delete({ timeout: 5000 }))
         reaction.users.remove(user.id)
         return
       } else {
         messageEmbed.fields[7].value === 'None' ? messageEmbed.fields[7].value = `• ${playerInformation.valorantUsername}` : messageEmbed.fields[7].value += `\n• ${playerInformation.valorantUsername}`
-        matchInformation.players['2'].push(playerInformationRef)
+        matchInformation.players.b.push(playerInformationRef)
         break
       }
     case '🇸':
@@ -567,11 +567,11 @@ client.on('messageReactionRemove', async (reaction, user) => {
   let playersArrayIndex
   switch (reaction.emoji.name) {
     case '🇦':
-      playersArrayIndex = matchInformation.players['1'].findIndex(e => e.id === playerInformationRef.id)
-      if (playersArrayIndex > -1) matchInformation.players['1'].splice(playersArrayIndex, 1)
+      playersArrayIndex = matchInformation.players.a.findIndex(e => e.id === playerInformationRef.id)
+      if (playersArrayIndex > -1) matchInformation.players.a.splice(playersArrayIndex, 1)
 
       messageEmbed.fields[6].value = ''
-      for (const playerRef of matchInformation.players['1']) {
+      for (const playerRef of matchInformation.players.a) {
         let playerDoc = await playerRef.get()
         playerDoc = playerDoc.data()
         messageEmbed.fields[6].value += `\n• ${playerDoc.valorantUsername}`
@@ -579,11 +579,11 @@ client.on('messageReactionRemove', async (reaction, user) => {
       if (messageEmbed.fields[6].value === '') messageEmbed.fields[6].value = 'None'
       break
     case '🇧':
-      playersArrayIndex = matchInformation.players['2'].findIndex(e => e.id === playerInformationRef.id)
-      if (playersArrayIndex > -1) matchInformation.players['2'].splice(playersArrayIndex, 1)
+      playersArrayIndex = matchInformation.players.b.findIndex(e => e.id === playerInformationRef.id)
+      if (playersArrayIndex > -1) matchInformation.players.b.splice(playersArrayIndex, 1)
 
       messageEmbed.fields[7].value = ''
-      for (const playerRef of matchInformation.players['2']) {
+      for (const playerRef of matchInformation.players.b) {
         let playerDoc = await playerRef.get()
         playerDoc = playerDoc.data()
         messageEmbed.fields[7].value += `\n• ${playerDoc.valorantUsername}`
@@ -795,6 +795,18 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
   }
 }
 
+const addOldMessagesToCache = async () => {
+  const snapshot = await db.collection('matches').where('status', '==', 'created').get()
+  if (snapshot.empty) return // no open matches found
+
+  snapshot.forEach(async doc => {
+    const match = doc.data()
+
+    const messageChannel = await client.channels.fetch(match.message.channel)
+    messageChannel.messages.fetch(match.message.id)
+  })
+}
+
 if (process.env.TOKEN) {
   client.login(process.env.TOKEN)
 } else {
@@ -819,4 +831,3 @@ const capitalizeFirstLetter = string => {
 }
 
 process.on('unhandledRejection', console.error)
-process.on('SIGINT', () => { console.log('Bye bye!'); process.exit() })
