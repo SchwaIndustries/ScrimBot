@@ -505,6 +505,12 @@ client.on('messageReactionAdd', async (reaction, user) => {
     return
   }
 
+  if (playerInformation.valorantRank < matchInformation.rankMinimum || playerInformation.valorantRank > matchInformation.rankMaximum) {
+    reaction.message.channel.send(`<@${user.id}>, you do not meet the match rank requirements! Please try a different one or ask the match creator to adjust them.`).then(msg => msg.delete({ timeout: 5000 }))
+    reaction.users.remove(user.id)
+    return
+  }
+
   const messageEmbed = reaction.message.embeds[0]
 
   switch (reaction.emoji.name) {
