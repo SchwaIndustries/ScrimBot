@@ -119,7 +119,7 @@ const userRegistrationSteps = [
 
 const activeMatchCreation = new Discord.Collection()
 const matchCreationSteps = [
-  ['1. Date & Time', 'When will the match be? Respond in the format HH:MM YYYY-MM-DD (Time must be in 24 hour format and if no date is specified the current day is assumed.'],
+  ['1. Date & Time', 'When will the match be? Respond in the format HH:MM am/pm YYYY-MM-DD (If no date is specified the current day is assumed.)'],
   ['2. Rank Minimum', 'What is the **MINIMUM** rank you are allowing into your tournament? If any, type "any"'],
   ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
   ['4. Player Count', 'How many players should be on each team? Max 5.'],
@@ -231,6 +231,8 @@ client.on('message', async message => {
     if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
     matchInformation = matchInformation.data()
 
+    if (message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to start the match.')
+
     if (matchInformation.players.a.length === 0 && matchInformation.players.b.length === 0) return message.reply('There are no players in the match!')
 
     matchInformation.status = 'started'
@@ -261,6 +263,8 @@ client.on('message', async message => {
     let matchInformation = await matchInformationRef.get()
     if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
     matchInformation = matchInformation.data()
+
+    if (message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to score the match.')
 
     matchInformation.status = 'completed'
     matchInformation.score = [matchScore.split('-')[0], matchScore.split('-')[1]]
@@ -319,6 +323,7 @@ client.on('message', async message => {
       .setDescription('')
       .setTimestamp(matchInformation.date.toDate())
       .setAuthor(matchCreator.tag, matchCreator.avatarURL())
+      .setThumbnail(MAPS_THUMBNAILS[matchInformation.map])
       .addField('Status', capitalizeFirstLetter(matchInformation.status), true)
       .addField('Date', moment(matchInformation.date.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'), true)
       .addField('Map', capitalizeFirstLetter(matchInformation.map), true)
@@ -342,7 +347,7 @@ client.on('message', async message => {
       playerDoc = playerDoc.data()
       matchEmbed.fields[7].value += `\n• ${playerDoc.valorantUsername}`
     }
-    if (matchEmbed.fields[7].value === '') matchEmbed.fields[6].value = 'None'
+    if (matchEmbed.fields[7].value === '') matchEmbed.fields[7].value = 'None'
 
     if (matchInformation.spectators instanceof Array) {
       matchEmbed.fields[8].value = ''
@@ -360,6 +365,150 @@ client.on('message', async message => {
     message.reply(matchEmbed)
   }
 
+  else if (message.content.startsWith('v!match edit')) {
+    const attributes = message.content.split(' ')
+    const matchID = attributes[2]
+    if (!matchID) return message.reply('Please specify a match id to edit!')
+
+    const editedProperty = attributes[3]
+    if (!editedProperty) return message.reply('Please specify a property to edit! (date, map, minRank, maxRank, teamPlayerCount, spectators)')
+
+    const editedValue = attributes[4]
+    if (!editedValue) return message.reply('Please specify a value for ' + editedProperty)
+
+    const matchInformationRef = db.collection('matches').doc(matchID)
+    let matchInformation = await matchInformationRef.get()
+    if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+    matchInformation = matchInformation.data()
+
+    switch (editedProperty) {
+      case 'date': {
+        const dateString = [editedValue, attributes[5]]
+        if (dateString.length === 2) {
+          const actualDate = moment().tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('YYYY-MM-DD')
+          dateString.push(actualDate)
+        }
+
+        const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE || 'America/Los_Angeles').toDate()
+        if (isNaN(date)) return message.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
+        matchInformation.date = date
+        break
+      }
+      case 'minRank': {
+        if (editedValue.toLowerCase() === 'any') {
+          matchInformation.rankMinimum = 0
+          break
+        } else if (!RANKS[editedValue.toUpperCase()]) {
+          return message.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
+        } else {
+          matchInformation.rankMinimum = RANKS[editedValue.toUpperCase()] // TODO: cover edge cases
+          break
+        }
+      }
+      case 'maxRank': {
+        if (editedValue.toLowerCase() === 'any') {
+          matchInformation.rankMaximum = 99
+          break
+        } else if (!RANKS[editedValue.toUpperCase()]) {
+          return message.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
+        } else if (RANKS[editedValue.toUpperCase()] < matchInformation.rankMinimum) {
+          return message.reply('the maximum rank cannot be below the minimum rank!').then(msg => msg.delete({ timeout: 5000 }))
+        } else {
+          matchInformation.rankMaximum = RANKS[editedValue.toUpperCase()] // TODO: cover edge cases
+          break
+        }
+      }
+      case 'teamPlayerCount': {
+        if (!Number(editedValue) || Number(editedValue) > 5) {
+          return message.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
+        } else {
+          matchInformation.maxTeamCount = Number(editedValue)
+          break
+        }
+      }
+      case 'spectators':
+        matchInformation.spectators = (AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase())) ? [] : false
+        break
+      case 'map': {
+        if (editedValue.toLowerCase() === 'any') {
+          matchInformation.map = MAPS[Math.floor(Math.random() * Math.floor(MAPS.length))]
+          break
+        } else if (isNaN(editedValue) || Number(editedValue) > MAPS.length) {
+          return message.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
+        } else {
+          matchInformation.map = MAPS[Number(editedValue - 1)]
+          break
+        }
+      }
+    }
+
+    matchInformationRef.update(matchInformation)
+    message.reply(`${editedProperty} successfully changed to ${editedValue} for match ${matchID}!`)
+  }
+
+  else if (message.content.startsWith('v!user info')) {
+    let userID = message.content.split(' ')[2]
+
+    if (!userID) userID = message.author.id
+    if (userID.startsWith('<@')) {
+      userID = userID.replace(/<@!?/, '').replace(/>$/, '')
+    }
+    const userInformationRef = db.collection('users').doc(userID)
+    let userInformation = await userInformationRef.get()
+    if (!userInformation.exists) return message.reply('User not found! Ensure correct user ID is submitted.')
+    userInformation = userInformation.data()
+
+    const userDiscordInformation = await client.users.fetch(userID)
+
+    const userEmbed = new ScrimBotEmbed()
+      .setTitle('Retrieved User Information')
+      .setDescription('')
+      .setTimestamp(new Date())
+      .setAuthor(userDiscordInformation.tag, userDiscordInformation.avatarURL())
+      .setThumbnail(userDiscordInformation.avatarURL())
+      .addField('Valorant Username', userInformation.valorantUsername, true)
+      .addField('Valorant Rank', capitalizeFirstLetter(RANKS_REVERSED[userInformation.valorantRank]), true)
+      .addField('Registration Date', moment(userInformation.timestamp.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'))
+      .addField('Notifications Enabled', userInformation.notifications === true ? 'Yes' : 'No', true)
+      .addField('Matches Played', userInformation.matches.length, true)
+    message.reply(userEmbed)
+  }
+
+  else if (message.content.startsWith('v!user edit')) {
+    const attributes = message.content.split(' ')
+    const editedProperty = attributes[2]
+    if (!editedProperty) return message.reply('Please specify a property to edit! (username, rank, notifications)')
+
+    const editedValue = attributes[3]
+    if (!editedValue) return message.reply('Please specify a value for ' + editedProperty)
+
+    const userInformationRef = db.collection('users').doc(message.author.id)
+    let userInformation = await userInformationRef.get()
+    if (!userInformation.exists) return message.reply('User not found! Are you registered with ScrimBot?')
+    userInformation = userInformation.data()
+
+    switch (editedProperty) {
+      case 'username':
+        userInformation.valorantUsername = editedValue
+        break
+      case 'rank':
+        if (!RANKS[editedValue.toUpperCase()]) {
+          return message.reply('Please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
+        } else {
+          userInformation.valorantRank = RANKS[editedValue.toUpperCase()] // TODO: cover edge cases
+          break
+        }
+      case 'notifications':
+        userInformation.notifications = (AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase()))
+        break
+      default:
+        return message.reply('Requested property not found!')
+    }
+
+    userInformationRef.update(userInformation)
+    message.reply(`${editedProperty} successfully changed to ${editedValue}!`)
+  }
+
   else if (message.content === 'v!help') {
     const embed = new ScrimBotEmbed()
       .setTitle('Help')
@@ -369,7 +518,11 @@ client.on('message', async message => {
       v!match create: Create a match.
       v!match join: Join a match.
       v!match start <match id>: Start a match (only for match creator)
-      v!match score <match id> <team a score>-<team b score>: Report final match score (only for match creator)`)
+      v!match score <match id> <team a score>-<team b score>: Report final match score (only for match creator)
+      v!match edit <match id> <property to edit> <edited value>: Edit match information (only for match creator)
+      v!match info <match id>: Retrieves match information
+      v!user info <mention or user id>: Retrieves user information
+      v!user edit <username, rank, notifications> <edited value>: Edit user info`)
     message.channel.send(embed)
   }
 
@@ -395,7 +548,7 @@ client.on('message', async message => {
     message.reply(embed)
   }
 
-  else if (message.content === 'v!coinflip') {
+  else if (message.content === 'v!coinflip' || message.content === 'v!cf') {
     const embed = new ScrimBotEmbed()
       .setTitle('Flip a Coin')
       .setDescription('A coin will be flipped in 7 seconds, call heads or tails!')
@@ -404,10 +557,10 @@ client.on('message', async message => {
     for (let i = 7; i >= 0; i--) {
       embed.setDescription(`A coin will be flipped in ${i} seconds, call heads or tails`)
       coinflipMessage.edit(embed)
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 1100))
     }
     const decision = Math.floor(Math.random() * Math.floor(2))
-    console.log(decision)
+
     embed.setDescription(`The final decision is ${decision === 0 ? '**HEADS**' : '**TAILS**'}`)
     coinflipMessage.edit(embed)
   }
@@ -635,7 +788,7 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
       .setTimestamp(new Date(matchRecord.creationInformation.date))
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .addField('Status', capitalizeFirstLetter(matchRecord.creationInformation.status), true)
-      .addField('Date', moment(matchRecord.creationInformation.date.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'), true)
+      .addField('Date', moment(matchRecord.creationInformation.date).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'), true)
       .addField('Map', capitalizeFirstLetter(matchRecord.creationInformation.map), true)
       .addField('Max Team Count', matchRecord.creationInformation.maxTeamCount + ' players per team', true)
       .addField('Minimum Rank', capitalizeFirstLetter(RANKS_REVERSED[matchRecord.creationInformation.rankMinimum]), true)

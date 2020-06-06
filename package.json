@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "standard && nodemon src/index.js"
+    "test": "standard && heroku ps:scale web=0 --app valorant-scrim-bot && nodemon src/index.js"
   },
   "repository": {
     "type": "git",
