@@ -782,7 +782,7 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
       .addField('Status', capitalizeFirstLetter(matchRecord.creationInformation.status), true)
       .addField('Date', matchRecord.creationInformation.date.toLocaleString('en-US', { timeZone: process.env.TIME_ZONE || 'America/Los_Angeles', timeZoneName: 'short' }), true)
       .addField('Map', capitalizeFirstLetter(matchRecord.creationInformation.map), true)
-      .addField('Max Team Count', matchRecord.creationInformation.maxTeamCount, true)
+      .addField('Max Team Count', matchRecord.creationInformation.maxTeamCount + ' players per team', true)
       .addField('Minimum Rank', capitalizeFirstLetter(RANKS_REVERSED[matchRecord.creationInformation.rankMinimum]), true)
       .addField('Maximum Rank', capitalizeFirstLetter(RANKS_REVERSED[matchRecord.creationInformation.rankMaximum]), true)
       .addField('Team A', 'None', true)
