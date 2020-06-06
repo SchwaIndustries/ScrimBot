@@ -111,7 +111,7 @@ setInterval(() => {
 
 const activeUserRegistration = new Discord.Collection()
 const userRegistrationSteps = [
-  ['1. Valorant Username', 'What is your FULL Valorant username?'],
+  ['1. Valorant Username', 'What is your FULL Valorant username (including tag)?'],
   ['2. Valorant Rank', 'What rank are you in Valorant? If you don\'t have a rank, go with "Iron 1"'],
   ['3. Notifications', 'Do you want to be notified when LFG starts? Respond "yes" if you would like to opt-in.']
 ]
@@ -206,6 +206,7 @@ client.on('message', async message => {
           botMessage: creationMessage,
           botReaction: reaction,
           userID: message.author.id,
+          userMessage: message,
           creationInformation: {
             players: { a: [], b: [] },
             spectators: false,
@@ -801,6 +802,7 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
         }
         db.collection('matches').doc(message.id).set(matchRecord.creationInformation)
         activeMatchCreation.delete(matchRecord.userID)
+        matchRecord.userMessage.delete()
       })
   }
 }
