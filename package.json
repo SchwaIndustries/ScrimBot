@@ -20,10 +20,12 @@
   "dependencies": {
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
+    "erlpack": "github:discordapp/erlpack",
     "express": "^4.17.1",
     "firebase-admin": "^8.12.1",
     "moment": "^2.26.0",
-    "moment-timezone": "^0.5.31"
+    "moment-timezone": "^0.5.31",
+    "zlib-sync": "^0.1.6"
   },
   "devDependencies": {
     "nodemon": "^2.0.4",
