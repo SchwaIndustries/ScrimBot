@@ -694,7 +694,7 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
   switch (matchRecord.step) {
     case 0: {
       const dateString = userMessage.content.split(' ')
-      if (dateString.length === 1) dateString.push(new Date().toDateString())
+      if (dateString.length === 1) dateString.push(new Date().toLocaleDateString('en-US', { timeZone: process.env.TIME_ZONE || 'America/Los_Angeles' }))
       const date = new Date(dateString.reverse().join(' '))
       if (isNaN(date)) return userMessage.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchRecord.creationInformation.date = date
