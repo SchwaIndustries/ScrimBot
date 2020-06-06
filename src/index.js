@@ -15,6 +15,7 @@ const admin = require('firebase-admin')
 const Express = require('express')
   const app = Express()
 const https = require('https')
+const moment = require('moment-timezone')
 /* eslint-enable indent */
 
 const RANKS = {
@@ -316,10 +317,10 @@ client.on('message', async message => {
     const matchEmbed = new ScrimBotEmbed()
       .setTitle('Retrieved Match Information')
       .setDescription('')
-      .setTimestamp(new Date(matchInformation.date))
+      .setTimestamp(matchInformation.date.toDate())
       .setAuthor(matchCreator.tag, matchCreator.avatarURL())
       .addField('Status', capitalizeFirstLetter(matchInformation.status), true)
-      .addField('Date', matchInformation.date.toDate().toLocaleString('en-US', { timeZone: process.env.TIME_ZONE || 'America/Los_Angeles', timeZoneName: 'short' }), true)
+      .addField('Date', moment(matchInformation.date.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'), true)
       .addField('Map', capitalizeFirstLetter(matchInformation.map), true)
       .addField('Max Team Count', matchInformation.maxTeamCount, true)
       .addField('Minimum Rank', capitalizeFirstLetter(RANKS_REVERSED[matchInformation.rankMinimum]), true)
@@ -695,8 +696,12 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
   switch (matchRecord.step) {
     case 0: {
       const dateString = userMessage.content.split(' ')
-      if (dateString.length === 1) dateString.push(new Date().toLocaleDateString('en-US', { timeZone: process.env.TIME_ZONE || 'America/Los_Angeles' }))
-      const date = new Date(dateString.reverse().join(' '))
+      if (dateString.length === 2) {
+        const actualDate = moment().tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('YYYY-MM-DD')
+        dateString.push(actualDate)
+      }
+
+      const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE || 'America/Los_Angeles').toDate()
       if (isNaN(date)) return userMessage.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchRecord.creationInformation.date = date
       break
@@ -781,7 +786,7 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
       .setTimestamp(new Date(matchRecord.creationInformation.date))
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .addField('Status', capitalizeFirstLetter(matchRecord.creationInformation.status), true)
-      .addField('Date', matchRecord.creationInformation.date.toLocaleString('en-US', { timeZone: process.env.TIME_ZONE || 'America/Los_Angeles', timeZoneName: 'short' }), true)
+      .addField('Date', moment(matchRecord.creationInformation.date.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'), true)
       .addField('Map', capitalizeFirstLetter(matchRecord.creationInformation.map), true)
       .addField('Max Team Count', matchRecord.creationInformation.maxTeamCount + ' players per team', true)
       .addField('Minimum Rank', capitalizeFirstLetter(RANKS_REVERSED[matchRecord.creationInformation.rankMinimum]), true)
