@@ -73,6 +73,14 @@ class ScrimBotEmbed extends Discord.MessageEmbed {
   constructor (specialColor) {
     super()
     this.setColor(specialColor || 'PURPLE')
+    this.footer = { text: 'Sponsored by Limitless Gaming', iconURL: 'https://cdn.discordapp.com/icons/667553378607431681/0129a1e3f29b541b6af45c8c3fb0dd14.webp' }
+  }
+
+  setFooter (text, override) {
+    if (override) {
+      this.footer.text = text
+    }
+    this.footer.text += `\n${text}`
   }
 }
 
@@ -133,6 +141,15 @@ client.on('ready', () => {
   addOldMessagesToCache()
 })
 
+// const rotateStatus = async () => {
+//   const timeBetween = 15000
+//   while (true) {
+//     client.user.setActivity('for matches | v!help', { type: 'WATCHING' })
+//     await new Promise(resolve => setTimeout(resolve, timeBetween))
+//     client.user.setActivity('thanks to Limitless Gaming')
+//     await new Promise(resolve => setTimeout(resolve, timeBetween))
+//   }
+// }
 
 
 
@@ -522,7 +539,10 @@ client.on('message', async message => {
       v!match edit <match id> <property to edit> <edited value>: Edit match information (only for match creator)
       v!match info <match id>: Retrieves match information
       v!user info <mention or user id>: Retrieves user information
-      v!user edit <username, rank, notifications> <edited value>: Edit user info`)
+      v!user edit <username, rank, notifications> <edited value>: Edit user info
+      
+      *Special thanks to Limitless Gaming:* https://discord.gg/kKPSCaB`)
+    embed.setFooter('', true)
     message.channel.send(embed)
   }
 
