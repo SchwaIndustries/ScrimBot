@@ -112,7 +112,7 @@ setInterval(() => {
 const activeUserRegistration = new Discord.Collection()
 const userRegistrationSteps = [
   ['1. Valorant Username', 'What is your FULL Valorant username?'],
-  ['2. Valorant Rank', 'What rank are you in Valorant? If you don\'t have a rank, type "N/A"'],
+  ['2. Valorant Rank', 'What rank are you in Valorant? If you don\'t have a rank, go with "Iron 1"'],
   ['3. Notifications', 'Do you want to be notified when LFG starts? Respond "yes" if you would like to opt-in.']
 ]
 
@@ -187,7 +187,7 @@ client.on('message', async message => {
             valorantUsername: ''
           }
         }) // add user to the list of users who are currently registering, and set their progress to 0 (none)
-        message.reply('Check your DMs!')
+        if (message.guild) message.reply('Check your DMs!')
       })
   }
 
