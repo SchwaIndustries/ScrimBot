@@ -128,7 +128,7 @@ const matchCreationSteps = [
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}! All systems online.`)
-  client.user.setActivity('for matches', { type: 'WATCHING' })
+  client.user.setActivity('for matches | v!help', { type: 'WATCHING' })
   addOldMessagesToCache()
 })
 
