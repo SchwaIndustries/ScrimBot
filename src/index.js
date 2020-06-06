@@ -60,6 +60,12 @@ for (const key in RANKS) {
 }
 
 const MAPS = ['split', 'bind', 'haven', 'ascent']
+const MAPS_THUMBNAILS = {
+  split: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt2caea7a88362d6aa/5ecd64b0817e574fa1dcc162/split-minimap-2.png',
+  bind: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/bltad4274632c983531/5ecd64d04d187c101f3f2486/bind-minimap-2.png',
+  haven: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/bltedb5d57941e4f3f5/5ecd64c14d187c101f3f2484/haven-minimap-2.png',
+  ascent: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt47bef6aa9e43d8ec/5ecd64df96a8996de38bbf8f/ascent-minimap-2.jpg'
+}
 const AFFIRMATIVE_WORDS = ['yes', 'yeah', 'sure', 'true', '1', 'si', 'yea', 'ok', 'mhm', 'k']
 
 class ScrimBotEmbed extends Discord.MessageEmbed {
@@ -770,6 +776,7 @@ const handleMatchCreation = async (matchRecord, userMessage) => {
     const matchEmbed = new ScrimBotEmbed()
       .setTitle('Match Information')
       .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and, if enabled, react with 🇸 to be a spectator.')
+      .setThumbnail(MAPS_THUMBNAILS[matchRecord.creationInformation.map])
       .setTimestamp(new Date(matchRecord.creationInformation.date))
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .addField('Status', capitalizeFirstLetter(matchRecord.creationInformation.status), true)
