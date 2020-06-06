@@ -10,11 +10,7 @@ const Discord = require('discord.js')
   const client = new Discord.Client()
 require('dotenv').config()
 const admin = require('firebase-admin')
-  const serviceAccount = require('../' + process.env.FIR_SERVICEACCOUNT)
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
-  })
+  admin.initializeApp()
   const db = admin.firestore()
 const Express = require('express')
   const app = Express()
