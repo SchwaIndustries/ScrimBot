@@ -166,9 +166,11 @@ client.on('message', async message => {
     await message.author.createDM()
     message.author.send(embed)
       .then(async registrationMessage => {
+        const botReaction = await registrationMessage.react('❌')
         activeUserRegistration.set(message.author.id, {
           step: 0,
           botMessage: registrationMessage,
+          botReaction: botReaction,
           userID: message.author.id,
           registrationInformation: {
             discordID: message.author.id,
@@ -179,7 +181,6 @@ client.on('message', async message => {
             valorantUsername: ''
           }
         }) // add user to the list of users who are currently registering, and set their progress to 0 (none)
-        registrationMessage.react('❌')
         message.reply('Check your DMs!')
       })
   }
@@ -239,7 +240,7 @@ client.on('message', async message => {
     const botMessageEmbed = botMessage.embeds[0]
     botMessageEmbed.fields[0].value = capitalizeFirstLetter(matchInformation.status)
     botMessage.edit('The match has started! <@233760849381163010> <@521910335888949278>', botMessageEmbed)
-    botMessage.reactions.removeAll()
+    if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
   }
 
   else if (message.content.startsWith('v!match score')) {
@@ -270,7 +271,7 @@ client.on('message', async message => {
     botMessageEmbed.fields[0].value = capitalizeFirstLetter(matchInformation.status)
     botMessageEmbed.addField('Final Score', matchScore)
     botMessage.edit(botMessageEmbed)
-    botMessage.reactions.removeAll()
+    if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 
     for (const playerRef of matchInformation.players.a) {
       let playerDoc = await playerRef.get()
@@ -661,7 +662,7 @@ const handleUserRegistration = (userRecord, userMessage) => {
       .setTitle('ScrimBot Registration Complete')
       .setDescription('Thanks for registering! Now it\'s time to get playing!')
     userRecord.botMessage.edit(embed)
-    // userRecord.botMessage.reactions.removeAll()
+    userRecord.botReaction.users.remove(client.user)
     userRecord.registrationInformation.timestamp = new Date()
     db.collection('users').doc(userRecord.userID).set(userRecord.registrationInformation)
     activeUserRegistration.delete(userRecord.userID)
