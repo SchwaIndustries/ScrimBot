@@ -120,7 +120,7 @@ setInterval(() => {
 
 const activeUserRegistration = new Discord.Collection()
 const userRegistrationSteps = [
-  ['1. Valorant Username', 'What is your FULL Valorant username (including tag)?'],
+  ['1. Valorant Username', 'What is your FULL Valorant username? (including tag, e.g. `Username#NA1`)'],
   ['2. Valorant Rank', 'What rank are you in Valorant? If you don\'t have a rank, go with "Iron 1"'],
   ['3. Notifications', 'Do you want to be notified when LFG starts? Respond "yes" if you would like to opt-in.']
 ]
@@ -856,7 +856,7 @@ const addPlayerToMatch = async (reaction, user) => {
   const playerInformationRef = db.collection('users').doc(user.id)
   let playerInformation = await playerInformationRef.get()
   if (!playerInformation.exists) {
-    reaction.message.channel.send(`<@${user.id}>, you are not registered with ScrimBot. Please type v!register before reacting!`).then(msg => msg.delete({ timeout: 5000 }))
+    reaction.message.channel.send(`<@${user.id}>, you are not registered with ScrimBot. Please type \`v!register\` before reacting!`).then(msg => msg.delete({ timeout: 5000 }))
     reaction.users.remove(user.id)
     return
   }
