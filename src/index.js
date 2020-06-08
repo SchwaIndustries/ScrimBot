@@ -570,14 +570,18 @@ client.on('message', async message => {
         }
       case 'notifications':
         userInformation.notifications = (AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase()))
+        if (userInformation.notifications === true) {
+          message.member.roles.add('717802617534808084') }
+        if (userInformation.notifications === false) {
+          message.member.roles.remove('717802617534808084') }
+        userInformationRef.update(userInformation)
         break
       default:
         return message.reply('Requested property not found!')
     }
-
-    userInformationRef.update(userInformation)
     message.reply(`${editedProperty} successfully changed to ${editedValue}!`)
   }
+
 
   else if (message.content === 'v!help') {
     const embed = new ScrimBotEmbed()
@@ -749,6 +753,9 @@ const handleUserRegistration = (userRecord, userMessage) => {
       }
     case 2:
       userRecord.registrationInformation.notifications = (AFFIRMATIVE_WORDS.includes(userMessage.content.toLowerCase()))
+      if (userRecord.registrationInformation.notifications === true) {
+        userMessage.member.roles.add('717802617534808084')
+      }
       break
   }
 
@@ -840,7 +847,7 @@ const handlePlayerReport = async (reportRecord, userMessage) => {
     activeReportCreation.set(reportRecord.userID, reportRecord)
   } else {
     const embed = new ScrimBotEmbed()
-      .setTitle('ScrimBot Registration Complete')
+      .setTitle('ScrimBot Report Complete')
       .setDescription('Thanks for reporting and keeping the community safe!')
     reportRecord.botMessage.edit(embed)
     reportRecord.botReaction.users.remove(client.user)
@@ -1157,13 +1164,6 @@ if (process.env.TOKEN) {
 } else {
   console.error('Bot token not found! Ensure environment variable TOKEN contains the bot token. If you don\'t understand this, go read the documentation.')
 }
-
-
-
-
-
-
-
 
 
 
