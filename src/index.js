@@ -800,6 +800,11 @@ const cancelUserRegistration = async (reaction, user) => {
 
 // \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
 // MARK: - Reporting
+
+
+
+
+
 const reportWebhook = new Discord.WebhookClient('719586184229159013', 'x_8m24WRM7b6aK19WIoF5cf61BcgwcUjtzaQz_qNLxnMPcLUdouFW4OZEANcT9I_xbUU')
 
 const handlePlayerReport = async (reportRecord, userMessage) => {
@@ -884,6 +889,11 @@ const cancelReportCreation = async (reaction, user) => {
 
 // \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
 // MARK: - Matchmaking
+
+
+
+
+
 
 const handleMatchCreation = async (matchRecord, userMessage) => {
   if (userMessage.channel !== matchRecord.botMessage.channel) return
@@ -1167,8 +1177,19 @@ if (process.env.TOKEN) {
 
 
 
+
+
+
+
+
+
 // \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
 // MARK: - Helper functions
+
+
+
+
+
 
 const capitalizeFirstLetter = string => {
   string = string.toLowerCase()
