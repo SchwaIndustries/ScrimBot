@@ -136,6 +136,13 @@ const matchCreationSteps = [
   ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent. If any, type "any"']
 ]
 
+const activeReportCreation = new Discord.Collection()
+const reportCreationSteps = [
+  ['1. Player\'s Discord ID', 'What is the Disocrd ID of the player you would like to report? If you don\'t know how to retrieve a Discord ID, please visit this https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-'],
+  ['2. Date of Offense', 'What was the date of the offense? YYYY-MM-DD'],
+  ['3. Explination', 'In as much detail as possible, explain what the player has done wrong?']
+]
+
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}! All systems online.`)
   client.user.setActivity('for matches | v!help', { type: 'WATCHING' })
@@ -173,7 +180,10 @@ client.on('message', async message => {
     handleMatchCreation(activeMatchCreation.get(message.author.id), message)
     return
   }
-
+  if (activeReportCreation.has(message.author.id)) {
+    handlePlayerReport(activeReportCreation.get(message.author.id), message)
+    return
+  }
   /* eslint-disable brace-style */
   if (message.content === 'v!register') {
     const existingRecord = await db.collection('users').doc(message.author.id).get()
@@ -236,7 +246,7 @@ client.on('message', async message => {
             creator: message.author.id,
             status: 'created'
           }
-        }) // add user to the list of users who are currently registering, and set their progress to 0 (none)
+        }) // add user to the list of users who are currently creating a match, and set their progress to 0 (none)
       })
   }
 
@@ -659,9 +669,34 @@ client.on('message', async message => {
     client.destroy()
     process.exit(0)
   }
+
+  else if (message.content === 'v!report') {
+    const embed = new ScrimBotEmbed()
+      .setTitle('ScrimBot Report System')
+      .setAuthor(message.author.tag, message.author.avatarURL())
+      .setDescription('Welcome to ScrimBot Report System! We will ask you a set of questions to get started. At any time, you can cancel by reacting with the x below.')
+      .addField(reportCreationSteps[0][0], reportCreationSteps[0][1])
+    await message.author.createDM()
+    message.author.send(embed)
+      .then(async reportMessage => {
+        const botReaction = await reportMessage.react('❌')
+        activeReportCreation.set(message.author.id, {
+          step: 0,
+          botMessage: reportMessage,
+          botReaction: botReaction,
+          userID: message.author.id,
+          reportInformation: {
+            reporterDiscordID: message.author.id,
+            offenderDiscordID: '',
+            reason: '',
+            timestamp: undefined
+          }
+        }) // add user to the list of users who are currently registering, and set their progress to 0 (none)
+        if (message.guild) message.reply('Check your DMs!')
+      })
+  }
   /* eslint-enable brace-style */
 })
-
 
 
 
@@ -679,6 +714,7 @@ client.on('messageReactionAdd', (reaction, user) => {
 
   if (activeUserRegistration.has(user.id)) cancelUserRegistration(reaction, user)
   else if (activeMatchCreation.has(user.id)) cancelMatchCreation(reaction, user)
+  else if (activeReportCreation.has(user.id)) cancelReportCreation(reaction, user)
   addPlayerToMatch(reaction, user)
 })
 
@@ -745,13 +781,77 @@ const cancelUserRegistration = async (reaction, user) => {
     const userRecord = activeUserRegistration.get(user.id)
     const embed = new ScrimBotEmbed()
       .setTitle('ScrimBot Registration Cancelled')
-      .setDescription('Your registration has been cancelled. If you want to try again, just type !register.')
+      .setDescription('Your registration has been cancelled. If you want to try again, just type v!register.')
     userRecord.botMessage.edit(embed)
     activeUserRegistration.delete(userRecord.userID)
     reaction.remove()
   }
 }
 
+
+
+// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+// MARK: - Report shit
+
+const handlePlayerReport = async (reportRecord, userMessage) => {
+  if (userMessage.channel.type !== 'dm') return
+
+  switch (reportRecord.step) {
+    case 0: {
+      const existingRecord = await db.collection('users').doc(userMessage.content).get()
+      if (!existingRecord.exists) return userMessage.reply('The ID provided is not valid. Please make sure to provide a valid ID').then(msg => msg.delete({ timeout: 5000 }))
+      reportRecord.reportInformation.offenderDiscordID = userMessage.content
+      break
+    }
+    case 1: {
+      const dateString = userMessage.content.split(' ')
+      if (dateString.length === 2) {
+        const actualDate = moment().tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('YYYY-MM-DD')
+        dateString.push(actualDate)
+      }
+      break
+    }
+    case 2:
+      reportRecord.reportInformation.reason = userMessage.content
+      break
+  }
+
+  if (reportRecord.step < reportCreationSteps.length - 1) {
+    const embed = reportRecord.botMessage.embeds[0]
+
+    const previousField = embed.fields[reportRecord.step]
+    previousField.name = '✅ ' + previousField.name
+
+    reportRecord.step = reportRecord.step + 1
+
+    const stepInfo = reportCreationSteps[reportRecord.step]
+    embed.addField(stepInfo[0], stepInfo[1])
+    reportRecord.botMessage.edit(embed)
+
+    activeReportCreation.set(reportRecord.userID, reportRecord)
+  } else {
+    const embed = new ScrimBotEmbed()
+      .setTitle('ScrimBot Registration Complete')
+      .setDescription('Thanks for reporting and keeping the community safe!')
+    reportRecord.botMessage.edit(embed)
+    reportRecord.botReaction.users.remove(client.user)
+    reportRecord.reportInformation.timestamp = new Date()
+    db.collection('users').doc(reportRecord.reportInformation.offenderDiscordID).collection('reports').add(reportRecord.reportInformation)
+    activeReportCreation.delete(reportRecord.userID)
+  }
+}
+
+const cancelReportCreation = async (reaction, user) => {
+  if (reaction.emoji.name === '❌') {
+    const userRecord = activeReportCreation.get(user.id)
+    const embed = new ScrimBotEmbed()
+      .setTitle('ScrimBot Report Cancelled')
+      .setDescription('Your report has been cancelled. If you want to try again, just type v!report.')
+    userRecord.botMessage.edit(embed)
+    activeReportCreation.delete(userRecord.userID)
+    reaction.remove()
+  }
+}
 
 
 
@@ -890,7 +990,7 @@ const cancelMatchCreation = async (reaction, user) => {
     const userRecord = activeMatchCreation.get(user.id)
     const embed = new ScrimBotEmbed()
       .setTitle('ScrimBot Match Creation Cancelled')
-      .setDescription('Your Match Creation has been cancelled. If you want to try again, just type !match create.')
+      .setDescription('Your Match Creation has been cancelled. If you want to try again, just type v!match create.')
     userRecord.botMessage.edit(embed)
     activeMatchCreation.delete(userRecord.userID)
     reaction.remove()
