@@ -138,9 +138,10 @@ const matchCreationSteps = [
 
 const activeReportCreation = new Discord.Collection()
 const reportCreationSteps = [
-  ['1. Player\'s Discord ID', 'What is the Disocrd ID of the player you would like to report? If you don\'t know how to retrieve a Discord ID, please visit this https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-'],
-  ['2. Date of Offense', 'What was the date of the offense? YYYY-MM-DD'],
-  ['3. Explination', 'In as much detail as possible, explain what the player has done wrong?']
+  ['1. Server ID:', 'What is the server ID?  If you don\'t know how to retrieve a Discord ID, please visit this https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-'],
+  ['2. Player ID', 'What is the Disocrd ID of the player you would like to report?'],
+  ['3. Date of Offense', 'What was the date of the offense? YYYY-MM-DD'],
+  ['4. Explination', 'In as much detail as possible, explain what the player has done wrong?']
 ]
 
 client.on('ready', () => {
@@ -730,7 +731,7 @@ client.on('messageReactionRemove', async (reaction, user) => {
 
 
 // \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-// MARK: - User registration shit
+// MARK: - User Registration
 
 const handleUserRegistration = (userRecord, userMessage) => {
   if (userMessage.channel.type !== 'dm') return
@@ -791,19 +792,26 @@ const cancelUserRegistration = async (reaction, user) => {
 
 
 // \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-// MARK: - Report shit
+// MARK: - Reporting
+const reportWebhook = new Discord.WebhookClient('719586184229159013', 'x_8m24WRM7b6aK19WIoF5cf61BcgwcUjtzaQz_qNLxnMPcLUdouFW4OZEANcT9I_xbUU')
 
 const handlePlayerReport = async (reportRecord, userMessage) => {
   if (userMessage.channel.type !== 'dm') return
 
   switch (reportRecord.step) {
     case 0: {
-      const existingRecord = await db.collection('users').doc(userMessage.content).get()
-      if (!existingRecord.exists) return userMessage.reply('The ID provided is not valid. Please make sure to provide a valid ID').then(msg => msg.delete({ timeout: 5000 }))
-      reportRecord.reportInformation.offenderDiscordID = userMessage.content
+      const existingRecord = await db.collection('guilds').doc(userMessage.content).get()
+      if (!existingRecord.exists) return userMessage.reply('The ID provided is not valid. Please make sure to provide a valid ID').then(msg => msg.delete({ timeout: 10000 }))
+      reportRecord.reportInformation.GuildID = userMessage.content
       break
     }
     case 1: {
+      const existingRecord = await db.collection('users').doc(userMessage.content).get()
+      if (!existingRecord.exists) return userMessage.reply('The ID provided is not valid. Please make sure to provide a valid ID').then(msg => msg.delete({ timeout: 10000 }))
+      reportRecord.reportInformation.offenderDiscordID = userMessage.content
+      break
+    }
+    case 2: {
       const dateString = userMessage.content.split(' ')
       if (dateString.length === 2) {
         const actualDate = moment().tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('YYYY-MM-DD')
@@ -811,9 +819,10 @@ const handlePlayerReport = async (reportRecord, userMessage) => {
       }
       break
     }
-    case 2:
+    case 3: {
       reportRecord.reportInformation.reason = userMessage.content
       break
+    }
   }
 
   if (reportRecord.step < reportCreationSteps.length - 1) {
@@ -837,6 +846,13 @@ const handlePlayerReport = async (reportRecord, userMessage) => {
     reportRecord.botReaction.users.remove(client.user)
     reportRecord.reportInformation.timestamp = new Date()
     db.collection('users').doc(reportRecord.reportInformation.offenderDiscordID).collection('reports').add(reportRecord.reportInformation)
+    const reportEmbed = new ScrimBotEmbed()
+      .setTitle('User Report')
+      .addField('Guild', `${client.guilds.resolve(reportRecord.reportInformation.GuildID)}, ${reportRecord.reportInformation.GuildID}`)
+      .addField('Report for', `<@${reportRecord.reportInformation.offenderDiscordID}>`)
+      .addField('Reported by', `<@${reportRecord.reportInformation.reporterDiscordID}>`)
+      .addField('Reported for', reportRecord.reportInformation.reason)
+    reportWebhook.send(reportEmbed)
     activeReportCreation.delete(reportRecord.userID)
   }
 }
@@ -860,7 +876,7 @@ const cancelReportCreation = async (reaction, user) => {
 
 
 // \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-// MARK: - Match shit
+// MARK: - Matchmaking
 
 const handleMatchCreation = async (matchRecord, userMessage) => {
   if (userMessage.channel !== matchRecord.botMessage.channel) return
