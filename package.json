@@ -28,6 +28,7 @@
     "zlib-sync": "^0.1.6"
   },
   "devDependencies": {
+    "heroku": "^7.42.1",
     "nodemon": "^2.0.4",
     "standard": "^14.3.4"
   },
