@@ -81,6 +81,7 @@ class ScrimBotEmbed extends Discord.MessageEmbed {
       this.footer.text = text
     }
     this.footer.text += `\n${text}`
+    return this
   }
 }
 
@@ -248,7 +249,9 @@ client.on('message', async message => {
     if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
     matchInformation = matchInformation.data()
 
-    if (message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to start the match.')
+    const adminUser = await db.collection('botAdmins').doc(message.author.id).get()
+
+    if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to start the match.')
 
     if (matchInformation.players.a.length === 0 && matchInformation.players.b.length === 0) return message.reply('There are no players in the match!')
 
@@ -281,7 +284,9 @@ client.on('message', async message => {
     if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
     matchInformation = matchInformation.data()
 
-    if (message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to score the match.')
+    const adminUser = await db.collection('botAdmins').doc(message.author.id).get()
+
+    if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to score the match.')
 
     matchInformation.status = 'completed'
     matchInformation.score = [matchScore.split('-')[0], matchScore.split('-')[1]]
@@ -323,6 +328,43 @@ client.on('message', async message => {
       }
     }
   }
+
+  else if (message.content.startsWith('v!match cancel')) {
+    const matchID = message.content.split(' ')[2]
+
+    const matchInformationRef = db.collection('matches').doc(matchID)
+    let matchInformation = await matchInformationRef.get()
+    if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+    matchInformation = matchInformation.data()
+
+    const adminUser = await db.collection('botAdmins').doc(message.author.id).get()
+
+    if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to cancel the match.')
+
+    if (matchInformation.status === 'scored') return message.reply('This match has already been scored.')
+
+    if (matchInformation.status === 'started') {
+      if (!adminUser.exists) return message.reply('**__You must be a ScrimBot admin to cancel an ongoing match.__**')
+    }
+
+    matchInformation.status = 'canceled'
+
+    matchInformationRef.update(matchInformation)
+
+    const embed = new ScrimBotEmbed()
+      .setTitle('Match Canceled')
+      .setDescription('Match with ID `' + matchID + '` has been canceled. Thanks for using ScrimBot, to create a new match type `v!match create`')
+      .setFooter('This message will self-destruct in 30 seconds.')
+    message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
+
+    const botMessageChannel = await client.channels.fetch(matchInformation.message.channel)
+    const botMessage = await botMessageChannel.messages.fetch(matchID)
+    const botMessageEmbed = botMessage.embeds[0]
+    botMessageEmbed.fields[0].value = capitalizeFirstLetter(matchInformation.status)
+    botMessage.edit(botMessageEmbed)
+    if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
+  }
+
 
   else if (message.content.startsWith('v!match info')) {
     const matchID = message.content.split(' ')[2]
@@ -532,9 +574,11 @@ client.on('message', async message => {
       .setDescription(`v!help: Show this help menu.
       v!ping: Play a game of ping pong.
       v!register: Register to join matches.
+      v!invite: Invite the bot to your server!
       v!match create: Create a match.
       v!match join: Join a match.
       v!match start <match id>: Start a match (only for match creator)
+      v!match cancel <match id>: Cancel a match (must be match creator)
       v!match score <match id> <team a score>-<team b score>: Report final match score (only for match creator)
       v!match edit <match id> <property to edit> <edited value>: Edit match information (only for match creator)
       v!match info <match id>: Retrieves match information
@@ -551,6 +595,13 @@ client.on('message', async message => {
       .setTitle('Bot Status')
       .setDescription(`Current Uptime: ${Math.floor(client.uptime / 60000)} minutes\nCurrent Ping: ${client.ws.ping}ms\nRunning on Port: ${app.get('port')}`)
     message.channel.send(embed)
+  }
+
+  else if (message.content === 'v!invite') {
+    const embed = new ScrimBotEmbed()
+      .setTitle('Add me to your server!')
+      .setURL('https://discord.com/oauth2/authorize?client_id=715030981894995998&scope=bot&permissions=8')
+    message.reply(embed)
   }
 
   else if (message.content === 'v!ping') {
