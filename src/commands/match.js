@@ -1,0 +1,314 @@
+const CONSTANTS = require('../constants')
+const moment = require('moment-timezone')
+
+module.exports = exports = {
+  name: 'match',
+  usage: '',
+  enabled: true,
+  process: async (message, GLOBALS) => {
+    switch (message.content.split(' ')[1]) {
+      case 'create': create(message, GLOBALS); break
+      case 'start': start(message, GLOBALS); break
+      case 'score': score(message, GLOBALS); break
+      case 'cancel': cancel(message, GLOBALS); break
+      case 'info': info(message, GLOBALS); break
+      case 'edit': edit(message, GLOBALS); break
+    }
+  }
+}
+
+const create = async (message, GLOBALS) => {
+  if (!message.guild) return message.reply('This command can only be run in a server!')
+  const embed = new GLOBALS.embed()
+    .setTitle('Create a Match')
+    .setDescription('Let\'s start a match!')
+    .setAuthor(message.author.tag, message.author.avatarURL())
+    .addField(CONSTANTS.matchCreationSteps[0][0], CONSTANTS.matchCreationSteps[0][1])
+
+  const creationMessage = await message.channel.send(embed)
+  const reaction = await creationMessage.react('❌')
+  GLOBALS.activeMatchCreation.set(message.author.id, {
+    step: 0,
+    botMessage: creationMessage,
+    botReaction: reaction,
+    userID: message.author.id,
+    userMessage: message,
+    creationInformation: {
+      players: { a: [], b: [] },
+      spectators: false,
+      map: 0,
+      rankMinimum: '',
+      rankMaximum: '',
+      date: undefined,
+      creator: message.author.id,
+      status: 'created'
+    }
+  }) // add user to the list of users who are currently creating a match, and set their progress to 0 (none)
+}
+
+const start = async (message, GLOBALS) => {
+  const matchID = message.content.split(' ')[2]
+  if (!message.guild) return message.reply('This command can only be run in a server!')
+  if (!matchID) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
+  let matchInformation = await matchInformationRef.get()
+  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  matchInformation = matchInformation.data()
+
+  const adminUser = await GLOBALS.db.collection('botAdmins').doc(message.author.id).get()
+
+  if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to start the match.')
+
+  if (matchInformation.players.a.length === 0 && matchInformation.players.b.length === 0) return message.reply('There are no players in the match!')
+
+  matchInformation.status = 'started'
+
+  matchInformationRef.update(matchInformation)
+
+  const embed = new GLOBALS.embed()
+    .setTitle('Match Started')
+    .setDescription('Match with ID `' + matchID + '` has been started. Once complete, use `v!match score <match id> <score>` to report the score!')
+    .setFooter('This message will self-destruct in 30 seconds.')
+  message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
+
+  const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
+  const botMessage = await botMessageChannel.messages.fetch(matchID)
+  const botMessageEmbed = botMessage.embeds[0]
+  botMessageEmbed.fields[0].value = CONSTANTS.capitalizeFirstLetter(matchInformation.status)
+  botMessage.edit('The match has started!', botMessageEmbed)
+  if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
+}
+
+const score = async (message, GLOBALS) => {
+  const matchID = message.content.split(' ')[2]
+  const matchScore = message.content.split(' ')[3]
+  if (!message.guild) return message.reply('This command can only be run in a server!')
+
+  if (/\d{1,2}-\d{1,2}/.test(matchScore) === false) return message.reply('Ensure your score is reported in the format `<team a>-<team b>` (e.g. `13-7`)')
+
+  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
+  let matchInformation = await matchInformationRef.get()
+  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  matchInformation = matchInformation.data()
+
+  const adminUser = await GLOBALS.db.collection('botAdmins').doc(message.author.id).get()
+
+  if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to score the match.')
+
+  matchInformation.status = 'completed'
+  matchInformation.score = [matchScore.split('-')[0], matchScore.split('-')[1]]
+
+  matchInformationRef.update(matchInformation)
+
+  const embed = new GLOBALS.embed()
+    .setTitle('Match Completed')
+    .setDescription('Match with ID `' + matchID + '` has been completed. Thanks for using ScrimBot, to create a new match type `v!match create`')
+    .setFooter('This message will self-destruct in 30 seconds.')
+  message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
+
+  const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
+  const botMessage = await botMessageChannel.messages.fetch(matchID)
+  const botMessageEmbed = botMessage.embeds[0]
+  botMessageEmbed.fields[0].value = CONSTANTS.capitalizeFirstLetter(matchInformation.status)
+  botMessageEmbed.addField('Final Score', matchScore)
+  botMessage.edit(botMessageEmbed)
+  if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
+
+  for (const playerRef of matchInformation.players.a) {
+    let playerDoc = await playerRef.get()
+    playerDoc = playerDoc.data()
+    playerDoc.matches.unshift(matchInformationRef)
+    playerRef.update(playerDoc)
+  }
+  for (const playerRef of matchInformation.players.b) {
+    let playerDoc = await playerRef.get()
+    playerDoc = playerDoc.data()
+    playerDoc.matches.unshift(matchInformationRef)
+    playerRef.update(playerDoc)
+  }
+  if (matchInformation.spectators instanceof Array) {
+    for (const playerRef of matchInformation.spectators) {
+      let playerDoc = await playerRef.get()
+      playerDoc = playerDoc.data()
+      playerDoc.matches.unshift(matchInformationRef)
+      playerRef.update(playerDoc)
+    }
+  }
+}
+
+const cancel = async (message, GLOBALS) => {
+  const matchID = message.content.split(' ')[2]
+  if (!message.guild) return message.reply('This command can only be run in a server!')
+
+  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
+  let matchInformation = await matchInformationRef.get()
+  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  matchInformation = matchInformation.data()
+
+  const adminUser = await GLOBALS.db.collection('botAdmins').doc(message.author.id).get()
+
+  if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to cancel the match.')
+
+  if (matchInformation.status === 'scored') return message.reply('This match has already been scored.')
+
+  if (matchInformation.status === 'started') {
+    if (!adminUser.exists) return message.reply('**__You must be a ScrimBot admin to cancel an ongoing match.__**')
+  }
+
+  matchInformation.status = 'canceled'
+
+  matchInformationRef.update(matchInformation)
+
+  const embed = new GLOBALS.embed()
+    .setTitle('Match Canceled')
+    .setDescription('Match with ID `' + matchID + '` has been canceled. Thanks for using ScrimBot, to create a new match type `v!match create`')
+    .setFooter('This message will self-destruct in 30 seconds.')
+  message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
+
+  const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
+  const botMessage = await botMessageChannel.messages.fetch(matchID)
+  const botMessageEmbed = botMessage.embeds[0]
+  botMessageEmbed.fields[0].value = CONSTANTS.capitalizeFirstLetter(matchInformation.status)
+  botMessage.edit(botMessageEmbed)
+  if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
+}
+
+const info = async (message, GLOBALS) => {
+  const matchID = message.content.split(' ')[2]
+
+  if (!matchID) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
+  let matchInformation = await matchInformationRef.get()
+  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  matchInformation = matchInformation.data()
+
+  const matchCreator = await GLOBALS.client.users.fetch(matchInformation.creator)
+
+  const matchEmbed = new GLOBALS.embed()
+    .setTitle('Retrieved Match Information')
+    .setDescription('')
+    .setTimestamp(matchInformation.date.toDate())
+    .setAuthor(matchCreator.tag, matchCreator.avatarURL())
+    .setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
+    .addField('Status', CONSTANTS.capitalizeFirstLetter(matchInformation.status), true)
+    .addField('Date', moment(matchInformation.date.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'), true)
+    .addField('Map', CONSTANTS.capitalizeFirstLetter(matchInformation.map), true)
+    .addField('Max Team Count', matchInformation.maxTeamCount, true)
+    .addField('Minimum Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchInformation.rankMinimum]), true)
+    .addField('Maximum Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchInformation.rankMaximum]), true)
+    .addField('Team A', 'None', true)
+    .addField('Team B', 'None', true)
+    .addField('Spectators', matchInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
+  matchEmbed.fields[6].value = ''
+  for (const playerRef of matchInformation.players.a) {
+    let playerDoc = await playerRef.get()
+    playerDoc = playerDoc.data()
+    matchEmbed.fields[6].value += `\n• ${playerDoc.valorantUsername}`
+  }
+  if (matchEmbed.fields[6].value === '') matchEmbed.fields[6].value = 'None'
+
+  matchEmbed.fields[7].value = ''
+  for (const playerRef of matchInformation.players.b) {
+    let playerDoc = await playerRef.get()
+    playerDoc = playerDoc.data()
+    matchEmbed.fields[7].value += `\n• ${playerDoc.valorantUsername}`
+  }
+  if (matchEmbed.fields[7].value === '') matchEmbed.fields[7].value = 'None'
+
+  if (matchInformation.spectators instanceof Array) {
+    matchEmbed.fields[8].value = ''
+    for (const playerRef of matchInformation.spectators) {
+      let playerDoc = await playerRef.get()
+      playerDoc = playerDoc.data()
+      matchEmbed.fields[8].value += `\n• ${playerDoc.valorantUsername}`
+    }
+    if (matchEmbed.fields[8].value === '') matchEmbed.fields[8].value = 'None'
+  }
+
+  if (matchInformation.status === 'completed') {
+    matchEmbed.addField('Final Score', `${matchInformation.score[0]}-${matchInformation.score[1]}`)
+  }
+  message.reply(matchEmbed)
+}
+
+const edit = async (message, GLOBALS) => {
+  const attributes = message.content.split(' ')
+  const matchID = attributes[2]
+  if (!message.guild) return message.reply('This command can only be run in a server!')
+  if (!matchID) return message.reply('Please specify a match id to edit!')
+
+  const editedProperty = attributes[3]
+  if (!editedProperty) return message.reply('Please specify a property to edit! (date, map, minRank, maxRank, teamPlayerCount, spectators)')
+
+  const editedValue = attributes[4]
+  if (!editedValue) return message.reply('Please specify a value for ' + editedProperty)
+
+  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
+  let matchInformation = await matchInformationRef.get()
+  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  matchInformation = matchInformation.data()
+
+  switch (editedProperty) {
+    case 'date': {
+      const dateString = [editedValue, attributes[5]]
+      if (dateString.length === 2) {
+        const actualDate = moment().tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('YYYY-MM-DD')
+        dateString.push(actualDate)
+      }
+
+      const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE || 'America/Los_Angeles').toDate()
+      if (isNaN(date)) return message.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
+      matchInformation.date = date
+      break
+    }
+    case 'minRank': {
+      if (editedValue.toLowerCase() === 'any') {
+        matchInformation.rankMinimum = 0
+        break
+      } else if (!CONSTANTS.RANKS[editedValue.toUpperCase()]) {
+        return message.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
+      } else {
+        matchInformation.rankMinimum = CONSTANTS.RANKS[editedValue.toUpperCase()] // TODO: cover edge cases
+        break
+      }
+    }
+    case 'maxRank': {
+      if (editedValue.toLowerCase() === 'any') {
+        matchInformation.rankMaximum = 99
+        break
+      } else if (!CONSTANTS.RANKS[editedValue.toUpperCase()]) {
+        return message.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
+      } else if (CONSTANTS.RANKS[editedValue.toUpperCase()] < matchInformation.rankMinimum) {
+        return message.reply('the maximum rank cannot be below the minimum rank!').then(msg => msg.delete({ timeout: 5000 }))
+      } else {
+        matchInformation.rankMaximum = CONSTANTS.RANKS[editedValue.toUpperCase()] // TODO: cover edge cases
+        break
+      }
+    }
+    case 'teamPlayerCount': {
+      if (!Number(editedValue) || Number(editedValue) > 5) {
+        return message.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
+      } else {
+        matchInformation.maxTeamCount = Number(editedValue)
+        break
+      }
+    }
+    case 'spectators':
+      matchInformation.spectators = (CONSTANTS.AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase())) ? [] : false
+      break
+    case 'map': {
+      if (editedValue.toLowerCase() === 'any') {
+        matchInformation.map = CONSTANTS.MAPS[Math.floor(Math.random() * Math.floor(CONSTANTS.MAPS.length))]
+        break
+      } else if (isNaN(editedValue) || Number(editedValue) > CONSTANTS.MAPS.length) {
+        return message.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
+      } else {
+        matchInformation.map = CONSTANTS.MAPS[Number(editedValue - 1)]
+        break
+      }
+    }
+  }
+
+  matchInformationRef.update(matchInformation)
+  message.reply(`${editedProperty} successfully changed to ${editedValue} for match ${matchID}!`)
+}
