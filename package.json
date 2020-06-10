@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "standard && heroku ps:scale web=0 --app valorant-scrim-bot && nodemon src/index.js"
+    "test": "npx standard && npx heroku ps:scale web=0 && npx nodemon src/index.js"
   },
   "repository": {
     "type": "git",
@@ -20,12 +20,10 @@
   "dependencies": {
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
-    "erlpack": "github:discordapp/erlpack",
     "express": "^4.17.1",
     "firebase-admin": "^8.12.1",
     "moment": "^2.26.0",
-    "moment-timezone": "^0.5.31",
-    "zlib-sync": "^0.1.6"
+    "moment-timezone": "^0.5.31"
   },
   "devDependencies": {
     "heroku": "^7.42.1",

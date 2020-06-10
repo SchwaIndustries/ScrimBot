@@ -67,7 +67,7 @@ const MAPS_THUMBNAILS = {
   haven: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/bltedb5d57941e4f3f5/5ecd64c14d187c101f3f2484/haven-minimap-2.png',
   ascent: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt47bef6aa9e43d8ec/5ecd64df96a8996de38bbf8f/ascent-minimap-2.jpg'
 }
-const AFFIRMATIVE_WORDS = ['yes', 'yeah', 'sure', 'true', '1', 'si', 'yea', 'ok', 'mhm', 'k']
+const AFFIRMATIVE_WORDS = ['yes', 'yeah', 'sure', 'true', '1', 'si', 'yea', 'ok', 'mhm', 'k', 'yah']
 
 class ScrimBotEmbed extends Discord.MessageEmbed {
   constructor (specialColor) {
@@ -253,7 +253,7 @@ client.on('message', async message => {
 
   else if (message.content.startsWith('v!match start')) {
     const matchID = message.content.split(' ')[2]
-
+    if (!message.guild) return message.reply('This command can only be run in a server!')
     if (!matchID) return message.reply('Match not found! Ensure correct match ID is submitted.')
     const matchInformationRef = db.collection('matches').doc(matchID)
     let matchInformation = await matchInformationRef.get()
@@ -287,6 +287,7 @@ client.on('message', async message => {
   else if (message.content.startsWith('v!match score')) {
     const matchID = message.content.split(' ')[2]
     const matchScore = message.content.split(' ')[3]
+    if (!message.guild) return message.reply('This command can only be run in a server!')
 
     if (/\d{1,2}-\d{1,2}/.test(matchScore) === false) return message.reply('Ensure your score is reported in the format `<team a>-<team b>` (e.g. `13-7`)')
 
@@ -342,6 +343,7 @@ client.on('message', async message => {
 
   else if (message.content.startsWith('v!match cancel')) {
     const matchID = message.content.split(' ')[2]
+    if (!message.guild) return message.reply('This command can only be run in a server!')
 
     const matchInformationRef = db.collection('matches').doc(matchID)
     let matchInformation = await matchInformationRef.get()
@@ -438,6 +440,7 @@ client.on('message', async message => {
   else if (message.content.startsWith('v!match edit')) {
     const attributes = message.content.split(' ')
     const matchID = attributes[2]
+    if (!message.guild) return message.reply('This command can only be run in a server!')
     if (!matchID) return message.reply('Please specify a match id to edit!')
 
     const editedProperty = attributes[3]
@@ -627,6 +630,16 @@ client.on('message', async message => {
     message.reply(embed)
   }
 
+  else if (message.content === 'v!servers') {
+    const existingRecord = await db.collection('botAdmins').doc(message.author.id).get()
+    if (!existingRecord.exists) return message.reply('This command can only be executed by bot admins.')
+    const embed = new ScrimBotEmbed()
+      .setTitle('Uptime')
+      .setDescription(`ScrimBot is currently in ${client.guilds.cache.size} guilds :slight_smile:`)
+      .addField('Servers', `${client.guilds.cache.map(x => '\n' + x.name)}`)
+    message.reply(embed)
+  }
+
   else if (message.content === 'v!uptime') {
     const embed = new ScrimBotEmbed()
       .setTitle('Uptime')
@@ -654,7 +667,7 @@ client.on('message', async message => {
   else if (message.content === 'v!restart') {
     const existingRecord = await db.collection('botAdmins').doc(message.author.id).get()
       .catch(console.error)
-    if (!existingRecord.exists) return message.reply('fuck off')
+    if (!existingRecord.exists) return message.reply('This command can only be executed by bot admins.')
     const embed = new ScrimBotEmbed()
       .setTitle('Restarting!')
       .setDescription('See you soon!')
@@ -666,7 +679,7 @@ client.on('message', async message => {
   else if (message.content === 'v!shutdown') {
     const existingRecord = await db.collection('botAdmins').doc(message.author.id).get()
       .catch(console.error)
-    if (!existingRecord.exists) return message.reply('go away you pleb')
+    if (!existingRecord.exists) return message.reply('This command can only be executed by bot admins.')
     const embed = new ScrimBotEmbed()
       .setTitle('Shutdown!')
       .setDescription('Adios!')
