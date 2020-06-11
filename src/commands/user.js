@@ -38,6 +38,7 @@ const info = async (message, GLOBALS) => {
     .addField('Registration Date', moment(userInformation.timestamp.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'))
     .addField('Notifications Enabled', userInformation.notifications === true ? 'Yes' : 'No', true)
     .addField('Matches Played', userInformation.matches.length, true)
+    .addField('Banned', userInformation.isBanned)
   message.reply(userEmbed)
 }
 
