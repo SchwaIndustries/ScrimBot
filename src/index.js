@@ -17,7 +17,6 @@ const admin = require('firebase-admin')
 const Express = require('express')
   const app = Express()
 const fs = require('fs')
-/* eslint-enable indent */
 
 const CONSTANTS = require('./constants')
 
@@ -37,6 +36,18 @@ class ScrimBotEmbed extends Discord.MessageEmbed {
   }
 }
 
+const GLOBALS = {
+  'client': client,
+  'embed': ScrimBotEmbed,
+  'db': db,
+  'app': app,
+  'activeUserRegistration': new Discord.Collection(),
+  'activeMatchCreation': new Discord.Collection(),
+  'activeReportCreation': new Discord.Collection()
+}
+
+/* eslint-enable indent */
+
 // module.exports = exports = {
 //   name: '',
 //   usage: '',
@@ -54,8 +65,27 @@ class ScrimBotEmbed extends Discord.MessageEmbed {
 //   }
 // }
 
-// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-// MARK: - Heroku init
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}! All systems online.`)
+  client.user.setActivity('for matches | v!help', { type: 'WATCHING' })
+  runServices()
+  loadCommands()
+})
+
+client.on('message', async message => {
+  if (message.author === client.user || message.author.bot === true) return // ignore messages from the bot itself or other bots
+
+  const commandName = message.content.split(' ')[0].substring(2).toLowerCase()
+  if (client.commands.has(commandName)) {
+    const commandData = client.commands.get(commandName)
+    try {
+      commandData.process(message, GLOBALS)
+    } catch (e) {
+      console.error(`Error with v!${commandName}. Looks like we got a ${e}`)
+    }
+  }
+})
+
 
 function loadCommands () {
   for (const file of fs.readdirSync('./src/commands/')) {
@@ -72,56 +102,6 @@ function runServices () {
   }
   client.services.forEach(service => service.process(GLOBALS))
 }
-
-
-
-
-
-// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-// MARK: - Special message capturing
-
-const activeUserRegistration = new Discord.Collection()
-const activeMatchCreation = new Discord.Collection()
-const activeReportCreation = new Discord.Collection()
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}! All systems online.`)
-  client.user.setActivity('for matches | v!help', { type: 'WATCHING' })
-  runServices()
-  loadCommands()
-})
-
-
-const GLOBALS = {
-  'client': client,
-  'embed': ScrimBotEmbed,
-  'db': db,
-  'app': app,
-  'activeUserRegistration': activeUserRegistration,
-  'activeMatchCreation': activeMatchCreation,
-  'activeReportCreation': activeReportCreation
-}
-
-
-
-
-
-// \\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-// MARK: - Command handling
-
-client.on('message', async message => {
-  if (message.author === client.user || message.author.bot === true) return // ignore messages from the bot itself or other bots
-
-  const commandName = message.content.split(' ')[0].substring(2).toLowerCase()
-  if (client.commands.has(commandName)) {
-    const commandData = client.commands.get(commandName)
-    try {
-      commandData.process(message, GLOBALS)
-    } catch (e) {
-      console.error(`Error with v!${commandName}. Looks like we got a ${e}`)
-    }
-  }
-})
 
 if (process.env.TOKEN) {
   client.login(process.env.TOKEN)
