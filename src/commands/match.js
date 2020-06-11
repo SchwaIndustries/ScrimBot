@@ -234,7 +234,6 @@ const info = async (message, GLOBALS) => {
 const edit = async (message, GLOBALS) => {
   const attributes = message.content.split(' ')
   const matchID = attributes[2]
-  if (!message.guild) return message.reply('This command can only be run in a server!')
   if (!matchID) return message.reply('Please specify a match id to edit!')
 
   const editedProperty = attributes[3]
@@ -247,6 +246,9 @@ const edit = async (message, GLOBALS) => {
   let matchInformation = await matchInformationRef.get()
   if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
   matchInformation = matchInformation.data()
+  const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
+  const botMessage = await botMessageChannel.messages.fetch(matchID)
+  const matchEmbed = botMessage.embeds[0]
 
   switch (editedProperty) {
     case 'date': {
@@ -259,56 +261,63 @@ const edit = async (message, GLOBALS) => {
       const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE || 'America/Los_Angeles').toDate()
       if (isNaN(date)) return message.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchInformation.date = date
+      matchEmbed.fields[1].value = moment(matchInformation.date.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY')
       break
     }
     case 'minRank': {
       if (editedValue.toLowerCase() === 'any') {
         matchInformation.rankMinimum = 0
-        break
       } else if (!CONSTANTS.RANKS[editedValue.toUpperCase()]) {
         return message.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
         matchInformation.rankMinimum = CONSTANTS.RANKS[editedValue.toUpperCase()] // TODO: cover edge cases
-        break
       }
+      matchEmbed.fields[4].value = CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchInformation.rankMinimum])
+      break
     }
     case 'maxRank': {
       if (editedValue.toLowerCase() === 'any') {
         matchInformation.rankMaximum = 99
-        break
       } else if (!CONSTANTS.RANKS[editedValue.toUpperCase()]) {
         return message.reply('please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else if (CONSTANTS.RANKS[editedValue.toUpperCase()] < matchInformation.rankMinimum) {
         return message.reply('the maximum rank cannot be below the minimum rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
         matchInformation.rankMaximum = CONSTANTS.RANKS[editedValue.toUpperCase()] // TODO: cover edge cases
-        break
       }
+      matchEmbed.fields[5].value = CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchInformation.rankMaximum])
+      break
     }
     case 'teamPlayerCount': {
       if (!Number(editedValue) || Number(editedValue) > 5) {
         return message.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
         matchInformation.maxTeamCount = Number(editedValue)
+        matchEmbed.fields[3].value = matchInformation.maxTeamCount + ' players per team'
         break
       }
     }
     case 'spectators':
       matchInformation.spectators = (CONSTANTS.AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase())) ? [] : false
+      matchEmbed.fields[8].value = matchInformation.spectators instanceof Array ? 'None' : 'Not allowed'
       break
     case 'map': {
       if (editedValue.toLowerCase() === 'any') {
         matchInformation.map = CONSTANTS.MAPS[Math.floor(Math.random() * Math.floor(CONSTANTS.MAPS.length))]
-        break
       } else if (isNaN(editedValue) || Number(editedValue) > CONSTANTS.MAPS.length) {
         return message.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
         matchInformation.map = CONSTANTS.MAPS[Number(editedValue - 1)]
-        break
       }
+      matchEmbed.fields[2].value = CONSTANTS.capitalizeFirstLetter(matchInformation.map)
+      matchEmbed.setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
+      break
     }
+    default:
+      return message.reply('Property `' + editedProperty + '` not found! Please try again using a valid property (date, map, minRank, maxRank, teamPlayerCount, spectators).')
   }
 
   matchInformationRef.update(matchInformation)
   message.reply(`${editedProperty} successfully changed to ${editedValue} for match ${matchID}!`)
+  botMessage.edit(matchEmbed)
 }

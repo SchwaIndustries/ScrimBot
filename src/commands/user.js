@@ -1,3 +1,6 @@
+const moment = require('moment-timezone')
+const CONSTANTS = require('../constants')
+
 module.exports = exports = {
   name: 'user',
   usage: '',
@@ -23,16 +26,16 @@ const info = async (message, GLOBALS) => {
   if (!userInformation.exists) return message.reply('User not found! Ensure correct user ID is submitted.')
   userInformation = userInformation.data()
 
-  const userDiscordInformation = await client.users.fetch(userID)
+  const userDiscordInformation = await GLOBALS.client.users.fetch(userID)
 
-  const userEmbed = new ScrimBotEmbed()
+  const userEmbed = new GLOBALS.embed()
     .setTitle('Retrieved User Information')
     .setDescription('')
     .setTimestamp(new Date())
     .setAuthor(userDiscordInformation.tag, userDiscordInformation.avatarURL())
     .setThumbnail(userDiscordInformation.avatarURL())
     .addField('Valorant Username', userInformation.valorantUsername, true)
-    .addField('Valorant Rank', capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[userInformation.valorantRank]), true)
+    .addField('Valorant Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[userInformation.valorantRank]), true)
     .addField('Registration Date', moment(userInformation.timestamp.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'))
     .addField('Notifications Enabled', userInformation.notifications === true ? 'Yes' : 'No', true)
     .addField('Matches Played', userInformation.matches.length, true)
@@ -44,7 +47,7 @@ const edit = async (message, GLOBALS) => {
   const editedProperty = attributes[2]
   if (!editedProperty) return message.reply('Please specify a property to edit! (username, rank, notifications)')
 
-  const editedValue = attributes[3]
+  let editedValue = attributes[3]
   if (!editedValue) return message.reply('Please specify a value for ' + editedProperty)
 
   const userInformationRef = GLOBALS.db.collection('users').doc(message.author.id)
@@ -57,6 +60,7 @@ const edit = async (message, GLOBALS) => {
       userInformation.valorantUsername = editedValue
       break
     case 'rank':
+      editedValue = attributes[3] + ' ' + attributes[4]
       if (!CONSTANTS.RANKS[editedValue.toUpperCase()]) {
         return message.reply('Please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
@@ -69,10 +73,10 @@ const edit = async (message, GLOBALS) => {
         message.member.roles.add('717802617534808084') }
       if (userInformation.notifications === false) {
         message.member.roles.remove('717802617534808084') }
-      userInformationRef.update(userInformation)
       break
     default:
       return message.reply('Requested property not found!')
   }
+  userInformationRef.update(userInformation)
   message.reply(`${editedProperty} successfully changed to ${editedValue}!`)
 }
