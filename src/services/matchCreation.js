@@ -7,14 +7,10 @@ module.exports = exports = {
   process: async (GLOBALS) => {
     GLOBALS.client.on('message', async message => {
       if (message.author === GLOBALS.client.user || message.author.bot === true) return // ignore messages from the bot itself or other bots
-      if (GLOBALS.activeMatchCreation.has(message.author.id)) {
-        handleMatchCreation(GLOBALS.activeMatchCreation.get(message.author.id), message, GLOBALS)
-        return
-      }
+      if (GLOBALS.activeMatchCreation.has(message.author.id)) handleMatchCreation(GLOBALS.activeMatchCreation.get(message.author.id), message, GLOBALS)
     })
     GLOBALS.client.on('messageReactionAdd', (reaction, user) => {
       if (user.bot) return // ignore messages from the bot itself or other bots
-    
       if (GLOBALS.activeMatchCreation.has(user.id)) cancelMatchCreation(reaction, user, GLOBALS)
     })
   }
@@ -99,7 +95,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
 
     GLOBALS.activeMatchCreation.set(matchRecord.userID, matchRecord)
   } else {
-    const embed = new GLOBALS.embed()
+    const embed = new GLOBALS.Embed()
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .setTitle('Match Creation Complete')
       .setDescription('Your match has been made! To start it, type `v!match start <match id>`')
@@ -110,7 +106,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
     else matchRecord.botReaction.remove()
     matchRecord.creationInformation.timestamp = new Date()
 
-    const matchEmbed = new GLOBALS.embed()
+    const matchEmbed = new GLOBALS.Embed()
       .setTitle('Match Information')
       .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and, if enabled, react with 🇸 to be a spectator.')
       .setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchRecord.creationInformation.map])
@@ -145,7 +141,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
 const cancelMatchCreation = async (reaction, user, GLOBALS) => {
   if (reaction.emoji.name === '❌') {
     const userRecord = GLOBALS.activeMatchCreation.get(user.id)
-    const embed = new GLOBALS.embed()
+    const embed = new GLOBALS.Embed()
       .setTitle('ScrimBot Match Creation Cancelled')
       .setDescription('Your Match Creation has been cancelled. If you want to try again, just type v!match create.')
     userRecord.botMessage.edit(embed)

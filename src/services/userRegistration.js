@@ -6,23 +6,15 @@ module.exports = exports = {
   process: async (GLOBALS) => {
     GLOBALS.client.on('message', async message => {
       if (message.author === GLOBALS.client.user || message.author.bot === true) return // ignore messages from the bot itself or other bots
-      if (GLOBALS.activeUserRegistration.has(message.author.id)) {
-        handleUserRegistration(activeUserRegistration.get(message.author.id), message, GLOBALS)
-        return
-      }
+      if (GLOBALS.activeUserRegistration.has(message.author.id)) handleUserRegistration(GLOBALS.activeUserRegistration.get(message.author.id), message, GLOBALS)
     })
 
     GLOBALS.client.on('messageReactionAdd', (reaction, user) => {
       if (user.bot) return // ignore messages from the bot itself or other bots
-    
       if (GLOBALS.activeUserRegistration.has(user.id)) cancelUserRegistration(reaction, user, GLOBALS)
     })
   }
 }
-
-
-
-
 
 const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
   if (userMessage.channel.type !== 'dm') return
@@ -58,27 +50,27 @@ const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
     embed.addField(stepInfo[0], stepInfo[1])
     userRecord.botMessage.edit(embed)
 
-    activeUserRegistration.set(userRecord.userID, userRecord)
+    GLOBALS.activeUserRegistration.set(userRecord.userID, userRecord)
   } else {
-    const embed = new GLOBALS.embed()
+    const embed = new GLOBALS.Embed()
       .setTitle('ScrimBot Registration Complete')
       .setDescription('Thanks for registering! Now it\'s time to get playing!')
     userRecord.botMessage.edit(embed)
     userRecord.botReaction.users.remove(GLOBALS.client.user)
     userRecord.registrationInformation.timestamp = new Date()
     GLOBALS.db.collection('users').doc(userRecord.userID).set(userRecord.registrationInformation)
-    activeUserRegistration.delete(userRecord.userID)
+    GLOBALS.activeUserRegistration.delete(userRecord.userID)
   }
 }
 
 const cancelUserRegistration = async (reaction, user, GLOBALS) => {
   if (reaction.emoji.name === '❌') {
-    const userRecord = activeUserRegistration.get(user.id)
-    const embed = new GLOBALS.embed()
+    const userRecord = GLOBALS.activeUserRegistration.get(user.id)
+    const embed = new GLOBALS.Embed()
       .setTitle('ScrimBot Registration Cancelled')
       .setDescription('Your registration has been cancelled. If you want to try again, just type v!register.')
     userRecord.botMessage.edit(embed)
-    activeUserRegistration.delete(userRecord.userID)
+    GLOBALS.activeUserRegistration.delete(userRecord.userID)
     reaction.remove()
   }
 }

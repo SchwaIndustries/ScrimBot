@@ -3,7 +3,7 @@ module.exports = exports = {
   usage: '',
   enabled: true,
   process: async (message, GLOBALS) => {
-    const embed = new GLOBALS.embed()
+    const embed = new GLOBALS.Embed()
       .setTitle('Flip a Coin')
       .setDescription('A coin will be flipped in 7 seconds, call heads or tails!')
     const coinflipMessage = await message.reply(embed)

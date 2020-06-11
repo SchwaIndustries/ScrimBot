@@ -1,64 +1,64 @@
 module.exports = exports = {
   RANKS: {
     'ANY MIN': 0,
-  
+
     'IRON 1': 11,
     'IRON 2': 12,
     'IRON 3': 13,
-  
+
     'BRONZE 1': 21,
     'BRONZE 2': 22,
     'BRONZE 3': 23,
-  
+
     'SILVER 1': 31,
     'SILVER 2': 32,
     'SILVER 3': 33,
-  
+
     'GOLD 1': 41,
     'GOLD 2': 42,
     'GOLD 3': 43,
-  
+
     'PLATINUM 1': 51,
     'PLATINUM 2': 52,
     'PLATINUM 3': 53,
-  
+
     'DIAMOND 1': 61,
     'DIAMOND 2': 62,
     'DIAMOND 3': 63,
-  
+
     'IMMORTAL 1': 71,
     'IMMORTAL 2': 72,
     'IMMORTAL 3': 73,
-  
+
     'VALORANT': 81, // eslint-disable-line quote-props
-  
+
     'ANY MAX': 99
   },
   RANKS_REVERSED: {
-    '0': 'ANY MIN',
-    '11': 'IRON 1',
-    '12': 'IRON 2',
-    '13': 'IRON 3',
-    '21': 'BRONZE 1',
-    '22': 'BRONZE 2',
-    '23': 'BRONZE 3',
-    '31': 'SILVER 1',
-    '32': 'SILVER 2',
-    '33': 'SILVER 3',
-    '41': 'GOLD 1',
-    '42': 'GOLD 2',
-    '43': 'GOLD 3',
-    '51': 'PLATINUM 1',
-    '52': 'PLATINUM 2',
-    '53': 'PLATINUM 3',
-    '61': 'DIAMOND 1',
-    '62': 'DIAMOND 2',
-    '63': 'DIAMOND 3',
-    '71': 'IMMORTAL 1',
-    '72': 'IMMORTAL 2',
-    '73': 'IMMORTAL 3',
-    '81': 'VALORANT',
-    '99': 'ANY MAX'
+    0: 'ANY MIN',
+    11: 'IRON 1',
+    12: 'IRON 2',
+    13: 'IRON 3',
+    21: 'BRONZE 1',
+    22: 'BRONZE 2',
+    23: 'BRONZE 3',
+    31: 'SILVER 1',
+    32: 'SILVER 2',
+    33: 'SILVER 3',
+    41: 'GOLD 1',
+    42: 'GOLD 2',
+    43: 'GOLD 3',
+    51: 'PLATINUM 1',
+    52: 'PLATINUM 2',
+    53: 'PLATINUM 3',
+    61: 'DIAMOND 1',
+    62: 'DIAMOND 2',
+    63: 'DIAMOND 3',
+    71: 'IMMORTAL 1',
+    72: 'IMMORTAL 2',
+    73: 'IMMORTAL 3',
+    81: 'VALORANT',
+    99: 'ANY MAX'
   },
 
   MAPS: ['split', 'bind', 'haven', 'ascent'],

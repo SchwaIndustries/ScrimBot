@@ -15,18 +15,6 @@ module.exports = exports = {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 const addOldMessagesToCache = async (GLOBALS) => {
   const snapshot = await GLOBALS.db.collection('matches').where('status', '==', 'created').get()
   if (snapshot.empty) return // no open matches found

@@ -18,8 +18,6 @@ const Express = require('express')
   const app = Express()
 const fs = require('fs')
 
-const CONSTANTS = require('./constants')
-
 class ScrimBotEmbed extends Discord.MessageEmbed {
   constructor (specialColor) {
     super()
@@ -37,17 +35,18 @@ class ScrimBotEmbed extends Discord.MessageEmbed {
 }
 
 const GLOBALS = {
-  'client': client,
-  'embed': ScrimBotEmbed,
-  'db': db,
-  'app': app,
-  'activeUserRegistration': new Discord.Collection(),
-  'activeMatchCreation': new Discord.Collection(),
-  'activeReportCreation': new Discord.Collection()
+  client: client,
+  Embed: ScrimBotEmbed,
+  db: db,
+  app: app,
+  activeUserRegistration: new Discord.Collection(),
+  activeMatchCreation: new Discord.Collection(),
+  activeReportCreation: new Discord.Collection()
 }
 
 /* eslint-enable indent */
 
+/* eslint-disable no-trailing-spaces */
 // module.exports = exports = {
 //   name: '',
 //   usage: '',
@@ -64,6 +63,7 @@ const GLOBALS = {
     
 //   }
 // }
+/* eslint-enable no-trailing-spaces */
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}! All systems online.`)

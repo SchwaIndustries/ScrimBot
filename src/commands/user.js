@@ -13,7 +13,6 @@ module.exports = exports = {
   }
 }
 
-
 const info = async (message, GLOBALS) => {
   let userID = message.content.split(' ')[2]
 
@@ -28,7 +27,7 @@ const info = async (message, GLOBALS) => {
 
   const userDiscordInformation = await GLOBALS.client.users.fetch(userID)
 
-  const userEmbed = new GLOBALS.embed()
+  const userEmbed = new GLOBALS.Embed()
     .setTitle('Retrieved User Information')
     .setDescription('')
     .setTimestamp(new Date())
@@ -69,10 +68,8 @@ const edit = async (message, GLOBALS) => {
       }
     case 'notifications':
       userInformation.notifications = (CONSTANTS.AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase()))
-      if (userInformation.notifications === true) {
-        message.member.roles.add('717802617534808084') }
-      if (userInformation.notifications === false) {
-        message.member.roles.remove('717802617534808084') }
+      if (userInformation.notifications) message.member.roles.add('717802617534808084')
+      else message.member.roles.remove('717802617534808084')
       break
     default:
       return message.reply('Requested property not found!')

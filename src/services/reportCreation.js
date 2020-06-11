@@ -1,4 +1,6 @@
 const Discord = require('discord.js')
+const moment = require('moment-timezone')
+const CONSTANTS = require('../constants')
 
 module.exports = exports = {
   name: 'reportCreation',
@@ -6,23 +8,18 @@ module.exports = exports = {
   process: async (GLOBALS) => {
     GLOBALS.client.on('message', async message => {
       if (message.author === GLOBALS.client.user || message.author.bot === true) return // ignore messages from the bot itself or other bots
-      if (GLOBALS.activeReportCreation.has(message.author.id)) {
-        handlePlayerReport(activeReportCreation.get(message.author.id), message, GLOBALS)
-        return
-      }
+      if (GLOBALS.activeReportCreation.has(message.author.id)) handlePlayerReport(GLOBALS.activeReportCreation.get(message.author.id), message, GLOBALS)
     })
     GLOBALS.client.on('messageReactionAdd', (reaction, user) => {
       if (user.bot) return // ignore messages from the bot itself or other bots
-    
       if (GLOBALS.activeReportCreation.has(user.id)) cancelReportCreation(reaction, user, GLOBALS)
     })
   }
 }
 
-
 const reportWebhook = new Discord.WebhookClient('719586184229159013', 'x_8m24WRM7b6aK19WIoF5cf61BcgwcUjtzaQz_qNLxnMPcLUdouFW4OZEANcT9I_xbUU')
 
-const handlePlayerReport = async (reportRecord, userMessage) => {
+const handlePlayerReport = async (reportRecord, userMessage, GLOBALS) => {
   if (userMessage.channel.type !== 'dm') return
 
   switch (reportRecord.step) {
@@ -52,7 +49,7 @@ const handlePlayerReport = async (reportRecord, userMessage) => {
     }
   }
 
-  if (reportRecord.step < reportCreationSteps.length - 1) {
+  if (reportRecord.step < CONSTANTS.reportCreationSteps.length - 1) {
     const embed = reportRecord.botMessage.embeds[0]
 
     const previousField = embed.fields[reportRecord.step]
@@ -60,38 +57,38 @@ const handlePlayerReport = async (reportRecord, userMessage) => {
 
     reportRecord.step = reportRecord.step + 1
 
-    const stepInfo = reportCreationSteps[reportRecord.step]
+    const stepInfo = CONSTANTS.reportCreationSteps[reportRecord.step]
     embed.addField(stepInfo[0], stepInfo[1])
     reportRecord.botMessage.edit(embed)
 
-    activeReportCreation.set(reportRecord.userID, reportRecord)
+    GLOBALS.activeReportCreation.set(reportRecord.userID, reportRecord)
   } else {
-    const embed = new GLOBALS.embed()
+    const embed = new GLOBALS.Embed()
       .setTitle('ScrimBot Report Complete')
       .setDescription('Thanks for reporting and keeping the community safe!')
     reportRecord.botMessage.edit(embed)
-    reportRecord.botReaction.users.remove(client.user)
+    reportRecord.botReaction.users.remove(GLOBALS.client.user)
     reportRecord.reportInformation.timestamp = new Date()
     GLOBALS.db.collection('users').doc(reportRecord.reportInformation.offenderDiscordID).collection('reports').add(reportRecord.reportInformation)
-    const reportEmbed = new GLOBALS.embed()
+    const reportEmbed = new GLOBALS.Embed()
       .setTitle('User Report')
-      .addField('Guild', `${client.guilds.resolve(reportRecord.reportInformation.GuildID)}, ${reportRecord.reportInformation.GuildID}`)
+      .addField('Guild', `${GLOBALS.client.guilds.resolve(reportRecord.reportInformation.GuildID)}, ${reportRecord.reportInformation.GuildID}`)
       .addField('Report for', `<@${reportRecord.reportInformation.offenderDiscordID}>`)
       .addField('Reported by', `<@${reportRecord.reportInformation.reporterDiscordID}>`)
       .addField('Reported for', reportRecord.reportInformation.reason)
     reportWebhook.send(reportEmbed)
-    activeReportCreation.delete(reportRecord.userID)
+    GLOBALS.activeReportCreation.delete(reportRecord.userID)
   }
 }
 
-const cancelReportCreation = async (reaction, user) => {
+const cancelReportCreation = async (reaction, user, GLOBALS) => {
   if (reaction.emoji.name === '❌') {
-    const userRecord = activeReportCreation.get(user.id)
-    const embed = new GLOBALS.embed()
+    const userRecord = GLOBALS.activeReportCreation.get(user.id)
+    const embed = new GLOBALS.Embed()
       .setTitle('ScrimBot Report Cancelled')
       .setDescription('Your report has been cancelled. If you want to try again, just type v!report.')
     userRecord.botMessage.edit(embed)
-    activeReportCreation.delete(userRecord.userID)
+    GLOBALS.activeReportCreation.delete(userRecord.userID)
     reaction.remove()
   }
 }

@@ -19,7 +19,7 @@ module.exports = exports = {
 
 const create = async (message, GLOBALS) => {
   if (!message.guild) return message.reply('This command can only be run in a server!')
-  const embed = new GLOBALS.embed()
+  const embed = new GLOBALS.Embed()
     .setTitle('Create a Match')
     .setDescription('Let\'s start a match!')
     .setAuthor(message.author.tag, message.author.avatarURL())
@@ -65,7 +65,7 @@ const start = async (message, GLOBALS) => {
 
   matchInformationRef.update(matchInformation)
 
-  const embed = new GLOBALS.embed()
+  const embed = new GLOBALS.Embed()
     .setTitle('Match Started')
     .setDescription('Match with ID `' + matchID + '` has been started. Once complete, use `v!match score <match id> <score>` to report the score!')
     .setFooter('This message will self-destruct in 30 seconds.')
@@ -100,7 +100,7 @@ const score = async (message, GLOBALS) => {
 
   matchInformationRef.update(matchInformation)
 
-  const embed = new GLOBALS.embed()
+  const embed = new GLOBALS.Embed()
     .setTitle('Match Completed')
     .setDescription('Match with ID `' + matchID + '` has been completed. Thanks for using ScrimBot, to create a new match type `v!match create`')
     .setFooter('This message will self-destruct in 30 seconds.')
@@ -159,7 +159,7 @@ const cancel = async (message, GLOBALS) => {
 
   matchInformationRef.update(matchInformation)
 
-  const embed = new GLOBALS.embed()
+  const embed = new GLOBALS.Embed()
     .setTitle('Match Canceled')
     .setDescription('Match with ID `' + matchID + '` has been canceled. Thanks for using ScrimBot, to create a new match type `v!match create`')
     .setFooter('This message will self-destruct in 30 seconds.')
@@ -184,7 +184,7 @@ const info = async (message, GLOBALS) => {
 
   const matchCreator = await GLOBALS.client.users.fetch(matchInformation.creator)
 
-  const matchEmbed = new GLOBALS.embed()
+  const matchEmbed = new GLOBALS.Embed()
     .setTitle('Retrieved Match Information')
     .setDescription('')
     .setTimestamp(matchInformation.date.toDate())
