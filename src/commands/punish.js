@@ -40,7 +40,7 @@ const ban = async (message, GLOBALS) => {
   userInformation.isBanned = true
   userInformationRef.update(userInformation)
   const BanUser = await message.guild.members.fetch(banUser)
-  BanUser.roles.add('720723322865713153')
+  BanUser.roles.add('720902105543606272')
 
   const embed = new GLOBALS.Embed()
     .setTitle('User Banned')
@@ -67,7 +67,7 @@ const unban = async (message, GLOBALS) => {
   userInformation.isBanned = false
   userInformationRef.update(userInformation)
   const UnbanUser = await message.guild.members.fetch(unbanUser)
-  UnbanUser.roles.remove('720723322865713153')
+  UnbanUser.roles.remove('720902105543606272')
 
   const embed = new GLOBALS.Embed()
     .setTitle('User Unbanned')
