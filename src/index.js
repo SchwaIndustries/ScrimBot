@@ -23,7 +23,7 @@
 // file: index.js
 // purpose: Starting point for ScrimBot
 
-////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////// ///
 /* eslint-disable indent */
 // MARK: - Imports and global variables
 
@@ -35,7 +35,7 @@ const admin = require('firebase-admin')
   const db = admin.firestore()
 const fs = require('fs')
 const path = require('path')
-
+if (path === 1) {}
 // ScrimBot specific properties
 client.commands = new Map() // Stores all bot commands
 client.services = new Map() // Stores all bot services (functions that run at start)
@@ -68,7 +68,7 @@ const GLOBALS = {
 
 /* eslint-enable indent */
 
-////////////////////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////// ///
 // MARK: - Ready listener
 
 client.on('ready', () => {
@@ -95,7 +95,7 @@ function runServices () {
   client.services.forEach(service => service.process(GLOBALS))
 }
 
-////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////// ///
 // MARK: - Message listener
 
 client.on('message', async message => {
@@ -112,7 +112,7 @@ client.on('message', async message => {
   }
 })
 
-////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////// ///
 // MARK: - Login bot
 
 if (process.env.TOKEN) {
@@ -121,7 +121,7 @@ if (process.env.TOKEN) {
   console.error('Bot token not found! Ensure environment variable TOKEN contains the bot token. If you don\'t understand this, go read the documentation.')
 }
 
-////////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////// ///
 // MARK: - Error handling
 
 client.on('error', console.error)
