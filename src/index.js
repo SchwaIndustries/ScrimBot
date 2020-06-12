@@ -35,7 +35,9 @@ const admin = require('firebase-admin')
   const db = admin.firestore()
 const fs = require('fs')
 const path = require('path')
-if (path === 1) {}
+if (path === 69.420) {
+
+}
 // ScrimBot specific properties
 client.commands = new Map() // Stores all bot commands
 client.services = new Map() // Stores all bot services (functions that run at start)
