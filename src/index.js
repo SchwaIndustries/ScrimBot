@@ -23,7 +23,7 @@
 // file: index.js
 // purpose: Starting point for ScrimBot
 
-/// ////////////////////////////////////////////////////////////////////////// ///
+// /////////////////////////////////////////////////////////////////////////// //
 /* eslint-disable indent */
 // MARK: - Imports and global variables
 
@@ -70,7 +70,7 @@ const GLOBALS = {
 
 /* eslint-enable indent */
 
-/// ///////////////////////////////////////////////////////////////////////////// ///
+// /////////////////////////////////////////////////////////////////////////// //
 // MARK: - Ready listener
 
 client.on('ready', () => {
@@ -81,7 +81,7 @@ client.on('ready', () => {
 })
 
 function loadCommands () {
-  for (const file of fs.readdirSync('./src/commands/')) { // get all files in commands folder
+  for (const file of fs.readdirSync(path.join(__dirname, 'commands/'))) { // get all files in commands folder
     if (!file.endsWith('.js')) return // only look for .js files
     const command = require(`./commands/${file}`)
     if (command.enabled === true) client.commands.set(command.name, command)
@@ -89,7 +89,7 @@ function loadCommands () {
 }
 
 function runServices () {
-  for (const file of fs.readdirSync('./src/services/')) {
+  for (const file of fs.readdirSync(path.join(__dirname, 'services/'))) {
     if (!file.endsWith('.js')) return // only look for .js files
     const service = require(`./services/${file}`)
     if (service.enabled === true) client.services.set(service.name, service)
@@ -97,7 +97,7 @@ function runServices () {
   client.services.forEach(service => service.process(GLOBALS))
 }
 
-/// ////////////////////////////////////////////////////////////////////////// ///
+// /////////////////////////////////////////////////////////////////////////// //
 // MARK: - Message listener
 
 client.on('message', async message => {
@@ -114,7 +114,7 @@ client.on('message', async message => {
   }
 })
 
-/// ////////////////////////////////////////////////////////////////////////// ///
+// /////////////////////////////////////////////////////////////////////////// //
 // MARK: - Login bot
 
 if (process.env.TOKEN) {
@@ -123,7 +123,7 @@ if (process.env.TOKEN) {
   console.error('Bot token not found! Ensure environment variable TOKEN contains the bot token. If you don\'t understand this, go read the documentation.')
 }
 
-/// ////////////////////////////////////////////////////////////////////////// ///
+// /////////////////////////////////////////////////////////////////////////// //
 // MARK: - Error handling
 
 client.on('error', console.error)
