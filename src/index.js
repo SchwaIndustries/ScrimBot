@@ -90,7 +90,7 @@ client.on('ready', () => {
 })
 
 function loadCommands () {
-  for (const file of fs.readdirSync(path.join(__dirname, 'commands/'))) { // get all files in commands folder
+  for (const file of fs.readdirSync(path.join(__dirname, 'commands'))) { // get all files in commands folder
     if (!file.endsWith('.js')) return // only look for .js files
     const command = require(`./commands/${file}`)
     if (command.enabled === true) client.commands.set(command.name, command)
@@ -98,7 +98,7 @@ function loadCommands () {
 }
 
 function runServices () {
-  for (const file of fs.readdirSync(path.join(__dirname, 'services/'))) {
+  for (const file of fs.readdirSync(path.join(__dirname, 'services'))) {
     if (!file.endsWith('.js')) return // only look for .js files
     const service = require(`./services/${file}`)
     if (service.enabled === true) client.services.set(service.name, service)
