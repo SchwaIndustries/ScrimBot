@@ -3,7 +3,7 @@ const CONSTANTS = require('../constants')
 
 module.exports = exports = {
   name: 'user',
-  usage: '',
+  usage: '<info/edit>',
   enabled: true,
   process: async (message, GLOBALS) => {
     switch (message.content.split(' ')[1]) {
@@ -68,9 +68,9 @@ const edit = async (message, GLOBALS) => {
         break
       }
     case 'notifications':
-      userInformation.notifications = (CONSTANTS.AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase()))
-      if (userInformation.notifications) message.member.roles.add('717802617534808084')
-      else message.member.roles.remove('717802617534808084')
+      userInformation.notifications = CONSTANTS.AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase())
+      if (userInformation.notifications) (await GLOBALS.client.guilds.resolve('704495983542796338').members.fetch(message.author.id)).roles.add('717802617534808084')
+      else (await GLOBALS.client.guilds.resolve('704495983542796338').members.fetch(message.author.id)).roles.remove('717802617534808084')
       break
     default:
       return message.reply('Requested property not found!')

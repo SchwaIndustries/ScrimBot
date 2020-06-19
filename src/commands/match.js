@@ -59,7 +59,7 @@ const start = async (message, GLOBALS) => {
 
   if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to start the match.')
 
-  if (matchInformation.players.a.length === 0 && matchInformation.players.b.length === 0) return message.reply('There are no players in the match!')
+  if (matchInformation.players.a.length === 1 && matchInformation.players.b.length === 1) return message.reply('There are not enough players in the match!')
 
   matchInformation.status = 'started'
 

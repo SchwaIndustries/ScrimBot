@@ -121,7 +121,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       .addField('Team A', 'None', true)
       .addField('Team B', 'None', true)
       .addField('Spectators', matchRecord.creationInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
-    matchRecord.botMessage.channel.send(matchEmbed)
+    matchRecord.botMessage.channel.send('<@&717802617534808084> a match has been created!', matchEmbed)
       .then(message => {
         message.react('🇦')
         message.react('🇧')

@@ -29,10 +29,9 @@ module.exports = exports = {
       v!punish ban <username, reason, time>: Ban User
       v!punish unban <username>: Unban a user
       v!shutdown: Shutsdown bot
-      v!restart: Restarts bot
-      
-      *Special thanks to Limitless Gaming:* https://limitlessgaming.team/`)
-    embed.setFooter('', true)
+      v!restart: Restarts bot`)
+      // *Special thanks to Limitless Gaming:* https://limitlessgaming.team/`)
+    // embed.setFooter('', true)
     message.channel.send(embed)
   }
 }

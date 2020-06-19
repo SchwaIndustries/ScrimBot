@@ -33,7 +33,7 @@ const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
     case 2:
       userRecord.registrationInformation.notifications = (CONSTANTS.AFFIRMATIVE_WORDS.includes(userMessage.content.toLowerCase()))
       if (userRecord.registrationInformation.notifications === true) {
-        userMessage.member.roles.add('717802617534808084')
+        userRecord.registrationMessage.member.roles.add('717802617534808084')
       }
       break
   }

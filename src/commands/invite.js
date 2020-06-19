@@ -1,7 +1,7 @@
 module.exports = exports = {
   name: 'invite',
   usage: '',
-  enabled: true,
+  enabled: false,
   process: async (message, GLOBALS) => {
     const embed = new GLOBALS.Embed()
       .setTitle('Add me to your server!')

@@ -7,7 +7,10 @@ The bot is pretty simple to set up, it really only needs a Discord bot token and
 2. Create a file named `.env` in the root directory of the bot, with the following contents:
 ```
 TOKEN=<discord bot token>
-GOOGLE_APPLICATION_CREDENTIALS=<firebase service account file name>
+FIR_PROJID=<Firebase project ID>
+FIR_CLIENTID=<Firebase client ID>
+FIR_PRIVATEKEY_ID=<Firebase private key ID>
+FIR_PRIVATEKEY=<Firebase private key ID>
 NOTIF_ROLES=<comma separated list of role ids for players who want notifications, optional>
 TIME_ZONE=<desired time zone (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), default is America/Los_Angeles>
 ```

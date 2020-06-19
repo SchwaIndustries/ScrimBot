@@ -26,6 +26,7 @@ module.exports = exports = {
           botMessage: registrationMessage,
           botReaction: botReaction,
           userID: message.author.id,
+          registrationMessage: registrationMessage,
           registrationInformation: {
             discordID: message.author.id,
             notifications: false,

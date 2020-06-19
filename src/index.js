@@ -27,17 +27,26 @@
 /* eslint-disable indent */
 // MARK: - Imports and global variables
 
+const fs = require('fs')
+const path = require('path')
 const Discord = require('discord.js')
   const client = new Discord.Client()
 require('dotenv').config()
 const admin = require('firebase-admin')
-  admin.initializeApp()
+  const firebaseConfig = {
+    type: 'service_account',
+    project_id: process.env.FIR_PROJID,
+    private_key_id: process.env.FIR_PRIVATEKEY_ID,
+    private_key: process.env.FIR_PRIVATEKEY,
+    client_email: `firebase-adminsdk-time3@${process.env.FIR_PROJID}.iam.gserviceaccount.com`,
+    client_id: process.env.FIR_CLIENTID,
+    auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+    token_uri: 'https://oauth2.googleapis.com/token',
+    auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+    client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-time3%40${process.env.FIR_PROJID}.iam.gserviceaccount.com`
+  }
+  admin.initializeApp(firebaseConfig)
   const db = admin.firestore()
-const fs = require('fs')
-const path = require('path')
-if (path === 69.420) {
-
-}
 // ScrimBot specific properties
 client.commands = new Map() // Stores all bot commands
 client.services = new Map() // Stores all bot services (functions that run at start)
@@ -46,16 +55,16 @@ class ScrimBotEmbed extends Discord.MessageEmbed {
   constructor (specialColor) {
     super()
     this.setColor(specialColor || 'PURPLE')
-    this.footer = { text: 'Sponsored by Limitless Gaming', iconURL: 'https://cdn.discordapp.com/icons/667553378607431681/0129a1e3f29b541b6af45c8c3fb0dd14.webp' }
+    // this.footer = { text: 'Sponsored by Limitless Gaming', iconURL: 'https://cdn.discordapp.com/icons/667553378607431681/0129a1e3f29b541b6af45c8c3fb0dd14.webp' }
   }
 
-  setFooter (text, override) {
-    if (override) {
-      this.footer.text = text
-    }
-    this.footer.text += `\n${text}`
-    return this
-  }
+  // setFooter (text, override) {
+  //   if (override) {
+  //     this.footer.text = text
+  //   }
+  //   this.footer.text += `\n${text}`
+  //   return this
+  // }
 }
 
 // Global variables accessible from all files
