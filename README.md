@@ -16,8 +16,6 @@ TIME_ZONE=<desired time zone (https://en.wikipedia.org/wiki/List_of_tz_database_
 ```
 3. Replace `<discord bot token>` in the file with your bot token.
 4. Create a Firebase project at console.firebase.google.com, and go to Settings > Service Accounts > Firebase Admin SDK > Generate a new key
-5. Place the downloaded json file in the root directory of the bot, and copy the filename
-6. Replace `<service account file name>` with your json filename
-
-7. Run `npm install` and let it install the dependencies
-8. Then run `npm start` and the bot should be online!
+5. Open the downloaded json file and input the project id, client id and private key values located within
+6. Run `npm install` and let it install the dependencies
+7. Then run `npm start` and the bot should be online!
