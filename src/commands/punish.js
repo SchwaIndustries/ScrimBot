@@ -20,33 +20,41 @@ const ban = async (message, GLOBALS) => {
     banUser = banUser.replace(/<@!?/, '').replace(/>$/, '')
   }
 
-  const banReason = attributes[3]
-  if (!banReason) return message.reply('Please specify a ban reason.')
-
-  let banLength = attributes[4]
+  let banLength = attributes[3]
   if (!banLength) return message.reply('Please specify a ban length.')
   else {
     banLength = moment().add(banLength.substring(0, banLength.length - 1), banLength.substring(banLength.length - 1))
   }
 
+  const banReason = attributes.slice(4).join(' ')
+  if (!banReason) return message.reply('Please specify a ban reason.')
+
   const userInformationRef = GLOBALS.db.collection('users').doc(banUser)
   let userInformation = await userInformationRef.get()
   if (!userInformation.exists) return message.reply('User not found! Are they registered with ScrimBot?')
   userInformation = userInformation.data()
-  if (userInformation.isBanned === true) return message.channel.send(`<@${banUser}> is already banned`)
 
-  userInformation.banDate = new Date()
-  userInformation.unbanDate = banLength.toDate()
-  userInformation.isBanned = true
-  userInformationRef.update(userInformation)
+  const playerPunishInformationRef = userInformationRef.collection('punishments')
+  const playerPunishInformation = await playerPunishInformationRef.get()
+  if (playerPunishInformation.docs.length > 0 && (playerPunishInformation.docs.slice(-1).pop().data().unbanDate.toMillis()) > Date.now()) {
+    return message.channel.send(`<@${banUser}> is already banned`)
+  }
+  const newPunishment = {
+    banDate: new Date(),
+    unbanDate: banLength.toDate(),
+    reason: banReason
+  }
+
+  playerPunishInformationRef.doc('' + newPunishment.banDate.getTime()).set(newPunishment)
   const BanUser = await message.guild.members.fetch(banUser)
   BanUser.roles.add('720902105543606272')
 
   const embed = new GLOBALS.Embed()
     .setTitle('User Banned')
     .addField('User:', `<@${banUser}>`)
-    .addField('Banned On:', userInformation.banDate)
-    .addField('Ban Expiration:', userInformation.unbanDate)
+    .addField('Banned On:', newPunishment.banDate)
+    .addField('Ban Expiration:', newPunishment.unbanDate)
+    .addField('Ban Reason', newPunishment.reason)
   message.channel.send(embed)
 }
 
@@ -62,10 +70,22 @@ const unban = async (message, GLOBALS) => {
   let userInformation = await userInformationRef.get()
   if (!userInformation.exists) return message.reply('User not found! Are they registered with ScrimBot?')
   userInformation = userInformation.data()
-  if (userInformation.isBanned === false) return message.channel.send(`<@${unbanUser}> is not banned`)
 
-  userInformation.isBanned = false
-  userInformationRef.update(userInformation)
+  const playerPunishInformationRef = userInformationRef.collection('punishments')
+  const playerPunishInformation = await playerPunishInformationRef.get()
+  if (playerPunishInformation.docs.length <= 0) {
+    return message.channel.send(`<@${unbanUser}> has no active bans!`)
+  }
+
+  const latestPunishment = playerPunishInformation.docs.slice(-1).pop().data()
+  if (latestPunishment.unbanDate.toMillis() < Date.now()) {
+    return message.channel.send(`<@${unbanUser}> has no active bans!`)
+  }
+
+  latestPunishment.unbanDate = new Date()
+  console.log(latestPunishment)
+  playerPunishInformationRef.doc('' + latestPunishment.banDate.toMillis()).update(latestPunishment)
+
   const UnbanUser = await message.guild.members.fetch(unbanUser)
   UnbanUser.roles.remove('720902105543606272')
 

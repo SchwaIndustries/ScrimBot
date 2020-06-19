@@ -42,6 +42,12 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
     return
   }
   playerInformation = playerInformation.data()
+  const playerPunishInformation = await playerInformationRef.collection('punishments').get()
+  if (playerPunishInformation.docs.length > 0 && (playerPunishInformation.docs.slice(-1).pop().data().unbanDate.toMillis()) > Date.now()) {
+    reaction.message.channel.send(`<@${user.id}>, you are currently banned. Please wait for your ban to expire before joining a match.`).then(msg => msg.delete({ timeout: 5000 }))
+    reaction.users.remove(user.id)
+    return
+  }
 
   if (matchInformation.players.a.find(e => e.id === playerInformationRef.id) || matchInformation.players.b.find(e => e.id === playerInformationRef.id) || (matchInformation.spectators && matchInformation.spectators.find(e => e.id === playerInformationRef.id))) {
     reaction.message.channel.send(`<@${user.id}>, you have already joined a team! Please remove that reaction before joining a new one.`).then(msg => msg.delete({ timeout: 5000 }))
