@@ -139,7 +139,6 @@ if (process.env.TOKEN) {
 // MARK: - Error handling
 
 client.on('error', console.error)
-client.on('rateLimit', console.error)
 client.on('shardError', console.error)
 client.on('warn', console.error)
 
