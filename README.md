@@ -7,7 +7,6 @@ The bot is pretty simple to set up, it really only needs a Discord bot token and
 2. Create a file named `.env` in the root directory of the bot or set your environment variables to the following contents:
 ```
 TOKEN=<discord bot token>
-NOTIF_ROLES=<comma separated list of role ids for players who want notifications, optional>
 TIME_ZONE=<desired time zone (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), default is America/Los_Angeles>
 ```
 3. Replace `<discord bot token>` in the file with your bot token.
