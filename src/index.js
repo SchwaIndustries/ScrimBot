@@ -33,22 +33,25 @@ const Discord = require('discord.js')
   const client = new Discord.Client()
 require('dotenv').config()
 const admin = require('firebase-admin')
-  const firebaseCredential = {
-    type: 'service_account',
-    project_id: process.env.FIR_PROJID,
-    private_key_id: process.env.FIR_PRIVATEKEY_ID,
-    private_key: process.env.FIR_PRIVATEKEY.replace(/\\n/g, '\n'), // encoding fix: https://stackoverflow.com/a/41044630
-    client_email: `firebase-adminsdk-time3@${process.env.FIR_PROJID}.iam.gserviceaccount.com`,
-    client_id: process.env.FIR_CLIENTID,
-    auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-    token_uri: 'https://oauth2.googleapis.com/token',
-    auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
-    client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-time3%40${process.env.FIR_PROJID}.iam.gserviceaccount.com`
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) admin.initializeApp()
+  else {
+    const firebaseCredential = {
+      type: 'service_account',
+      project_id: process.env.FIR_PROJID,
+      private_key_id: process.env.FIR_PRIVATEKEY_ID,
+      private_key: process.env.FIR_PRIVATEKEY.replace(/\\n/g, '\n'), // encoding fix: https://stackoverflow.com/a/41044630
+      client_email: `firebase-adminsdk-time3@${process.env.FIR_PROJID}.iam.gserviceaccount.com`,
+      client_id: process.env.FIR_CLIENTID,
+      auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+      token_uri: 'https://oauth2.googleapis.com/token',
+      auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+      client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-time3%40${process.env.FIR_PROJID}.iam.gserviceaccount.com`
+    }
+    admin.initializeApp({
+      credential: admin.credential.cert(firebaseCredential),
+      databaseURL: `https://${process.env.FIR_PROJID}.firebaseio.com`
+    })
   }
-  admin.initializeApp({
-    credential: admin.credential.cert(firebaseCredential),
-    databaseURL: `https://${process.env.FIR_PROJID}.firebaseio.com`
-  })
   const db = admin.firestore()
 // ScrimBot specific properties
 client.commands = new Map() // Stores all bot commands
