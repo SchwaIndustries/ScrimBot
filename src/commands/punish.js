@@ -47,7 +47,10 @@ const ban = async (message, GLOBALS) => {
 
   playerPunishInformationRef.doc('' + newPunishment.banDate.getTime()).set(newPunishment)
   const BanUser = await message.guild.members.fetch(banUser)
-  BanUser.roles.add('720902105543606272')
+  let punishRole = await GLOBALS.db.collection('guilds').doc(message.guild.id).get()
+  if (!punishRole.exists) return message.reply('Banned role does not exist in bot database. Make sure to run v!guild to setup roles.')
+  punishRole = punishRole.get('banRole')
+  BanUser.roles.add(punishRole)
 
   const embed = new GLOBALS.Embed()
     .setTitle('User Banned')
@@ -87,7 +90,10 @@ const unban = async (message, GLOBALS) => {
   playerPunishInformationRef.doc('' + latestPunishment.banDate.toMillis()).update(latestPunishment)
 
   const UnbanUser = await message.guild.members.fetch(unbanUser)
-  UnbanUser.roles.remove('720902105543606272')
+  let punishRole = await GLOBALS.db.collection('guilds').doc(message.guild.id).get()
+  if (!punishRole.exists) return message.reply('Banned role does not exist in bot database. Make sure to run v!guild to setup roles.')
+  punishRole = punishRole.get('banRole')
+  UnbanUser.roles.remove(punishRole)
 
   const embed = new GLOBALS.Embed()
     .setTitle('User Unbanned')
