@@ -1,7 +1,6 @@
-
 const checkRoleValidity = role => {
-  if (role.startsWith('<&')) {
-    role = role.replace(/<&/, '').replace(/>$/, '')
+  if (role.startsWith('<@&')) {
+    role = role.replace(/<@&/, '').replace(/>$/, '')
   }
 
   if (!isNaN(role)) return role
@@ -9,7 +8,7 @@ const checkRoleValidity = role => {
 }
 
 module.exports = exports = {
-  name: 'guild', // command name
+  name: 'server', // command name
   usage: '<add>', // arguments for the command
   enabled: true, // whether the command should be loaded
   process: async (message, GLOBALS) => {
@@ -26,10 +25,10 @@ module.exports = exports = {
     const reply = await message.reply(embed)
 
     let matchNotifications = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!guild add` again.'))
-    console.log(matchNotifications)
     matchNotifications = checkRoleValidity(matchNotifications.first().content)
     if (!matchNotifications) return message.reply('That is not a valid role! Please run `v!guild add` again.')
 
+    embed.fields[0].name = '✅ 1. Match Notification Role'
     embed.addField('2. Banned User Role', 'ScrimBot has the feature to give users a role when they are banned. Please either respond with the role ID of that role or mention it.')
     reply.edit(embed)
     let banRole = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!guild add` again.'))

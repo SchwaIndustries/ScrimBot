@@ -8,7 +8,7 @@ module.exports = exports = {
       defaultChannel.send({
         embed: {
           title: 'Welcome to ScrimBot',
-          description: 'Thanks for adding ScrimBot to your server! To get up and running, please type `v!guild new`. None of the commands will work until this guild is configured.',
+          description: 'Thanks for adding ScrimBot to your server! To get up and running, please type `v!server add`. None of the commands will work until this guild is configured.',
           color: 10181046
         }
       })

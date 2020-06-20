@@ -22,7 +22,7 @@
     "dotenv": "^8.2.0",
     "firebase-admin": "^8.12.1",
     "giphy-api": "^2.0.1",
-    "moment": "^2.26.0",
+    "moment": "^2.27.0",
     "moment-timezone": "^0.5.31"
   },
   "devDependencies": {
