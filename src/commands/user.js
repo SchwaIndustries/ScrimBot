@@ -13,6 +13,18 @@ module.exports = exports = {
   }
 }
 
+const updateUserRoles = async (user, role, addRole, GLOBALS) => {
+  const querySnapshot = await GLOBALS.db.collection('guilds').get().catch(console.error)
+  querySnapshot.forEach(async documentSnapshot => {
+    if (!documentSnapshot.exists) return
+    if (!GLOBALS.client.guilds.resolve(documentSnapshot.id)) return
+
+    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user.id).catch(console.error)
+    if (addRole) guildMember.roles.add(documentSnapshot.get(role))
+    else guildMember.roles.remove(documentSnapshot.get(role))
+  })
+}
+
 const info = async (message, GLOBALS) => {
   let userID = message.content.split(' ')[2]
 
@@ -38,7 +50,7 @@ const info = async (message, GLOBALS) => {
     .addField('Registration Date', moment(userInformation.timestamp.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'))
     .addField('Notifications Enabled', userInformation.notifications === true ? 'Yes' : 'No', true)
     .addField('Matches Played', userInformation.matches.length, true)
-    .addField('Banned', userInformation.isBanned)
+    .addField('Banned', userInformation.isBanned === true ? 'Yes' : 'No')
   message.reply(userEmbed)
 }
 
@@ -69,8 +81,8 @@ const edit = async (message, GLOBALS) => {
       }
     case 'notifications':
       userInformation.notifications = CONSTANTS.AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase())
-      if (userInformation.notifications) (await GLOBALS.client.guilds.resolve('704495983542796338').members.fetch(message.author.id)).roles.add('717802617534808084')
-      else (await GLOBALS.client.guilds.resolve('704495983542796338').members.fetch(message.author.id)).roles.remove('717802617534808084')
+      if (userInformation.notifications) updateUserRoles(message.author, 'notificationRole', true, GLOBALS)
+      else updateUserRoles(message.author, 'notificationRole', false, GLOBALS)
       break
     default:
       return message.reply('Requested property not found!')

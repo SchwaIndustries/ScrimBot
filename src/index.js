@@ -94,7 +94,7 @@ const GLOBALS = {
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}! All systems online.`)
-//   client.user.setActivity('for matches | v!help', { type: 'WATCHING' })
+  //   client.user.setActivity('for matches | v!help', { type: 'WATCHING' })
   runServices()
   loadCommands()
 })

@@ -69,7 +69,7 @@ module.exports = exports = {
     ascent: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt47bef6aa9e43d8ec/5ecd64df96a8996de38bbf8f/ascent-minimap-2.jpg'
   },
 
-  AFFIRMATIVE_WORDS: ['yes', 'yeah', 'sure', 'true', '1', 'si', 'yea', 'ok', 'mhm', 'k', 'yah'],
+  AFFIRMATIVE_WORDS: ['yes', 'yeah', 'sure', 'true', '1', 'si', 'yea', 'ok', 'mhm', 'k', 'yah', 'on'],
 
   userRegistrationSteps: [
     ['1. Valorant Username', 'What is your FULL Valorant username? (including tag, e.g. `Username#NA1`)'],

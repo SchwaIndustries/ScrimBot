@@ -9,20 +9,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thecodeweaver/ScrimBot.git"
+    "url": "git+https://github.com/momomiles/ScrimBot.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/thecodeweaver/ScrimBot/issues"
+    "url": "https://github.com/momomiles/ScrimBot/issues"
   },
-  "homepage": "https://github.com/thecodeweaver/ScrimBot#readme",
+  "homepage": "https://github.com/momomiles/ScrimBot#readme",
   "dependencies": {
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
     "firebase-admin": "^8.12.1",
     "giphy-api": "^2.0.1",
     "moment": "^2.27.0",
+    "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.5.31"
   },
   "devDependencies": {

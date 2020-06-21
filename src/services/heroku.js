@@ -6,7 +6,7 @@ module.exports = exports = {
   process: async (GLOBALS) => {
     http.createServer((req, res) => {
       res.writeHead(200)
-      res.end('This is ScrimBot, invite it to your Discord server here: https://discord.com/oauth2/authorize?client_id=715030981894995998&scope=bot&permissions=8')
+      res.end(`This is ScrimBot, invite it to your Discord server here: https://discord.com/oauth2/authorize?client_id=${GLOBALS.client.user.id}&scope=bot&permissions=8`)
     }).listen(process.env.PORT || 12500)
     setInterval(() => {
       http.get('http://valorant-scrim-bot.herokuapp.com')

@@ -1,3 +1,5 @@
+const CONSTANTS = require('../constants.js')
+
 const checkRoleValidity = role => {
   if (role.startsWith('<@&')) {
     role = role.replace(/<@&/, '').replace(/>$/, '')
@@ -24,16 +26,42 @@ module.exports = exports = {
     embed.addField('1. Match Notification Role', 'ScrimBot has the feature to mention a role when new matches are created. Please either respond with the role ID of that role or mention it.')
     const reply = await message.reply(embed)
 
+    // Match Notifications
     let matchNotifications = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!guild add` again.'))
     matchNotifications = checkRoleValidity(matchNotifications.first().content)
     if (!matchNotifications) return message.reply('That is not a valid role! Please run `v!guild add` again.')
 
+    // Banned User Role
     embed.fields[0].name = '✅ 1. Match Notification Role'
     embed.addField('2. Banned User Role', 'ScrimBot has the feature to give users a role when they are banned. Please either respond with the role ID of that role or mention it.')
     reply.edit(embed)
+
     let banRole = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!guild add` again.'))
     banRole = checkRoleValidity(banRole.first().content)
     if (!banRole) return message.reply('That is not a valid role! Please run `v!guild add` again.')
+
+    // Valorant Rank Roles
+    embed.fields[1].name = '✅ 2. Banned User Role'
+    embed.addField('3. Valorant Rank Roles', 'ScrimBot has the feature to create and give users a role based on their ranks. Would you like this? (yes or no)')
+    reply.edit(embed)
+
+    let valorantRankRoles = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!guild add` again.'))
+    valorantRankRoles = CONSTANTS.AFFIRMATIVE_WORDS.includes(valorantRankRoles.first().content.toLowerCase())
+    let rankRoleIDs
+    if (valorantRankRoles) {
+      const guild = message.guild
+      const rolesToCreate = ['Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Immortal', 'Valorant']
+      rankRoleIDs = []
+      for (const role of rolesToCreate) {
+        const newRole = await guild.roles.create({
+          data: {
+            name: role
+          },
+          reason: 'ScrimBot Valorant rank roles'
+        }).catch(console.error)
+        rankRoleIDs.push(newRole.id)
+      }
+    }
 
     const completionEmbed = new GLOBALS.Embed()
     completionEmbed.setTitle('ScrimBot Initialization Complete')
@@ -43,7 +71,8 @@ module.exports = exports = {
     guildInformationRef.set({
       name: message.guild.name,
       notificationRole: matchNotifications,
-      banRole: banRole
+      banRole: banRole,
+      valorantRankRoles: rankRoleIDs || false
     })
   }
 }
