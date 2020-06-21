@@ -126,7 +126,8 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
         message.react('🇦')
         message.react('🇧')
         if (matchRecord.creationInformation.spectators) message.react('🇸')
-        matchEmbed.setFooter(`match id: ${message.id}`)
+        matchEmbed.setFooter('match id: ' + message.id)
+        console.log('match id: ' + message.id)
         message.edit(matchEmbed)
         matchRecord.creationInformation.message = {
           id: message.id,
