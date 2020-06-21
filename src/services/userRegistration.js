@@ -16,6 +16,18 @@ module.exports = exports = {
   }
 }
 
+const updateUserRoles = async (user, role, addRole, GLOBALS) => {
+  const querySnapshot = await GLOBALS.db.collection('guilds').get().catch(console.error)
+  querySnapshot.forEach(async documentSnapshot => {
+    if (!documentSnapshot.exists) return
+    if (!GLOBALS.client.guilds.resolve(documentSnapshot.id)) return
+
+    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user.id).catch(console.error)
+    if (addRole) guildMember.roles.add(documentSnapshot.get(role))
+    else guildMember.roles.remove(documentSnapshot.get(role))
+  })
+}
+
 const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
   if (userMessage.channel.type !== 'dm') return
 
@@ -32,9 +44,7 @@ const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
       }
     case 2:
       userRecord.registrationInformation.notifications = (CONSTANTS.AFFIRMATIVE_WORDS.includes(userMessage.content.toLowerCase()))
-      if (userRecord.registrationInformation.notifications === true) {
-        userRecord.registrationMessage.member.roles.add('717802617534808084')
-      }
+      if (userRecord.registrationInformation.notifications === true) updateUserRoles(userMessage.author, 'notificationRole', true, GLOBALS)
       break
   }
 
