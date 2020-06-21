@@ -59,7 +59,7 @@ const edit = async (message, GLOBALS) => {
   const editedProperty = attributes[2]
   if (!editedProperty) return message.reply('Please specify a property to edit! (username, rank, notifications)')
 
-  let editedValue = attributes[3]
+  const editedValue = attributes.slice(3).join(' ')
   if (!editedValue) return message.reply('Please specify a value for ' + editedProperty)
 
   const userInformationRef = GLOBALS.db.collection('users').doc(message.author.id)
@@ -72,7 +72,6 @@ const edit = async (message, GLOBALS) => {
       userInformation.valorantUsername = editedValue
       break
     case 'rank':
-      editedValue = attributes[3] + ' ' + attributes[4]
       if (!CONSTANTS.RANKS[editedValue.toUpperCase()]) {
         return message.reply('Please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
