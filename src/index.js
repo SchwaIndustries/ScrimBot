@@ -30,7 +30,11 @@
 const fs = require('fs')
 const path = require('path')
 const Discord = require('discord.js')
-  const client = new Discord.Client()
+  const client = new Discord.Client({
+    presence: {
+      activity: { name: 'for matches | v!help', type: 'WATCHING' }
+    }
+  })
 require('dotenv').config()
 const admin = require('firebase-admin')
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS) admin.initializeApp()
@@ -90,7 +94,7 @@ const GLOBALS = {
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}! All systems online.`)
-  client.user.setActivity('for matches | v!help', { type: 'WATCHING' })
+//   client.user.setActivity('for matches | v!help', { type: 'WATCHING' })
   runServices()
   loadCommands()
 })
