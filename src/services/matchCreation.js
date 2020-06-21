@@ -129,6 +129,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
         matchEmbed.setFooter('match id: ' + message.id)
         console.log('match id: ' + message.id)
         message.edit(matchEmbed)
+        matchRecord.userMessage.delete()
         matchRecord.creationInformation.message = {
           id: message.id,
           channel: message.channel.id
