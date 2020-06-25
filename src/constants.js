@@ -30,7 +30,7 @@ module.exports = exports = {
     'IMMORTAL 2': 72,
     'IMMORTAL 3': 73,
 
-    'VALORANT': 81, // eslint-disable-line quote-props
+    'RADIANT': 81, // eslint-disable-line quote-props
 
     'ANY MAX': 99
   },
@@ -57,7 +57,7 @@ module.exports = exports = {
     71: 'IMMORTAL 1',
     72: 'IMMORTAL 2',
     73: 'IMMORTAL 3',
-    81: 'VALORANT',
+    81: 'RADIANT',
     99: 'ANY MAX'
   },
 

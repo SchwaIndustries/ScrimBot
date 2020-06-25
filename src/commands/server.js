@@ -27,32 +27,33 @@ module.exports = exports = {
     const reply = await message.reply(embed)
 
     // Match Notifications
-    let matchNotifications = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!guild add` again.'))
+    let matchNotifications = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!server add` again.'))
     matchNotifications = checkRoleValidity(matchNotifications.first().content)
-    if (!matchNotifications) return message.reply('That is not a valid role! Please run `v!guild add` again.')
+    if (!matchNotifications) return message.reply('That is not a valid role! Please run `v!server add` again.')
 
     // Banned User Role
     embed.fields[0].name = '✅ 1. Match Notification Role'
     embed.addField('2. Banned User Role', 'ScrimBot has the feature to give users a role when they are banned. Please either respond with the role ID of that role or mention it.')
     reply.edit(embed)
 
-    let banRole = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!guild add` again.'))
+    let banRole = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!server add` again.'))
     banRole = checkRoleValidity(banRole.first().content)
-    if (!banRole) return message.reply('That is not a valid role! Please run `v!guild add` again.')
+    if (!banRole) return message.reply('That is not a valid role! Please run `v!server add` again.')
 
     // Valorant Rank Roles
     embed.fields[1].name = '✅ 2. Banned User Role'
     embed.addField('3. Valorant Rank Roles', 'ScrimBot has the feature to create and give users a role based on their ranks. Would you like this? (yes or no)')
     reply.edit(embed)
 
-    let valorantRankRoles = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!guild add` again.'))
+    let valorantRankRoles = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!server add` again.'))
     valorantRankRoles = CONSTANTS.AFFIRMATIVE_WORDS.includes(valorantRankRoles.first().content.toLowerCase())
     let rankRoleIDs
     if (valorantRankRoles) {
       const guild = message.guild
-      const rolesToCreate = ['Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Immortal', 'Valorant']
+      if (!guild.me.hasPermission('MANAGE_ROLES')) return message.reply('ScrimBot does not have the manage roles permission and is unable to create roles. Please change the permissions and run v!server add again.')
+      const rolesToCreate = ['Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Immortal', 'Radiant']
       rankRoleIDs = []
-      for (const role of rolesToCreate) {
+      for (const role of rolesToCreate.reverse()) {
         const newRole = await guild.roles.create({
           data: {
             name: role
@@ -61,6 +62,7 @@ module.exports = exports = {
         }).catch(console.error)
         rankRoleIDs.push(newRole.id)
       }
+      rankRoleIDs = rankRoleIDs.reverse()
     }
 
     const completionEmbed = new GLOBALS.Embed()
