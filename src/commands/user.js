@@ -20,8 +20,25 @@ const updateUserRoles = async (user, role, addRole, GLOBALS) => {
     if (!GLOBALS.client.guilds.resolve(documentSnapshot.id)) return
 
     const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user.id).catch(console.error)
+    if (!guildMember) return
     if (addRole) guildMember.roles.add(documentSnapshot.get(role))
     else guildMember.roles.remove(documentSnapshot.get(role))
+  })
+}
+
+const updateUserRankRoles = async (user, rank, GLOBALS) => {
+  const querySnapshot = await GLOBALS.db.collection('guilds').get().catch(console.error)
+  querySnapshot.forEach(async documentSnapshot => {
+    if (!documentSnapshot.exists) return
+    if (!GLOBALS.client.guilds.resolve(documentSnapshot.id)) return
+    if (!documentSnapshot.get('valorantRankRoles')) return
+
+    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user.id).catch(console.error)
+    if (!guildMember) return
+    const allRankRoles = documentSnapshot.get('valorantRankRoles')
+    await guildMember.roles.remove(allRankRoles).catch(console.error)
+    const rankRole = allRankRoles[rank.toString()[0] - 1]
+    guildMember.roles.add(rankRole)
   })
 }
 
@@ -76,6 +93,7 @@ const edit = async (message, GLOBALS) => {
         return message.reply('Please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
         userInformation.valorantRank = CONSTANTS.RANKS[editedValue.toUpperCase()] // TODO: cover edge cases
+        updateUserRankRoles(message.author, userInformation.valorantRank, GLOBALS)
         break
       }
     case 'notifications':
