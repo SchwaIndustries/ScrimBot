@@ -1,5 +1,6 @@
 const moment = require('moment-timezone')
 const CONSTANTS = require('../constants')
+const Discord = require('discord.js')
 
 module.exports = exports = {
   name: 'user',
@@ -13,6 +14,13 @@ module.exports = exports = {
   }
 }
 
+/**
+ * Updates a user's role across all servers that the user and bot share
+ * @param {Discord.User} user User to update roles for
+ * @param {Discord.RoleResolvable} role The role to update
+ * @param {boolean} addRole Whether to add the role to the user or remove it
+ * @param {Object} GLOBALS GLOBALS object
+ */
 const updateUserRoles = async (user, role, addRole, GLOBALS) => {
   const querySnapshot = await GLOBALS.db.collection('guilds').get().catch(console.error)
   querySnapshot.forEach(async documentSnapshot => {
@@ -26,6 +34,12 @@ const updateUserRoles = async (user, role, addRole, GLOBALS) => {
   })
 }
 
+/**
+ * Updates a user's competitive rank across all servers that the user and bot share
+ * @param {Discord.User} user User to update rank roles for
+ * @param {Number} rank User's new rank
+ * @param {Object} GLOBALS GLOBALS object
+ */
 const updateUserRankRoles = async (user, rank, GLOBALS) => {
   const querySnapshot = await GLOBALS.db.collection('guilds').get().catch(console.error)
   querySnapshot.forEach(async documentSnapshot => {

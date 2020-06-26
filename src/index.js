@@ -99,6 +99,11 @@ client.on('ready', () => {
   loadCommands()
 })
 
+/**
+ * Reads the command files from src/commands and
+ * adds them to the commands collection which
+ * allows the bot to use them
+ */
 function loadCommands () {
   for (const file of fs.readdirSync(path.join(__dirname, 'commands'))) { // get all files in commands folder
     if (!file.endsWith('.js')) return // only look for .js files
@@ -107,6 +112,13 @@ function loadCommands () {
   }
 }
 
+/**
+ * Reads the service files from src/services and
+ * adds them to the services collection.
+ * The bot then runs all of the services at startup.
+ * This is useful for certain things that need to be run
+ * independently of commands.
+ */
 function runServices () {
   for (const file of fs.readdirSync(path.join(__dirname, 'services'))) {
     if (!file.endsWith('.js')) return // only look for .js files
