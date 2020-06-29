@@ -71,9 +71,47 @@ const start = async (message, GLOBALS) => {
 
   if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to start the match.')
 
-  if (matchInformation.players.a.length === 1 && matchInformation.players.b.length === 1) return message.reply('There are not enough players in the match!')
+  if (matchInformation.players.a.length === 0 || matchInformation.players.b.length === 0) return message.reply('There are not enough players in the match!')
 
   matchInformation.status = 'started'
+
+  const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
+  const botMessage = await botMessageChannel.messages.fetch(matchID)
+  const botMessageEmbed = botMessage.embeds[0]
+  botMessageEmbed.fields[0].value = CONSTANTS.capitalizeFirstLetter(matchInformation.status)
+  botMessage.edit('The match has started!', botMessageEmbed)
+  if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
+
+  if (message.guild.me.hasPermission('MANAGE_CHANNELS')) {
+    const teamAPermissionOverrides = matchInformation.players.a.map(p => {
+      return {
+        id: p.id,
+        allow: ['VIEW_CHANNEL', 'CONNECT', 'SPEAK', 'USE_VAD']
+      }
+    })
+    const teamBPermissionOverrides = matchInformation.players.b.map(p => {
+      return {
+        id: p.id,
+        allow: ['VIEW_CHANNEL', 'CONNECT', 'SPEAK', 'USE_VAD']
+      }
+    })
+
+    const teamAVoiceChannel = await botMessageChannel.guild.channels.create(`Team A: ${matchID.slice(-4)}`, {
+      type: 'voice',
+      userLimit: matchInformation.players.a.length,
+      parent: botMessageChannel.parent,
+      permissionOverrides: teamAPermissionOverrides
+    })
+    const teamBVoiceChannel = await botMessageChannel.guild.channels.create(`Team B: ${matchID.slice(-4)}`, {
+      type: 'voice',
+      userLimit: matchInformation.players.b.length,
+      parent: botMessageChannel.parent,
+      permissionOverrides: teamBPermissionOverrides
+    })
+
+    matchInformation.teamAVoiceChannel = teamAVoiceChannel.id
+    matchInformation.teamBVoiceChannel = teamBVoiceChannel.id
+  }
 
   matchInformationRef.update(matchInformation)
 
@@ -82,13 +120,6 @@ const start = async (message, GLOBALS) => {
     .setDescription('Match with ID `' + matchID + '` has been started. Once complete, use `v!match score <match id> <score>` to report the score!')
     .setFooter('This message will self-destruct in 30 seconds.')
   message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
-
-  const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
-  const botMessage = await botMessageChannel.messages.fetch(matchID)
-  const botMessageEmbed = botMessage.embeds[0]
-  botMessageEmbed.fields[0].value = CONSTANTS.capitalizeFirstLetter(matchInformation.status)
-  botMessage.edit('The match has started!', botMessageEmbed)
-  if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 }
 
 const score = async (message, GLOBALS) => {
@@ -145,6 +176,11 @@ const score = async (message, GLOBALS) => {
       playerDoc.matches.unshift(matchInformationRef)
       playerRef.update(playerDoc)
     }
+  }
+
+  if (message.guild.me.hasPermission('MANAGE_CHANNELS')) {
+    GLOBALS.client.channels.fetch(matchInformation.teamAVoiceChannel).then(c => c.delete())
+    GLOBALS.client.channels.fetch(matchInformation.teamBVoiceChannel).then(c => c.delete())
   }
 }
 
