@@ -264,7 +264,7 @@ const edit = async (message, GLOBALS) => {
 
   switch (editedProperty) {
     case 'date': {
-      const dateString = [editedValue, attributes[5]]
+      const dateString = [editedValue, ...attributes.slice(5)]
       if (dateString.length === 2) {
         const actualDate = moment().tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('YYYY-MM-DD')
         dateString.push(actualDate)
@@ -273,7 +273,9 @@ const edit = async (message, GLOBALS) => {
       const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE || 'America/Los_Angeles').toDate()
       if (isNaN(date)) return message.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchInformation.date = date
-      matchEmbed.fields[1].value = moment(matchInformation.date.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY')
+
+      matchEmbed.fields[1].value = moment(matchInformation.date).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY')
+      matchEmbed.setTimestamp(matchInformation.date)
       break
     }
     case 'minRank': {
