@@ -111,6 +111,23 @@ const start = async (message, GLOBALS) => {
 
     matchInformation.teamAVoiceChannel = teamAVoiceChannel.id
     matchInformation.teamBVoiceChannel = teamBVoiceChannel.id
+
+    if (message.guild.me.hasPermission('MOVE_MEMBERS')) {
+      const teamAMembers = await message.guild.members.fetch({
+        user: matchInformation.players.a.map(p => p.id)
+      })
+
+      const teamBMembers = await message.guild.members.fetch({
+        user: matchInformation.players.b.map(p => p.id)
+      })
+
+      teamAMembers.each(player => {
+        player.voice.setChannel(teamAVoiceChannel)
+      })
+      teamBMembers.each(player => {
+        player.voice.setChannel(teamBVoiceChannel)
+      })
+    }
   }
 
   matchInformationRef.update(matchInformation)
@@ -119,7 +136,10 @@ const start = async (message, GLOBALS) => {
     .setTitle('Match Started')
     .setDescription('Match with ID `' + matchID + '` has been started. Once complete, use `v!match score <match id> <score>` to report the score!')
     .setFooter('This message will self-destruct in 30 seconds.')
-  message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
+  message.reply(embed).then(msg => {
+    msg.delete({ timeout: 30000 })
+    message.delete({ timeout: 30000 })
+  })
 }
 
 const score = async (message, GLOBALS) => {
@@ -138,8 +158,15 @@ const score = async (message, GLOBALS) => {
 
   if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to score the match.')
 
+  if (message.guild.me.hasPermission('MANAGE_CHANNELS')) {
+    GLOBALS.client.channels.fetch(matchInformation.teamAVoiceChannel).then(c => c.delete())
+    GLOBALS.client.channels.fetch(matchInformation.teamBVoiceChannel).then(c => c.delete())
+  }
+
   matchInformation.status = 'completed'
   matchInformation.score = [matchScore.split('-')[0], matchScore.split('-')[1]]
+  matchInformation.teamAVoiceChannel = undefined
+  matchInformation.teamBVoiceChannel = undefined
 
   matchInformationRef.update(matchInformation)
 
@@ -147,7 +174,10 @@ const score = async (message, GLOBALS) => {
     .setTitle('Match Completed')
     .setDescription('Match with ID `' + matchID + '` has been completed. Thanks for using ScrimBot, to create a new match type `v!match create`')
     .setFooter('This message will self-destruct in 30 seconds.')
-  message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
+  message.reply(embed).then(msg => {
+    msg.delete({ timeout: 30000 })
+    message.delete({ timeout: 30000 })
+  })
 
   const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
   const botMessage = await botMessageChannel.messages.fetch(matchID)
@@ -176,11 +206,6 @@ const score = async (message, GLOBALS) => {
       playerDoc.matches.unshift(matchInformationRef)
       playerRef.update(playerDoc)
     }
-  }
-
-  if (message.guild.me.hasPermission('MANAGE_CHANNELS')) {
-    GLOBALS.client.channels.fetch(matchInformation.teamAVoiceChannel).then(c => c.delete())
-    GLOBALS.client.channels.fetch(matchInformation.teamBVoiceChannel).then(c => c.delete())
   }
 }
 

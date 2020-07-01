@@ -1,5 +1,5 @@
 module.exports = exports = {
-  name: '',
+  name: 'matchReactions',
   enabled: true,
   process: async (GLOBALS) => {
     addOldMessagesToCache(GLOBALS)
@@ -22,8 +22,10 @@ const addOldMessagesToCache = async (GLOBALS) => {
   snapshot.forEach(async doc => {
     const match = doc.data()
 
-    const messageChannel = await GLOBALS.client.channels.fetch(match.message.channel)
-    messageChannel.messages.fetch(match.message.id)
+    try {
+      const messageChannel = await GLOBALS.client.channels.fetch(match.message.channel)
+      messageChannel.messages.fetch(match.message.id)
+    } catch (error) {} // The only errors this really gives is when the bot no longer has access to channels
   })
 }
 
