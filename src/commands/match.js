@@ -1,5 +1,6 @@
 const CONSTANTS = require('../constants')
 const moment = require('moment-timezone')
+const admin = require('firebase-admin')
 
 module.exports = exports = {
   name: 'match',
@@ -122,10 +123,10 @@ const start = async (message, GLOBALS) => {
       })
 
       teamAMembers.each(player => {
-        player.voice.setChannel(teamAVoiceChannel)
+        player.voice.setChannel(teamAVoiceChannel).catch()
       })
       teamBMembers.each(player => {
-        player.voice.setChannel(teamBVoiceChannel)
+        player.voice.setChannel(teamBVoiceChannel).catch()
       })
     }
   }
@@ -165,8 +166,8 @@ const score = async (message, GLOBALS) => {
 
   matchInformation.status = 'completed'
   matchInformation.score = [matchScore.split('-')[0], matchScore.split('-')[1]]
-  matchInformation.teamAVoiceChannel = undefined
-  matchInformation.teamBVoiceChannel = undefined
+  matchInformation.teamAVoiceChannel = admin.firestore.FieldValue.delete()
+  matchInformation.teamBVoiceChannel = admin.firestore.FieldValue.delete()
 
   matchInformationRef.update(matchInformation)
 
