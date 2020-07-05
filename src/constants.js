@@ -69,6 +69,8 @@ module.exports = exports = {
     ascent: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt47bef6aa9e43d8ec/5ecd64df96a8996de38bbf8f/ascent-minimap-2.jpg'
   },
 
+  GAME_MODES: ['standard', 'spike rush', 'team deathmatch'],
+
   AFFIRMATIVE_WORDS: ['yes', 'yeah', 'sure', 'true', '1', 'si', 'yea', 'ok', 'mhm', 'k', 'yah', 'on'],
 
   userRegistrationSteps: [
@@ -83,7 +85,8 @@ module.exports = exports = {
     ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
     ['4. Player Count', 'How many players should be on each team? Max 5.'],
     ['5. Spectators', 'Are spectators allowed?'],
-    ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent. If any, type "any"']
+    ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent. If any, type "any"'],
+    ['7. Game Mode', 'What game mode would you like? Options are "standard", "spike rush", and "team deathmatch".']
   ],
 
   reportCreationSteps: [

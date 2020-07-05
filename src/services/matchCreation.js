@@ -20,6 +20,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
   if (userMessage.channel !== matchRecord.botMessage.channel) return
 
   if (userMessage.guild.me.hasPermission('MANAGE_MESSAGES')) userMessage.delete({ timeout: 500 })
+  const content = userMessage.content.toLowerCase()
   switch (matchRecord.step) {
     case 0: {
       const dateString = userMessage.content.split(' ')
@@ -34,7 +35,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       break
     }
     case 1: {
-      if (userMessage.content.toLowerCase() === 'any') {
+      if (content === 'any') {
         matchRecord.creationInformation.rankMinimum = 0
         break
       } else if (!CONSTANTS.RANKS[userMessage.content.toUpperCase()]) {
@@ -45,7 +46,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       }
     }
     case 2: {
-      if (userMessage.content.toLowerCase() === 'any') {
+      if (content === 'any') {
         matchRecord.creationInformation.rankMaximum = 99
         break
       } else if (!CONSTANTS.RANKS[userMessage.content.toUpperCase()]) {
@@ -58,25 +59,33 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       }
     }
     case 3: {
-      if (!Number(userMessage.content) || Number(userMessage.content) > 5) {
+      if (!Number(content) || Number(content) > 5) {
         return userMessage.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
-        matchRecord.creationInformation.maxTeamCount = Number(userMessage.content)
+        matchRecord.creationInformation.maxTeamCount = Number(content)
         break
       }
     }
     case 4:
-      matchRecord.creationInformation.spectators = (CONSTANTS.AFFIRMATIVE_WORDS.includes(userMessage.content.toLowerCase())) ? [] : false
+      matchRecord.creationInformation.spectators = (CONSTANTS.AFFIRMATIVE_WORDS.includes(content)) ? [] : false
       break
     case 5: {
-      if (userMessage.content.toLowerCase() === 'any') {
+      if (content === 'any') {
         matchRecord.creationInformation.map = CONSTANTS.MAPS[Math.floor(Math.random() * Math.floor(CONSTANTS.MAPS.length))]
         break
-      } else if (isNaN(userMessage.content) || Number(userMessage.content) > CONSTANTS.MAPS.length) {
+      } else if (isNaN(content) || Number(content) > CONSTANTS.MAPS.length) {
         return userMessage.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
-        matchRecord.creationInformation.map = CONSTANTS.MAPS[Number(userMessage.content - 1)]
+        matchRecord.creationInformation.map = CONSTANTS.MAPS[Number(content - 1)]
         break
+      }
+    }
+    case 6: {
+      if (CONSTANTS.GAME_MODES.includes(content)) {
+        matchRecord.creationInformation.mode = content
+        break
+      } else {
+        return userMessage.reply('please give a valid game mode!').then(msg => msg.delete({ timeout: 5000 }))
       }
     }
   }
