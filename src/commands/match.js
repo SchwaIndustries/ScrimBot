@@ -265,7 +265,7 @@ const info = async (message, GLOBALS) => {
     .setAuthor(matchCreator.tag, matchCreator.avatarURL())
     .setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
     .addField('Status', CONSTANTS.capitalizeFirstLetter(matchInformation.status), true)
-    .addField('Date', moment(matchInformation.date.toMillis()).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'), true)
+    .addField('Game Mode', CONSTANTS.capitalizeFirstLetter(matchInformation.mode), true)
     .addField('Map', CONSTANTS.capitalizeFirstLetter(matchInformation.map), true)
     .addField('Max Team Count', matchInformation.maxTeamCount, true)
     .addField('Minimum Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchInformation.rankMinimum]), true)

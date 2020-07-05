@@ -122,7 +122,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       .setTimestamp(new Date(matchRecord.creationInformation.date))
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .addField('Status', CONSTANTS.capitalizeFirstLetter(matchRecord.creationInformation.status), true)
-      .addField('Date', moment(matchRecord.creationInformation.date).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY'), true)
+      .addField('Game Mode', CONSTANTS.capitalizeFirstLetter(matchRecord.creationInformation.mode), true)
       .addField('Map', CONSTANTS.capitalizeFirstLetter(matchRecord.creationInformation.map), true)
       .addField('Max Team Count', matchRecord.creationInformation.maxTeamCount + ' players per team', true)
       .addField('Minimum Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchRecord.creationInformation.rankMinimum]), true)
