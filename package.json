@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/momomiles/ScrimBot.git"
+    "url": "git+https://github.com/SchwaIndustries/ScrimBot.git"
   },
-  "author": "",
+  "author": "Schwa Industries",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/momomiles/ScrimBot/issues"
+    "url": "https://github.com/SchwaIndustries/ScrimBot/issues"
   },
-  "homepage": "https://github.com/momomiles/ScrimBot#readme",
+  "homepage": "https://github.com/SchwaIndustries/ScrimBot#readme",
   "dependencies": {
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
