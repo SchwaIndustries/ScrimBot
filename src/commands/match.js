@@ -311,7 +311,7 @@ const edit = async (message, GLOBALS) => {
   if (!matchID) return message.reply('Please specify a match id to edit!')
 
   const editedProperty = attributes[3]
-  if (!editedProperty) return message.reply('Please specify a property to edit! (date, map, minRank, maxRank, teamPlayerCount, spectators)')
+  if (!editedProperty) return message.reply('Please specify a property to edit! (date, map, minRank, maxRank, teamPlayerCount, spectators, mode)')
 
   const editedValue = attributes[4]
   if (!editedValue) return message.reply('Please specify a value for ' + editedProperty)
@@ -336,7 +336,6 @@ const edit = async (message, GLOBALS) => {
       if (isNaN(date)) return message.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchInformation.date = date
 
-      matchEmbed.fields[1].value = moment(matchInformation.date).tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('h:mm a z DD MMM, YYYY')
       matchEmbed.setTimestamp(matchInformation.date)
       break
     }
@@ -389,8 +388,17 @@ const edit = async (message, GLOBALS) => {
       matchEmbed.setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
       break
     }
+    case 'mode': {
+      if (CONSTANTS.GAME_MODES.includes(editedValue.toLowerCase())) {
+        matchInformation.mode = editedValue.toLowerCase()
+        matchEmbed.fields[1].value = GLOBALS.capitalizeFirstLetter(matchInformation.mode.toLowerCase())
+      } else {
+        return message.reply('please give a valid game mode!').then(msg => msg.delete({ timeout: 5000 }))
+      }
+      break
+    }
     default:
-      return message.reply('Property `' + editedProperty + '` not found! Please try again using a valid property (date, map, minRank, maxRank, teamPlayerCount, spectators).')
+      return message.reply('Property `' + editedProperty + '` not found! Please try again using a valid property (date, map, minRank, maxRank, teamPlayerCount, spectators, mode).')
   }
 
   matchInformationRef.update(matchInformation)
