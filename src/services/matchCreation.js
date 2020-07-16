@@ -115,6 +115,10 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
     else matchRecord.botReaction.remove()
     matchRecord.creationInformation.timestamp = new Date()
 
+    let guildInformation = await GLOBALS.db.collection('guilds').doc(userMessage.guild.id).get()
+    if (!guildInformation.exists) guildInformation.notificationRole = userMessage.guild.id
+    else guildInformation = guildInformation.data()
+
     const matchEmbed = new GLOBALS.Embed()
       .setTitle('Match Information')
       .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and, if enabled, react with 🇸 to be a spectator.')
@@ -130,7 +134,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       .addField('Team A', 'None', true)
       .addField('Team B', 'None', true)
       .addField('Spectators', matchRecord.creationInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
-    matchRecord.botMessage.channel.send('<@&717802617534808084> a match has been created!', matchEmbed)
+    matchRecord.botMessage.channel.send(`<@&${guildInformation.notificationRole}> a match has been created!`, matchEmbed)
       .then(message => {
         message.react('🇦')
         message.react('🇧')
