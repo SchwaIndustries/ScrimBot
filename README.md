@@ -41,3 +41,4 @@ If both are present, `GOOGLE_APPLICATION_CREDENTIALS` will be preferred.
 
 6. Run `npm install` and let it install the dependencies
 7. Then run `npm start` and the bot should be online!
+8. You can add yourself as a bot admin by creating a collection in the database named botAdmins. Add a document within whose id matches your Discord id. You can create additional documents for any other admins. The documents do not need any content.
