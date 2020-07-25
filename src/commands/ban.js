@@ -2,7 +2,7 @@ const moment = require('moment-timezone')
 
 module.exports = exports = {
   name: 'ban',
-  usage: '',
+  usage: '<user> <length> <reason>',
   enabled: true,
   process: async (message, GLOBALS) => {
     const attributes = message.content.split(' ')
