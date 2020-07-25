@@ -27,6 +27,7 @@
 /* eslint-disable indent */
 // MARK: - Imports and global variables
 
+const CONSTANTS = require('./constants')
 const fs = require('fs')
 const path = require('path')
 const Discord = require('discord.js')
@@ -60,27 +61,38 @@ const admin = require('firebase-admin')
 // ScrimBot specific properties
 client.commands = new Map() // Stores all bot commands
 client.services = new Map() // Stores all bot services (functions that run at start)
-// Custom embed that contains the sponsorship for the bot
+
 class ScrimBotEmbed extends Discord.MessageEmbed {
   constructor (specialColor) {
     super()
     this.setColor(specialColor || 'PURPLE')
-    // this.footer = { text: 'Sponsored by Limitless Gaming', iconURL: 'https://cdn.discordapp.com/icons/667553378607431681/0129a1e3f29b541b6af45c8c3fb0dd14.webp' }
   }
+}
 
-  // setFooter (text, override) {
-  //   if (override) {
-  //     this.footer.text = text
-  //   }
-  //   this.footer.text += `\n${text}`
-  //   return this
-  // }
+class MatchEmbed extends ScrimBotEmbed {
+  constructor (matchData, specialColor) {
+    super(specialColor)
+    this.setTitle('Match Information')
+    this.setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and, if enabled, react with 🇸 to be a spectator.')
+    this.setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchData.map])
+    this.setTimestamp(new Date(matchData.date))
+    this.addField('Status', CONSTANTS.capitalizeFirstLetter(matchData.status), true)
+    this.addField('Game Mode', CONSTANTS.capitalizeFirstLetter(matchData.mode), true)
+    this.addField('Map', CONSTANTS.capitalizeFirstLetter(matchData.map), true)
+    this.addField('Max Team Count', matchData.maxTeamCount + ' players per team', true)
+    this.addField('Minimum Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchData.rankMinimum]), true)
+    this.addField('Maximum Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchData.rankMaximum]), true)
+    this.addField('Team A', 'None', true)
+    this.addField('Team B', 'None', true)
+    this.addField('Spectators', matchData.spectators instanceof Array ? 'None' : 'Not allowed', true)
+  }
 }
 
 // Global variables accessible from all files
 const GLOBALS = {
   client: client,
   Embed: ScrimBotEmbed,
+  MatchEmbed: MatchEmbed,
   db: db,
   activeUserRegistration: new Discord.Collection(),
   activeMatchCreation: new Discord.Collection(),
