@@ -20,18 +20,10 @@ module.exports = exports = {
       v!user edit <username, rank, notifications> <edited value>: Edit user info
 
       **__MISCELLANEOUS COMMANDS__**
-        v!help: Show this help menu.  
+        v!help: Show this help menu.
         v!invite: Invite the bot to your server!
         v!ping: Play a game of ping pong.
-        v!register: Register to join matches.
-      
-      **__BOT ADMIN COMMANDS__**
-      v!punish ban <username, reason, time>: Ban User
-      v!punish unban <username>: Unban a user
-      v!shutdown: Shutsdown bot
-      v!restart: Restarts bot`)
-      // *Special thanks to Limitless Gaming:* https://limitlessgaming.team/`)
-    // embed.setFooter('', true)
+        v!register: Register to join matches.`)
     message.channel.send(embed)
   }
 }
