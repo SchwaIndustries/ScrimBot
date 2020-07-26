@@ -120,7 +120,7 @@ function loadCommands () {
   for (const file of fs.readdirSync(path.join(__dirname, 'commands'))) { // get all files in commands folder
     if (!file.endsWith('.js')) return // only look for .js files
     const command = require(`./commands/${file}`)
-    if (command.enabled === true) client.commands.set(command.name, command)
+    client.commands.set(command.name, command)
   }
 }
 
@@ -149,6 +149,7 @@ client.on('message', async message => {
   const commandName = message.content.split(' ')[0].substring(2).toLowerCase() // extract command name from the message by removing the prefix
   if (message.content.toLowerCase().startsWith('v!') && client.commands.has(commandName)) {
     const commandData = client.commands.get(commandName)
+    if (!commandData.enabled) return
     try {
       commandData.process(message, GLOBALS) // attempt to run command
     } catch (e) {
