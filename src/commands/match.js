@@ -328,11 +328,11 @@ const edit = async (message, GLOBALS) => {
     case 'date': {
       const dateString = [editedValue, ...attributes.slice(5)]
       if (dateString.length === 2) {
-        const actualDate = moment().tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('YYYY-MM-DD')
+        const actualDate = moment().tz(process.env.TIME_ZONE).format('YYYY-MM-DD')
         dateString.push(actualDate)
       }
 
-      const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE || 'America/Los_Angeles').toDate()
+      const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE).toDate()
       if (isNaN(date)) return message.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchInformation.date = date
 

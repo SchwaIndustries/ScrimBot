@@ -61,6 +61,7 @@ const admin = require('firebase-admin')
 // ScrimBot specific properties
 client.commands = new Map() // Stores all bot commands
 client.services = new Map() // Stores all bot services (functions that run at start)
+if (!process.env.TIME_ZONE) process.env.TIME_ZONE = 'America/Los_Angeles'
 
 class ScrimBotEmbed extends Discord.MessageEmbed {
   constructor (specialColor) {

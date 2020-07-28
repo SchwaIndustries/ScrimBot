@@ -38,7 +38,7 @@ const handlePlayerReport = async (reportRecord, userMessage, GLOBALS) => {
     case 2: {
       const dateString = userMessage.content.split(' ')
       if (dateString.length === 2) {
-        const actualDate = moment().tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('YYYY-MM-DD')
+        const actualDate = moment().tz(process.env.TIME_ZONE).format('YYYY-MM-DD')
         dateString.push(actualDate)
       }
       break
