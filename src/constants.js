@@ -89,13 +89,6 @@ module.exports = exports = {
     ['7. Game Mode', 'What game mode would you like? Options are "standard", "spike rush", and "team deathmatch".']
   ],
 
-  reportCreationSteps: [
-    ['1. Server ID:', 'What is the server ID?  If you don\'t know how to retrieve a Discord ID, please visit this https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-'],
-    ['2. Player ID', 'What is the Disocrd ID of the player you would like to report?'],
-    ['3. Date of Offense', 'What was the date of the offense? YYYY-MM-DD'],
-    ['4. Explination', 'In as much detail as possible, explain what the player has done wrong?']
-  ],
-
   capitalizeFirstLetter: string => {
     string = string.toLowerCase()
     return string.charAt(0).toUpperCase() + string.slice(1)

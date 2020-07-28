@@ -1,6 +1,6 @@
 const moment = require('moment-timezone')
 const CONSTANTS = require('../constants')
-const Discord = require('discord.js')
+const Discord = require('discord.js') // eslint-disable-line
 
 module.exports = exports = {
   name: 'user',
@@ -67,8 +67,6 @@ const info = async (message, GLOBALS) => {
   let userInformation = await userInformationRef.get()
   if (!userInformation.exists) return message.reply('User not found! Ensure correct user ID is submitted.')
   userInformation = userInformation.data()
-  const userPunishInformation = await userInformationRef.collection('punishments').get()
-  const userBanned = userPunishInformation.docs.length > 0 && (userPunishInformation.docs.slice(-1).pop().data().unbanDate.toMillis()) > Date.now()
 
   const userDiscordInformation = await GLOBALS.client.users.fetch(userID)
 
@@ -83,7 +81,6 @@ const info = async (message, GLOBALS) => {
     .addField('Registration Date', moment(userInformation.timestamp.toMillis()).tz(process.env.TIME_ZONE).format('h:mm a z DD MMM, YYYY'))
     .addField('Notifications Enabled', userInformation.notifications === true ? 'Yes' : 'No', true)
     .addField('Matches Played', userInformation.matches.length, true)
-    .addField('Banned', userBanned === true ? 'Yes' : 'No')
   message.reply(userEmbed)
 }
 

@@ -26,12 +26,6 @@ const create = async (message, GLOBALS) => {
     return
   }
 
-  const playerPunishInformation = await GLOBALS.db.collection('users').doc(message.author.id).collection('punishments').get()
-  if (playerPunishInformation.docs.length > 0 && (playerPunishInformation.docs.slice(-1).pop().data().unbanDate.toMillis()) > Date.now()) {
-    message.channel.send(`<@${message.author.id}>, you are currently banned. Please wait for your ban to expire before creating a match.`).then(msg => msg.delete({ timeout: 5000 }))
-    return
-  }
-
   const embed = new GLOBALS.Embed()
     .setTitle('Create a Match')
     .setDescription('Let\'s start a match!')

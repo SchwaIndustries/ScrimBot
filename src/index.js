@@ -96,8 +96,7 @@ const GLOBALS = {
   MatchEmbed: MatchEmbed,
   db: db,
   activeUserRegistration: new Discord.Collection(),
-  activeMatchCreation: new Discord.Collection(),
-  activeReportCreation: new Discord.Collection()
+  activeMatchCreation: new Discord.Collection()
 }
 
 /* eslint-enable indent */
