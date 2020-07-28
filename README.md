@@ -12,24 +12,43 @@ ScrimBot is Discord bot meant to allow for the easy creation of VALORANT custom 
 _ScrimBot is based off [Mountainz](https://github.com/Kalissaac/Mountainz)._
 
 ## Running this yourself
-The bot is pretty simple to set up, it really only needs a Discord bot token and a Firebase project.
-1. First, get your bot token from Discord (https://discord.com/developers/applications).
-2. Create a file named `.env` in the root directory of the bot or set your environment variables to the following contents:
+
+### Requirements:
+1. Firebase Project (https://console.firebase.google.com/)
+2. Discord Bot Token (https://discord.com/developers/applications)
+3. Node.js Version 12 or higher (https://nodejs.org/en/download/)
+
+### Instructions:
+ScrimBot configuration is handled through environment variables. These can be set inside your terminal, on your hosting platform, or using a file named `.env` in the project directory.
+
+Here's a helpful guide on how to set them up for your platform: https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html
+
+For the purposes of this guide, we'll be using a `.env` file, which is the easiest option.
+
+---
+0. Clone the repository
 ```
-.env
+$ git clone https://github.com/SchwaIndustries/ScrimBot.git
+$ cd ScrimBot
+```
+
+1. Create a file named `.env` in the root directory of the bot with the following contents:
+```
 TOKEN=<discord bot token>
-TIME_ZONE=<desired time zone (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), default is America/Los_Angeles>
+TIME_ZONE=<(OPTIONAL) desired time zone (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), default is America/Los_Angeles>
+PREFIX=<(OPTIONAL) desired bot prefix, default is v!>
 ```
-3. Replace `<discord bot token>` in the file with your bot token.
-4. Create a Firebase project at console.firebase.google.com, and go to Settings > Service Accounts > Firebase Admin SDK > Generate a new key
-5. You now have two options: if you want to store the JSON locally, you can put the file in your project folder and set an additional key in `.env` which points to it:
+
+2. Replace `<discord bot token>` with your bot token
+
+3. In your Firebase project, navigate to Settings > Service Accounts > Firebase Admin SDK and click **Generate a new key**
+
+4. You now have two options: if you want to store the JSON locally, you can put the file in your project folder and set an additional key which points to it:
 ```
-.env
 GOOGLE_APPLICATION_CREDENTIALS=</path/to/service-account-file.json>
 ```
-or, if you are unable to store a JSON file in your project directory, you can add some specific keys to your `.env` and ScrimBot will do the rest for you.
+or, if you are unable to store a JSON file in your project directory, you can add some specific keys and ScrimBot will do the rest for you.
 ```
-.env
 FIR_PROJID=<Firebase project ID>
 FIR_CLIENTID=<Firebase client ID>
 FIR_PRIVATEKEY_ID=<Firebase private key ID>
@@ -37,6 +56,8 @@ FIR_PRIVATEKEY=<Firebase private key>
 ```
 If both are present, `GOOGLE_APPLICATION_CREDENTIALS` will be preferred.
 
-6. Run `npm install` and let it install the dependencies
-7. Then run `npm start` and the bot should be online!
-8. You can add yourself as a bot admin by creating a collection in the database named botAdmins. Add a document within whose id matches your Discord id. You can create additional documents for any other admins. The documents do not need any content.
+6. Run `npm install` to install bot dependencies
+
+7. Run `npm start` and the bot should be online!
+
+8. You can add yourself as a bot admin by creating a collection in the database named `botAdmins`. Add a document that has your Discord ID as the document ID. You can add as many documents as you want, and all of those people will be recognized as bot admins. These documents do not need any data inside.
