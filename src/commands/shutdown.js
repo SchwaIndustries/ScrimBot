@@ -1,5 +1,3 @@
-const childProcess = require('child_process')
-
 module.exports = exports = {
   name: 'shutdown',
   usage: '',
@@ -12,13 +10,6 @@ module.exports = exports = {
       .setTitle('Shutdown!')
       .setDescription('Adios!')
     await message.channel.send(embed)
-    childProcess.exec('heroku ps:scale web=0 --app valorant-scrim-bot', (error, stdout, stderr) => {
-      if (error) {
-        console.error(`exec error: ${error}`)
-        return
-      }
-      console.error(stderr)
-    })
     process.exit()
   }
 }
