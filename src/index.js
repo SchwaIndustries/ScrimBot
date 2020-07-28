@@ -62,6 +62,7 @@ const admin = require('firebase-admin')
 client.commands = new Map() // Stores all bot commands
 client.services = new Map() // Stores all bot services (functions that run at start)
 if (!process.env.TIME_ZONE) process.env.TIME_ZONE = 'America/Los_Angeles'
+if (!process.env.PREFIX) process.env.PREFIX = 'v!'
 
 class ScrimBotEmbed extends Discord.MessageEmbed {
   constructor (specialColor) {
@@ -145,14 +146,14 @@ function runServices () {
 client.on('message', async message => {
   if (message.author === client.user || message.author.bot) return // ignore messages from the bot itself or other bots
 
-  const commandName = message.content.split(' ')[0].substring(2).toLowerCase() // extract command name from the message by removing the prefix
-  if (message.content.toLowerCase().startsWith('v!') && client.commands.has(commandName)) {
+  const commandName = message.content.split(' ')[0].substring(process.env.PREFIX.length).toLowerCase() // extract command name from the message by removing the prefix
+  if (message.content.toLowerCase().startsWith(process.env.PREFIX) && client.commands.has(commandName)) {
     const commandData = client.commands.get(commandName)
     if (!commandData.enabled) return
     try {
       commandData.process(message, GLOBALS) // attempt to run command
     } catch (e) {
-      console.error(`Error with v!${commandName}. Looks like we got a ${e}`)
+      console.error(`Error with ${process.env.PREFIX}${commandName}. Looks like we got a ${e}`)
     }
   }
 })
