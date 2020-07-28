@@ -185,7 +185,7 @@ const score = async (message, GLOBALS) => {
   const botMessageEmbed = botMessage.embeds[0]
   botMessageEmbed.fields[0].value = CONSTANTS.capitalizeFirstLetter(matchInformation.status)
   botMessageEmbed.addField('Final Score', matchScore)
-  botMessage.edit(botMessageEmbed)
+  botMessage.edit('The match has completed!', botMessageEmbed)
   if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 
   for (const playerRef of matchInformation.players.a) {
@@ -243,7 +243,7 @@ const cancel = async (message, GLOBALS) => {
   const botMessage = await botMessageChannel.messages.fetch(matchID)
   const botMessageEmbed = botMessage.embeds[0]
   botMessageEmbed.fields[0].value = CONSTANTS.capitalizeFirstLetter(matchInformation.status)
-  botMessage.edit(botMessageEmbed)
+  botMessage.edit('The match has been canceled!', botMessageEmbed)
   if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 }
 
