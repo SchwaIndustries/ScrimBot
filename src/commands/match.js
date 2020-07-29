@@ -307,7 +307,7 @@ const edit = async (message, GLOBALS) => {
   const editedProperty = attributes[3]
   if (!editedProperty) return message.reply('Please specify a property to edit! (date, map, minRank, maxRank, teamPlayerCount, spectators, mode)')
 
-  const editedValue = attributes[4]
+  const editedValue = attributes.slice(4).join(' ')
   if (!editedValue) return message.reply('Please specify a value for ' + editedProperty)
 
   const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
@@ -320,7 +320,7 @@ const edit = async (message, GLOBALS) => {
 
   switch (editedProperty) {
     case 'date': {
-      const dateString = [editedValue, ...attributes.slice(5)]
+      const dateString = editedValue.split(' ')
       if (dateString.length === 2) {
         const actualDate = moment().tz(process.env.TIME_ZONE).format('YYYY-MM-DD')
         dateString.push(actualDate)
