@@ -1,6 +1,6 @@
 {
   "name": "scrimbot",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "A Discord bot for organizing Valorant custom games.",
   "main": "src/index.js",
   "scripts": {
