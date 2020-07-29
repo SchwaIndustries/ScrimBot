@@ -31,18 +31,9 @@ module.exports = exports = {
     matchNotifications = checkRoleValidity(matchNotifications.first().content)
     if (!matchNotifications) return message.reply('That is not a valid role! Please run `v!server add` again.')
 
-    // Banned User Role
-    embed.fields[0].name = '✅ 1. Match Notification Role'
-    embed.addField('2. Banned User Role', 'ScrimBot has the feature to give users a role when they are banned. Please either respond with the role ID of that role or mention it.')
-    reply.edit(embed)
-
-    let banRole = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!server add` again.'))
-    banRole = checkRoleValidity(banRole.first().content)
-    if (!banRole) return message.reply('That is not a valid role! Please run `v!server add` again.')
-
     // Valorant Rank Roles
-    embed.fields[1].name = '✅ 2. Banned User Role'
-    embed.addField('3. Valorant Rank Roles', 'ScrimBot has the feature to create and give users a role based on their ranks. Would you like this? (yes or no)')
+    embed.fields[0].name = '✅ 1. Match Notification Role'
+    embed.addField('2. Valorant Rank Roles', 'ScrimBot has the feature to create and give users a role based on their ranks. Would you like this? (yes or no)')
     reply.edit(embed)
 
     let valorantRankRoles = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!server add` again.'))
@@ -67,13 +58,12 @@ module.exports = exports = {
 
     const completionEmbed = new GLOBALS.Embed()
     completionEmbed.setTitle('ScrimBot Initialization Complete')
-    completionEmbed.setDescription('Your setup is complete, thanks for bearing with us! Don\'t forget to put the "Scrimbot" role above the Match Notification and Banned role for role management to work properly. Run `v!match create` to start your first match.')
+    completionEmbed.setDescription('Your setup is complete, thanks for bearing with us! Don\'t forget to put the "ScrimBot" role above Match Notifications for role management to work properly. Run `v!match create` to start your first match.')
     reply.edit(completionEmbed)
 
     guildInformationRef.set({
       name: message.guild.name,
       notificationRole: matchNotifications,
-      banRole: banRole,
       valorantRankRoles: rankRoleIDs || false
     })
   }

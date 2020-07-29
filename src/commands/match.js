@@ -26,12 +26,6 @@ const create = async (message, GLOBALS) => {
     return
   }
 
-  const playerPunishInformation = await GLOBALS.db.collection('users').doc(message.author.id).collection('punishments').get()
-  if (playerPunishInformation.docs.length > 0 && (playerPunishInformation.docs.slice(-1).pop().data().unbanDate.toMillis()) > Date.now()) {
-    message.channel.send(`<@${message.author.id}>, you are currently banned. Please wait for your ban to expire before creating a match.`).then(msg => msg.delete({ timeout: 5000 }))
-    return
-  }
-
   const embed = new GLOBALS.Embed()
     .setTitle('Create a Match')
     .setDescription('Let\'s start a match!')
@@ -185,7 +179,7 @@ const score = async (message, GLOBALS) => {
   const botMessageEmbed = botMessage.embeds[0]
   botMessageEmbed.fields[0].value = CONSTANTS.capitalizeFirstLetter(matchInformation.status)
   botMessageEmbed.addField('Final Score', matchScore)
-  botMessage.edit(botMessageEmbed)
+  botMessage.edit('The match has completed!', botMessageEmbed)
   if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 
   for (const playerRef of matchInformation.players.a) {
@@ -243,7 +237,7 @@ const cancel = async (message, GLOBALS) => {
   const botMessage = await botMessageChannel.messages.fetch(matchID)
   const botMessageEmbed = botMessage.embeds[0]
   botMessageEmbed.fields[0].value = CONSTANTS.capitalizeFirstLetter(matchInformation.status)
-  botMessage.edit(botMessageEmbed)
+  botMessage.edit('The match has been canceled!', botMessageEmbed)
   if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 }
 
@@ -313,7 +307,7 @@ const edit = async (message, GLOBALS) => {
   const editedProperty = attributes[3]
   if (!editedProperty) return message.reply('Please specify a property to edit! (date, map, minRank, maxRank, teamPlayerCount, spectators, mode)')
 
-  const editedValue = attributes[4]
+  const editedValue = attributes.slice(4).join(' ')
   if (!editedValue) return message.reply('Please specify a value for ' + editedProperty)
 
   const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
@@ -326,13 +320,13 @@ const edit = async (message, GLOBALS) => {
 
   switch (editedProperty) {
     case 'date': {
-      const dateString = [editedValue, ...attributes.slice(5)]
+      const dateString = editedValue.split(' ')
       if (dateString.length === 2) {
-        const actualDate = moment().tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('YYYY-MM-DD')
+        const actualDate = moment().tz(process.env.TIME_ZONE).format('YYYY-MM-DD')
         dateString.push(actualDate)
       }
 
-      const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE || 'America/Los_Angeles').toDate()
+      const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE).toDate()
       if (isNaN(date)) return message.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchInformation.date = date
 

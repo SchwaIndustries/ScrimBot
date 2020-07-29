@@ -1,5 +1,5 @@
 const CONSTANTS = require('../constants')
-const moment = require('moment-timezone')
+const chrono = require('chrono-node')
 
 module.exports = exports = {
   name: 'matchCreation',
@@ -23,13 +23,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
   const content = userMessage.content.toLowerCase()
   switch (matchRecord.step) {
     case 0: {
-      const dateString = userMessage.content.split(' ')
-      if (dateString.length === 2) {
-        const actualDate = moment().tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('YYYY-MM-DD')
-        dateString.push(actualDate)
-      }
-
-      const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE || 'America/Los_Angeles').toDate()
+      const date = chrono.parseDate(`${userMessage.content} ${process.env.TIME_ZONE}`, new Date(), { forwardDate: true })
       if (isNaN(date)) return userMessage.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchRecord.creationInformation.date = date
       break
@@ -135,7 +129,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       .addField('Team B', 'None', true)
       .addField('Spectators', matchRecord.creationInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
     matchRecord.botMessage.channel.send(`<@&${guildInformation.notificationRole}> a match has been created!`, matchEmbed)
-      .then(message => {
+      .then(async message => {
         message.react('🇦')
         message.react('🇧')
         if (matchRecord.creationInformation.spectators) message.react('🇸')
@@ -147,7 +141,8 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
           id: message.id,
           channel: message.channel.id
         }
-        GLOBALS.db.collection('matches').doc(message.id).set(matchRecord.creationInformation)
+        await GLOBALS.db.collection('matches').doc(message.id).set(matchRecord.creationInformation)
+        GLOBALS.db.collection('guilds').doc(message.guild.id).collection('matches').doc(message.id).set({ data: GLOBALS.db.collection('matches').doc(message.id) })
         GLOBALS.activeMatchCreation.delete(matchRecord.userID)
       })
   }

@@ -1,6 +1,6 @@
 module.exports = exports = {
-  name: 'guildAdd', // service name
-  enabled: true, // whether the servie should be loaded
+  name: 'guildAdd',
+  enabled: true,
   process: async (GLOBALS) => {
     GLOBALS.client.on('guildCreate', guild => {
       const defaultChannel = (guild.systemChannel || guild.embedChannel || guild.channels.cache.first())

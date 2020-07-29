@@ -80,20 +80,13 @@ module.exports = exports = {
   ],
 
   matchCreationSteps: [
-    ['1. Date & Time', 'When will the match be? Respond in the format HH:MM am/pm YYYY-MM-DD (If no date is specified the current day is assumed.)'],
+    ['1. Date & Time', 'When will the match be? (If no date is specified the current day is assumed.)'],
     ['2. Rank Minimum', 'What is the **MINIMUM** rank you are allowing into your tournament? If any, type "any"'],
     ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
     ['4. Player Count', 'How many players should be on each team? Max 5.'],
     ['5. Spectators', 'Are spectators allowed?'],
     ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent. If any, type "any"'],
     ['7. Game Mode', 'What game mode would you like? Options are "standard", "spike rush", and "team deathmatch".']
-  ],
-
-  reportCreationSteps: [
-    ['1. Server ID:', 'What is the server ID?  If you don\'t know how to retrieve a Discord ID, please visit this https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-'],
-    ['2. Player ID', 'What is the Disocrd ID of the player you would like to report?'],
-    ['3. Date of Offense', 'What was the date of the offense? YYYY-MM-DD'],
-    ['4. Explination', 'In as much detail as possible, explain what the player has done wrong?']
   ],
 
   capitalizeFirstLetter: string => {
