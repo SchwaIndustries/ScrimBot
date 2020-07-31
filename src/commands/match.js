@@ -60,6 +60,7 @@ const start = async (message, GLOBALS) => {
   const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
   let matchInformation = await matchInformationRef.get()
   if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  if (matchInformation.status === 'scored') return message.reply('This match has already been completed.')
   matchInformation = matchInformation.data()
 
   const adminUser = await GLOBALS.db.collection('botAdmins').doc(message.author.id).get()
@@ -147,6 +148,8 @@ const score = async (message, GLOBALS) => {
   const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
   let matchInformation = await matchInformationRef.get()
   if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  if (matchInformation.status === 'created') return message.reply('This match has not been started yet!')
+  if (matchInformation.status === 'completed') return message.reply('This match has already been scored. Please ask a bot admin to change the score in the database if changes are required.')
   matchInformation = matchInformation.data()
 
   const adminUser = await GLOBALS.db.collection('botAdmins').doc(message.author.id).get()
