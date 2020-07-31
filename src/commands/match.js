@@ -222,8 +222,9 @@ const cancel = async (message, GLOBALS) => {
 
   if (matchInformation.status === 'scored') return message.reply('This match has already been scored.')
 
-  if (matchInformation.status === 'started') {
-    if (!adminUser.exists) return message.reply('**__You must be a ScrimBot admin to cancel an ongoing match.__**')
+  if (matchInformation.status === 'started' && message.guild.me.hasPermission('MANAGE_CHANNELS')) {
+    GLOBALS.client.channels.fetch(matchInformation.teamAVoiceChannel).then(c => c.delete())
+    GLOBALS.client.channels.fetch(matchInformation.teamBVoiceChannel).then(c => c.delete())
   }
 
   matchInformation.status = 'canceled'
