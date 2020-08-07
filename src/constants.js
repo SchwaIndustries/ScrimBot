@@ -80,7 +80,7 @@ module.exports = exports = {
   ],
 
   matchCreationSteps: [
-    ['1. Date & Time', 'When will the match be? (If no date is specified the current day is assumed.)'],
+    ['1. Date & Time', 'When will the match be? Respond in the format HH:MM am/pm YYYY-MM-DD (If no date is specified the current day is assumed.)'],
     ['2. Rank Minimum', 'What is the **MINIMUM** rank you are allowing into your tournament? If any, type "any"'],
     ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
     ['4. Player Count', 'How many players should be on each team? Max 5.'],

@@ -1,5 +1,5 @@
 const CONSTANTS = require('../constants')
-const chrono = require('chrono-node')
+const moment = require('moment-timezone')
 
 module.exports = exports = {
   name: 'matchCreation',
@@ -23,7 +23,13 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
   const content = userMessage.content.toLowerCase()
   switch (matchRecord.step) {
     case 0: {
-      const date = chrono.parseDate(`${userMessage.content} ${process.env.TIME_ZONE}`, new Date(), { forwardDate: true })
+      const dateString = userMessage.content.split(' ')
+      if (dateString.length === 2) {
+        const actualDate = moment().tz(process.env.TIME_ZONE || 'America/Los_Angeles').format('YYYY-MM-DD')
+        dateString.push(actualDate)
+      }
+
+      const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE || 'America/Los_Angeles').toDate()
       if (isNaN(date)) return userMessage.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchRecord.creationInformation.date = date
       break
