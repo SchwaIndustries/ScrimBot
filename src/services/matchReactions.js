@@ -24,7 +24,7 @@ const addOldMessagesToCache = async (GLOBALS) => {
 
     try {
       const messageChannel = await GLOBALS.client.channels.fetch(match.message.channel)
-      messageChannel.messages.fetch(match.message.id)
+      await messageChannel.messages.fetch(match.message.id)
     } catch (error) {} // The only errors this really gives is when the bot no longer has access to channels
   })
 }
