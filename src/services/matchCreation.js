@@ -1,4 +1,5 @@
 const CONSTANTS = require('../constants')
+const moment = require('moment-timezone')
 const chrono = require('chrono-node')
 
 module.exports = exports = {
@@ -23,7 +24,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
   const content = userMessage.content.toLowerCase()
   switch (matchRecord.step) {
     case 0: {
-      const date = chrono.parseDate(`${userMessage.content} ${process.env.TIME_ZONE}`, new Date(), { forwardDate: true })
+      const date = chrono.parseDate(`${userMessage.content} ${moment.tz.zone(process.env.TIME_ZONE).abbr(Date.now())}`)
       if (isNaN(date)) return userMessage.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchRecord.creationInformation.date = date
       break

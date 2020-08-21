@@ -107,6 +107,7 @@ dist
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+.vscode/launch.json
 
 # yarn v2
 .yarn/cache
@@ -114,7 +115,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-# Firebase
-# *firebase-adminsdk*.json
-.vscode/launch.json
