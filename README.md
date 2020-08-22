@@ -60,4 +60,4 @@ If both are present, `GOOGLE_APPLICATION_CREDENTIALS` will be preferred.
 
 7. Run `npm start` and the bot should be online!
 
-8. You can add yourself as a bot admin by creating a collection in the database named `botAdmins`. Add a document that has your Discord ID as the document ID. You can add as many documents as you want, and all of those people will be recognized as bot admins. These documents do not need any data inside.
+8. You can add yourself as a bot admin by modifying your user entry in the database. In the `users` collection, find your user ID and add a field named `admin` with the boolean value of `true`. This will allow you to access certain bot admin commands.

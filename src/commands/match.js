@@ -63,9 +63,7 @@ const start = async (message, GLOBALS) => {
   if (matchInformation.status === 'scored') return message.reply('This match has already been completed.')
   matchInformation = matchInformation.data()
 
-  const adminUser = await GLOBALS.db.collection('botAdmins').doc(message.author.id).get()
-
-  if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to start the match.')
+  if (await GLOBALS.userIsAdmin(message.author.id) === false && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to start the match.')
 
   if (matchInformation.players.a.length === 0 || matchInformation.players.b.length === 0) return message.reply('There are not enough players in the match!')
 
@@ -152,9 +150,7 @@ const score = async (message, GLOBALS) => {
   if (matchInformation.status === 'completed') return message.reply('This match has already been scored. Please ask a bot admin to change the score in the database if changes are required.')
   matchInformation = matchInformation.data()
 
-  const adminUser = await GLOBALS.db.collection('botAdmins').doc(message.author.id).get()
-
-  if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to score the match.')
+  if (await GLOBALS.userIsAdmin(message.author.id) === false && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to score the match.')
 
   if (message.guild.me.hasPermission('MANAGE_CHANNELS')) {
     GLOBALS.client.channels.fetch(matchInformation.teamAVoiceChannel).then(c => c.delete())
@@ -216,9 +212,7 @@ const cancel = async (message, GLOBALS) => {
   if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
   matchInformation = matchInformation.data()
 
-  const adminUser = await GLOBALS.db.collection('botAdmins').doc(message.author.id).get()
-
-  if (!adminUser.exists && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to cancel the match.')
+  if (await GLOBALS.userIsAdmin(message.author.id) === false && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to cancel the match.')
 
   if (matchInformation.status === 'scored') return message.reply('This match has already been scored.')
 

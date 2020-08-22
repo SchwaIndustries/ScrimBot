@@ -3,9 +3,7 @@ module.exports = exports = {
   usage: '',
   enabled: true,
   process: async (message, GLOBALS) => {
-    const existingRecord = await GLOBALS.db.collection('botAdmins').doc(message.author.id).get()
-      .catch(console.error)
-    if (!existingRecord.exists) return message.reply('This command can only be executed by bot admins.')
+    if (await GLOBALS.userIsAdmin(message.author.id) === false) return message.reply('This command can only be executed by bot admins.')
     const embed = new GLOBALS.Embed()
       .setTitle('Shutdown!')
       .setDescription('Adios!')
