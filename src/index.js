@@ -135,6 +135,15 @@ const GLOBALS = {
     const userData = await db.collection('users').doc(userId).get()
     if (!userData.exists) return false
     return userData.get('admin') === true
+  },
+  /**
+   * Checks whether a specified user is registered with the bot
+   * @param {String} userId User ID to check
+   */
+  userIsRegistered: async userId => {
+    const userData = await db.collection('users').doc(userId).get()
+    if (!userData.exists) return false
+    else return userData
   }
 }
 
