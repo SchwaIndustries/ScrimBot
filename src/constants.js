@@ -71,7 +71,7 @@ module.exports = exports = {
 
   GAME_MODES: ['standard', 'spike rush', 'deathmatch'],
 
-  AFFIRMATIVE_WORDS: ['yes', 'yeah', 'sure', 'true', '1', 'one', 'si', 'yea', 'ok', 'okay', 'mhm', 'k', 'yah', 'on', 'why not', 'alright', 'aight'],
+  AFFIRMATIVE_WORDS: ['yes', 'yeah', 'sure', 'true', '1', 'one', 'si', 'yea', 'ok', 'okay', 'mhm', 'k', 'yah', 'on', 'why not', 'alright', 'aight', 'affirmative'],
 
   userRegistrationSteps: [
     ['1. Valorant Username', 'What is your FULL Valorant username? (including tag, e.g. `Username#NA1`)'],
