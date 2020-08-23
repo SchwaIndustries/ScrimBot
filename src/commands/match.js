@@ -229,7 +229,10 @@ const cancel = async (message, GLOBALS) => {
     .setTitle('Match Canceled')
     .setDescription('Match with ID `' + matchID + '` has been canceled. Thanks for using ScrimBot, to create a new match type `v!match create`')
     .setFooter('This message will self-destruct in 30 seconds.')
-  message.reply(embed).then(msg => msg.delete({ timeout: 30000 }))
+  message.reply(embed).then(msg => {
+    msg.delete({ timeout: 30000 })
+    message.delete({ timeout: 30000 })
+  })
 
   const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
   const botMessage = await botMessageChannel.messages.fetch(matchID)
