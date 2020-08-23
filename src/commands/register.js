@@ -38,5 +38,9 @@ module.exports = exports = {
         }) // add user to the list of users who are currently registering, and set their progress to 0 (none)
         if (message.guild) message.reply('Check your DMs!')
       })
+      .catch(error => {
+        if (error.code === 50007) message.reply('Please enable DMs from server members so that we can send you your registration message!')
+        else console.error(error)
+      })
   }
 }

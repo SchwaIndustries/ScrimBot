@@ -97,7 +97,16 @@ const GLOBALS = {
   MatchEmbed: MatchEmbed,
   db: db,
   activeUserRegistration: new Discord.Collection(),
-  activeMatchCreation: new Discord.Collection()
+  activeMatchCreation: new Discord.Collection(),
+  /**
+   * Checks whether a specified user is a bot admin
+   * @param {String} userId User ID to check
+   */
+  userIsAdmin: async userId => {
+    const userData = await db.collection('users').doc(userId).get()
+    if (!userData.exists) return false
+    return userData.get('admin') === true
+  }
 }
 
 /* eslint-enable indent */
