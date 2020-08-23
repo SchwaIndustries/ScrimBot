@@ -1,0 +1,35 @@
+{
+  "name": "ScrimBot",
+  "description": " A Discord bot for organizing Valorant custom games.",
+  "repository": "https://github.com/SchwaIndustries/ScrimBot",
+  "logo": "https://cdn.discordapp.com/avatars/715030981894995998/5cfd005742790ca9b4940f27c76bdd80.png?size=512",
+  "env": {
+    "TOKEN": {
+      "description": "Discord Bot Token (https://discord.com/developers/applications)"
+    },
+    "TIME_ZONE": {
+      "description": "Desired time zone (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)",
+      "required": false
+    },
+    "PREFIX": {
+      "description": "Desired bot prefix",
+      "required": false
+    },
+    "FIR_PROJID": {
+      "description": "Firebase project ID"
+    },
+    "FIR_CLIENTID": {
+      "description": "Firebase client ID"
+    },
+    "FIR_PRIVATEKEY_ID": {
+      "description": "Firebase private key ID"
+    },
+    "FIR_PRIVATEKEY": {
+      "description": "Firebase private key"
+    },
+    "DOMAIN": {
+      "description": "Heroku domain (to keep bot alive when using free dynos)",
+      "required": false
+    }
+  }
+}

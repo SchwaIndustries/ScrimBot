@@ -13,6 +13,8 @@ _ScrimBot is based off [Mountainz](https://github.com/Kalissaac/Mountainz)._
 
 ## Running this yourself
 
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
 ### Requirements:
 1. Firebase Project (https://console.firebase.google.com/)
 2. Discord Bot Token (https://discord.com/developers/applications)
