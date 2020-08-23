@@ -72,8 +72,7 @@ class ScrimBotEmbed extends Discord.MessageEmbed {
 }
 
 class MatchEmbed extends ScrimBotEmbed {
-  constructor (matchData, specialColor) {
-    super(specialColor)
+  async setMatchData (matchData) {
     this.setTitle('Match Information')
     this.setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and, if enabled, react with 🇸 to be a spectator.')
     this.setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchData.map])
@@ -87,6 +86,36 @@ class MatchEmbed extends ScrimBotEmbed {
     this.addField('Team A', 'None', true)
     this.addField('Team B', 'None', true)
     this.addField('Spectators', matchData.spectators instanceof Array ? 'None' : 'Not allowed', true)
+
+    if (matchData.players.a.length > 0) {
+      this.fields[6].value = ''
+      for (const playerRef of matchData.players.a) {
+        let playerDoc = await playerRef.get()
+        playerDoc = playerDoc.data()
+        this.fields[6].value += `\n• ${playerDoc.valorantUsername}`
+      }
+    }
+    if (matchData.players.b.length > 0) {
+      this.fields[7].value = ''
+      for (const playerRef of matchData.players.b) {
+        let playerDoc = await playerRef.get()
+        playerDoc = playerDoc.data()
+        this.fields[7].value += `\n• ${playerDoc.valorantUsername}`
+      }
+    }
+    if (matchData.spectators instanceof Array && matchData.spectators.length > 0) {
+      this.fields[8].value = ''
+      for (const playerRef of matchData.spectators) {
+        let playerDoc = await playerRef.get()
+        playerDoc = playerDoc.data()
+        this.fields[8].value += `\n• ${playerDoc.valorantUsername}`
+      }
+    }
+  }
+
+  constructor (matchData, specialColor) {
+    super(specialColor)
+    this.setMatchData(matchData)
   }
 }
 
