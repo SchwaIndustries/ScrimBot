@@ -20,8 +20,7 @@ module.exports = exports = {
 
 const create = async (message, GLOBALS) => {
   if (!message.guild) return message.reply('This command can only be run in a server!')
-  const playerInformation = await GLOBALS.db.collection('users').doc(message.author.id).get()
-  if (!playerInformation.exists) {
+  if (await GLOBALS.userIsRegistered(message.author.id) === false) {
     message.reply('You are not registered with ScrimBot. Please type `v!register` before creating a match!')
     return
   }
