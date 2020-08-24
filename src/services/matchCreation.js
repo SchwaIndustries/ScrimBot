@@ -25,7 +25,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
   switch (matchRecord.step) {
     case 0: {
       const date = chrono.parseDate(`${userMessage.content} ${moment.tz.zone(process.env.TIME_ZONE).abbr(Date.now())}`)
-      if (isNaN(date)) return userMessage.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
+      if (!date) return userMessage.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchRecord.creationInformation.date = date
       break
     }
@@ -116,9 +116,9 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
 
     const matchEmbed = new GLOBALS.Embed()
       .setTitle('Match Information')
-      .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and, if enabled, react with 🇸 to be a spectator.')
+      .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team' + (matchRecord.creationInformation.spectators instanceof Array ? ', and react with 🇸 to be a spectator.' : '.'))
       .setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchRecord.creationInformation.map])
-      .setTimestamp(new Date(matchRecord.creationInformation.date))
+      .setTimestamp(matchRecord.creationInformation.date)
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .addField('Status', CONSTANTS.capitalizeFirstLetter(matchRecord.creationInformation.status), true)
       .addField('Game Mode', CONSTANTS.capitalizeFirstLetter(matchRecord.creationInformation.mode), true)
@@ -129,13 +129,12 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       .addField('Team A', 'None', true)
       .addField('Team B', 'None', true)
       .addField('Spectators', matchRecord.creationInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
-    matchRecord.botMessage.channel.send(`<@&${guildInformation.notificationRole}> a match has been created!`, matchEmbed)
+    matchRecord.botMessage.channel.send(`A match has been created for ${moment().to(matchRecord.creationInformation.date)}! <@&${guildInformation.notificationRole}>`, matchEmbed)
       .then(async message => {
         message.react('🇦')
         message.react('🇧')
         if (matchRecord.creationInformation.spectators) message.react('🇸')
         matchEmbed.setFooter('match id: ' + message.id)
-        console.log('match id: ' + message.id)
         message.edit(matchEmbed)
         matchRecord.userMessage.delete()
         matchRecord.creationInformation.message = {
