@@ -225,8 +225,8 @@ const cancel = async (message, GLOBALS) => {
   matchInformationRef.update(matchInformation)
 
   const embed = new GLOBALS.Embed()
-    .setTitle('Match Canceled')
-    .setDescription('Match with ID `' + matchID + '` has been canceled. Thanks for using ScrimBot, to create a new match type `v!match create`')
+    .setTitle('Match Cancelled')
+    .setDescription('Match with ID `' + matchID + '` has been cancelled. Thanks for using ScrimBot, to create a new match type `v!match create`')
     .setFooter('This message will self-destruct in 30 seconds.')
   message.reply(embed).then(msg => {
     msg.delete({ timeout: 30000 })
@@ -237,7 +237,7 @@ const cancel = async (message, GLOBALS) => {
   const botMessage = await botMessageChannel.messages.fetch(matchID)
   const botMessageEmbed = botMessage.embeds[0]
   botMessageEmbed.fields[0].value = CONSTANTS.capitalizeFirstLetter(matchInformation.status)
-  botMessage.edit('The match has been canceled!', botMessageEmbed)
+  botMessage.edit('The match has been cancelled!', botMessageEmbed)
   if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 }
 
