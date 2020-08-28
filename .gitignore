@@ -106,9 +106,7 @@ dist
 .tern-port
 
 # Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-.vscode/launch.json
-.vscode/settings.json
+.vscode/
 
 # yarn v2
 .yarn/cache
