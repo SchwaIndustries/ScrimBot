@@ -23,8 +23,8 @@ const addOldMessagesToCache = async (GLOBALS) => {
     const match = doc.data()
 
     try {
-      const messageChannel = await GLOBALS.client.channels.fetch(match.message.channel)
-      await messageChannel.messages.fetch(match.message.id)
+      const messageChannel = await GLOBALS.client.channels.fetch(match.message.channel) // grab channel of match message
+      await messageChannel.messages.fetch(match.message.id) // grab the match message itself, so that when people react the bot is able to see it
     } catch (error) {} // The only errors this really gives is when the bot no longer has access to channels
   })
 }
@@ -34,7 +34,7 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
   let matchInformation = await matchInformationRef.get()
   if (!matchInformation.exists) return
   matchInformation = matchInformation.data()
-  if (matchInformation.status !== 'created') return
+  if (matchInformation.status !== 'created') return // only pay attention to matches that are still in the creation phase
 
   const playerInformationRef = GLOBALS.db.collection('users').doc(user.id)
   let playerInformation = await playerInformationRef.get()
@@ -54,7 +54,7 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
   const messageEmbed = reaction.message.embeds[0]
 
   switch (reaction.emoji.name) {
-    case '🇦':
+    case '🇦': // team a
       if (matchInformation.players.a.length >= matchInformation.maxTeamCount) {
         reaction.message.channel.send(`<@${user.id}>, the selected team is full! Please choose a different one.`).then(msg => msg.delete({ timeout: 5000 }))
       }
@@ -67,7 +67,7 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
         matchInformation.players.a.push(playerInformationRef)
         break
       }
-    case '🇧':
+    case '🇧': // team b
       if (matchInformation.players.b.length >= matchInformation.maxTeamCount) {
         reaction.message.channel.send(`<@${user.id}>, the selected team is full! Please choose a different one.`).then(msg => msg.delete({ timeout: 5000 }))
       }
@@ -80,7 +80,7 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
         matchInformation.players.b.push(playerInformationRef)
         break
       }
-    case '🇸':
+    case '🇸': // spectators
       if (!matchInformation.spectators) {
         reaction.message.channel.send(`<@${user.id}>, this match does not allow spectators! Either join a team or ask the match creator to start a new one.`).then(msg => msg.delete({ timeout: 5000 }))
         reaction.users.remove(user.id)
@@ -92,8 +92,10 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
       }
   }
 
-  reaction.message.edit(messageEmbed)
-  matchInformationRef.update(matchInformation)
+  if (messageEmbed !== reaction.message.embeds[0]) { // only update information if something has changed
+    reaction.message.edit(messageEmbed)
+    matchInformationRef.update(matchInformation)
+  }
 }
 
 const removePlayerFromMatch = async (reaction, user, GLOBALS) => {
@@ -152,6 +154,8 @@ const removePlayerFromMatch = async (reaction, user, GLOBALS) => {
       break
   }
 
-  reaction.message.edit(messageEmbed)
-  matchInformationRef.update(matchInformation)
+  if (messageEmbed !== reaction.message.embeds[0]) { // only update information if something has changed
+    reaction.message.edit(messageEmbed)
+    matchInformationRef.update(matchInformation)
+  }
 }
