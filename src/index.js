@@ -73,8 +73,9 @@ class ScrimBotEmbed extends Discord.MessageEmbed {
 
 class MatchEmbed extends ScrimBotEmbed {
   async setMatchData (matchData) {
+    const matchCreator = await client.users.fetch(matchData.creator)
     this.setTitle('Match Information')
-    this.setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and, if enabled, react with 🇸 to be a spectator.')
+    this.setAuthor(matchCreator.tag, matchCreator.avatarURL())
     this.setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchData.map])
     this.setTimestamp(new Date(matchData.date))
     this.addField('Status', CONSTANTS.capitalizeFirstLetter(matchData.status), true)
@@ -110,6 +111,12 @@ class MatchEmbed extends ScrimBotEmbed {
         playerDoc = playerDoc.data()
         this.fields[8].value += `\n• ${playerDoc.valorantUsername}`
       }
+    }
+
+    if (matchData.status === 'completed') {
+      this.addField('Final Score', `${matchData.score[0]}-${matchData.score[1]}`)
+    } else {
+      this.setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team' + (matchData.spectators instanceof Array ? ', and react with 🇸 to be a spectator.' : '.'))
     }
   }
 
