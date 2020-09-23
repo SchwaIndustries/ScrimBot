@@ -114,11 +114,26 @@ const start = async (message, GLOBALS) => {
         user: matchInformation.players.b.map(p => p.id)
       })
 
+      const teamAEmbed = new GLOBALS.Embed()
+      teamAEmbed.setTitle('Match Starting!')
+      teamAEmbed.setDescription(`Your match in ${message.guild.name} is starting now! Click [here](${(await teamAVoiceChannel.createInvite({ maxAge: 3600 })).url}) to join the voice channel.`)
       teamAMembers.each(player => {
-        player.voice.setChannel(teamAVoiceChannel).catch()
+        player.voice.setChannel(teamAVoiceChannel)
+          .catch(_ => {
+            player.createDM()
+            player.send(teamAEmbed)
+          })
       })
+
+      const teamBEmbed = new GLOBALS.Embed()
+      teamBEmbed.setTitle('Match Starting!')
+      teamBEmbed.setDescription(`Your match in ${message.guild.name} is starting now! Click [here](${(await teamBVoiceChannel.createInvite({ maxAge: 3600 })).url}) to join the voice channel.`)
       teamBMembers.each(player => {
-        player.voice.setChannel(teamBVoiceChannel).catch()
+        player.voice.setChannel(teamBVoiceChannel)
+          .catch(_ => {
+            player.createDM()
+            player.send(teamBEmbed)
+          })
       })
     }
   }
