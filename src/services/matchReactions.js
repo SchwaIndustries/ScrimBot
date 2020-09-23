@@ -6,10 +6,12 @@ module.exports = exports = {
 
     GLOBALS.client.on('messageReactionAdd', (reaction, user) => {
       if (user.bot) return // ignore messages from the bot itself or other bots
+      if (['🇦', '🇧', '🇸'].includes(reaction.emoji.name) === false) return // ignore reactions that are not team reactions
       addPlayerToMatch(reaction, user, GLOBALS)
     })
     GLOBALS.client.on('messageReactionRemove', async (reaction, user) => {
       if (user.bot) return // ignore messages from the bot itself or other bots
+      if (['🇦', '🇧', '🇸'].includes(reaction.emoji.name) === false) return // ignore reactions that are not team reactions
       removePlayerFromMatch(reaction, user, GLOBALS)
     })
   }
