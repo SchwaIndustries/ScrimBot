@@ -39,7 +39,7 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
   const playerInformationRef = GLOBALS.db.collection('users').doc(user.id)
   let playerInformation = await playerInformationRef.get()
   if (!playerInformation.exists) {
-    reaction.message.channel.send(`<@${user.id}>, you are not registered with ScrimBot. Please type \`v!register\` before reacting!`).then(msg => msg.delete({ timeout: 5000 }))
+    reaction.message.channel.send(`${user}, you are not registered with ScrimBot. Please type \`v!register\` before reacting!`).then(msg => msg.delete({ timeout: 5000 }))
     reaction.users.remove(user.id)
     return
   }
@@ -56,10 +56,10 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
   switch (reaction.emoji.name) {
     case '🇦': // team a
       if (matchInformation.players.a.length >= matchInformation.maxTeamCount) {
-        reaction.message.channel.send(`<@${user.id}>, the selected team is full! Please choose a different one.`).then(msg => msg.delete({ timeout: 5000 }))
+        reaction.message.channel.send(`${user}, the selected team is full! Please choose a different one.`).then(msg => msg.delete({ timeout: 5000 }))
       }
       if (playerInformation.valorantRank < matchInformation.rankMinimum || playerInformation.valorantRank > matchInformation.rankMaximum) {
-        reaction.message.channel.send(`<@${user.id}>, you do not meet the match rank requirements! Please try a different one or ask the match creator to adjust them.`).then(msg => msg.delete({ timeout: 5000 }))
+        reaction.message.channel.send(`${user}, you do not meet the match rank requirements! Please try a different one or ask the match creator to adjust them.`).then(msg => msg.delete({ timeout: 5000 }))
         reaction.users.remove(user.id)
         return
       } else {
@@ -69,10 +69,10 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
       }
     case '🇧': // team b
       if (matchInformation.players.b.length >= matchInformation.maxTeamCount) {
-        reaction.message.channel.send(`<@${user.id}>, the selected team is full! Please choose a different one.`).then(msg => msg.delete({ timeout: 5000 }))
+        reaction.message.channel.send(`${user}, the selected team is full! Please choose a different one.`).then(msg => msg.delete({ timeout: 5000 }))
       }
       if (playerInformation.valorantRank < matchInformation.rankMinimum || playerInformation.valorantRank > matchInformation.rankMaximum) {
-        reaction.message.channel.send(`<@${user.id}>, you do not meet the match rank requirements! Please try a different one or ask the match creator to adjust them.`).then(msg => msg.delete({ timeout: 5000 }))
+        reaction.message.channel.send(`${user}, you do not meet the match rank requirements! Please try a different one or ask the match creator to adjust them.`).then(msg => msg.delete({ timeout: 5000 }))
         reaction.users.remove(user.id)
         return
       } else {
@@ -82,7 +82,7 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
       }
     case '🇸': // spectators
       if (!matchInformation.spectators) {
-        reaction.message.channel.send(`<@${user.id}>, this match does not allow spectators! Either join a team or ask the match creator to start a new one.`).then(msg => msg.delete({ timeout: 5000 }))
+        reaction.message.channel.send(`${user}, this match does not allow spectators! Either join a team or ask the match creator to start a new one.`).then(msg => msg.delete({ timeout: 5000 }))
         reaction.users.remove(user.id)
         return
       } else {
