@@ -31,13 +31,7 @@ const addOldMessagesToCache = async (GLOBALS) => {
   })
 }
 
-const addPlayerToMatch = async (reaction, user, GLOBALS) => {
-  const matchInformationRef = GLOBALS.db.collection('matches').doc(reaction.message.id)
-  let matchInformation = await matchInformationRef.get()
-  if (!matchInformation.exists) return
-  matchInformation = matchInformation.data()
-  if (matchInformation.status !== 'created') return // only pay attention to matches that are still in the creation phase
-
+const _addPlayerToMatch = async (reaction, user, GLOBALS, matchInformation) => {
   const playerInformationRef = GLOBALS.db.collection('users').doc(user.id)
   let playerInformation = await playerInformationRef.get()
   if (!playerInformation.exists) {
@@ -47,10 +41,30 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
   }
   playerInformation = playerInformation.data()
 
-  if (matchInformation.players.a.find(e => e.id === playerInformationRef.id) || matchInformation.players.b.find(e => e.id === playerInformationRef.id) || (matchInformation.spectators && matchInformation.spectators.find(e => e.id === playerInformationRef.id))) {
-    reaction.message.channel.send(`<@${user.id}>, you have already joined a team! Please remove that reaction before joining a new one.`).then(msg => msg.delete({ timeout: 5000 }))
-    reaction.users.remove(user.id)
-    return
+  if (matchInformation.players.a.find(e => e.id === playerInformationRef.id)) {
+    if (!reaction.message.guild.me.hasPermission('MANAGE_MESSAGES')) {
+      reaction.message.channel.send(`${user}, you have already joined a team! Please remove that reaction before joining a new one.`).then(msg => msg.delete({ timeout: 5000 }))
+      reaction.users.remove(user.id)
+      return
+    } else {
+      matchInformation = await _removePlayerFromMatch(await reaction.message.reactions.cache.get('🇦'), user, GLOBALS, matchInformation)
+    }
+  } else if (matchInformation.players.b.find(e => e.id === playerInformationRef.id)) {
+    if (!reaction.message.guild.me.hasPermission('MANAGE_MESSAGES')) {
+      reaction.message.channel.send(`${user}, you have already joined a team! Please remove that reaction before joining a new one.`).then(msg => msg.delete({ timeout: 5000 }))
+      reaction.users.remove(user.id)
+      return
+    } else {
+      matchInformation = await _removePlayerFromMatch(await reaction.message.reactions.cache.get('🇧'), user, GLOBALS, matchInformation)
+    }
+  } else if (matchInformation.spectators && matchInformation.spectators.find(e => e.id === playerInformationRef.id)) {
+    if (!reaction.message.guild.me.hasPermission('MANAGE_MESSAGES')) {
+      reaction.message.channel.send(`${user}, you have already joined a team! Please remove that reaction before joining a new one.`).then(msg => msg.delete({ timeout: 5000 }))
+      reaction.users.remove(user.id)
+      return
+    } else {
+      matchInformation = await _removePlayerFromMatch(await reaction.message.reactions.cache.get('🇸'), user, GLOBALS, matchInformation)
+    }
   }
 
   const messageEmbed = reaction.message.embeds[0]
@@ -94,19 +108,21 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
       }
   }
 
-  if (messageEmbed !== reaction.message.embeds[0]) { // only update information if something has changed
-    reaction.message.edit(messageEmbed)
-    matchInformationRef.update(matchInformation)
-  }
+  reaction.message.edit(messageEmbed)
+  return matchInformation
 }
 
-const removePlayerFromMatch = async (reaction, user, GLOBALS) => {
+const addPlayerToMatch = async (reaction, user, GLOBALS) => {
   const matchInformationRef = GLOBALS.db.collection('matches').doc(reaction.message.id)
   let matchInformation = await matchInformationRef.get()
   if (!matchInformation.exists) return
   matchInformation = matchInformation.data()
-  if (matchInformation.status !== 'created') return
+  if (matchInformation.status !== 'created') return // only pay attention to matches that are still in the creation phase
+  matchInformation = await _addPlayerToMatch(reaction, user, GLOBALS, matchInformation)
+  matchInformationRef.update(matchInformation)
+}
 
+const _removePlayerFromMatch = async (reaction, user, GLOBALS, matchInformation) => {
   const playerInformationRef = GLOBALS.db.collection('users').doc(user.id)
   let playerInformation = await playerInformationRef.get()
   if (!playerInformation.exists) return
@@ -156,8 +172,17 @@ const removePlayerFromMatch = async (reaction, user, GLOBALS) => {
       break
   }
 
-  if (messageEmbed !== reaction.message.embeds[0]) { // only update information if something has changed
-    reaction.message.edit(messageEmbed)
-    matchInformationRef.update(matchInformation)
-  }
+  reaction.users.remove(user.id)
+  reaction.message.edit(messageEmbed)
+  return matchInformation
+}
+
+const removePlayerFromMatch = async (reaction, user, GLOBALS) => {
+  const matchInformationRef = GLOBALS.db.collection('matches').doc(reaction.message.id)
+  let matchInformation = await matchInformationRef.get()
+  if (!matchInformation.exists) return
+  matchInformation = matchInformation.data()
+  if (matchInformation.status !== 'created') return
+  matchInformation = await _removePlayerFromMatch(reaction, user, GLOBALS, matchInformation)
+  matchInformationRef.update(matchInformation)
 }
