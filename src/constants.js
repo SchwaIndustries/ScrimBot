@@ -73,6 +73,8 @@ module.exports = exports = {
 
   AFFIRMATIVE_WORDS: ['yes', 'yeah', 'sure', 'true', '1', 'one', 'si', 'yea', 'ok', 'okay', 'mhm', 'k', 'yah', 'on', 'why not', 'alright', 'aight', 'affirmative'],
 
+  MAX_TEAM_COUNT: 5, // maximum amount of players allowed on one team
+
   userRegistrationSteps: [
     ['1. Valorant Username', 'What is your FULL Valorant username? (including tag, e.g. `Username#NA1`)'],
     ['2. Valorant Rank', 'What rank are you in Valorant? If you don\'t have a rank, go with "Iron 1"'],
