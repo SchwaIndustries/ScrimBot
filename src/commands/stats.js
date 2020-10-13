@@ -2,6 +2,10 @@ module.exports = exports = {
   name: 'stats', // command name
   usage: '<discord username>', // arguments for the command
   enabled: false, // whether the command should be loaded
+  /**
+   * @param {import('discord.js').Message} message
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (message, GLOBALS) => {
     let userID = message.content.split(' ')[2]
 

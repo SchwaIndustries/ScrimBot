@@ -22,12 +22,12 @@
     "discord.js": "^12.3.1",
     "dotenv": "^8.2.0",
     "firebase-admin": "^9.2.0",
-    "moment": "^2.29.0",
+    "moment": "^2.29.1",
     "moment-timezone": "^0.5.31"
   },
   "devDependencies": {
-    "heroku": "^7.43.2",
-    "nodemon": "^2.0.4",
+    "heroku": "^7.46.0",
+    "nodemon": "^2.0.5",
     "standard": "^14.3.4"
   },
   "engines": {

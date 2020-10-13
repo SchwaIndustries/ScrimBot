@@ -126,6 +126,15 @@ class MatchEmbed extends ScrimBotEmbed {
   }
 }
 
+/**
+ * @typedef {Object} GLOBALS
+ * @property {Discord.Client} client
+ * @property {ScrimBotEmbed} Embed
+ * @property {MatchEmbed} MatchEmbed
+ * @property {admin.firestore.Firestore} db
+ * @property {Discord.Collection} activeUserRegistration
+ */
+
 // Global variables accessible from all files
 const GLOBALS = {
   client: client,

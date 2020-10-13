@@ -4,6 +4,10 @@ module.exports = exports = {
   name: 'register',
   usage: '',
   enabled: true,
+  /**
+   * @param {import('discord.js').Message} message
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (message, GLOBALS) => {
     const existingRecord = await GLOBALS.db.collection('users').doc(message.author.id).get()
       .catch(console.error)
