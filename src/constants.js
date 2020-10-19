@@ -61,7 +61,7 @@ module.exports = exports = {
     99: 'ANY MAX'
   },
 
-  MAPS: ['split', 'bind', 'haven', 'ascent'],
+  MAPS: ['split', 'bind', 'haven', 'ascent', 'icebox'],
   MAPS_THUMBNAILS: {
     split: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt2caea7a88362d6aa/5ecd64b0817e574fa1dcc162/split-minimap-2.png',
     bind: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/bltad4274632c983531/5ecd64d04d187c101f3f2486/bind-minimap-2.png',
@@ -87,7 +87,7 @@ module.exports = exports = {
     ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
     ['4. Player Count', 'How many players should be on each team? Max 5.'],
     ['5. Spectators', 'Are spectators allowed?'],
-    ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent. If any, type "any"'],
+    ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent, 5 For Icebox. If any, type "any"'],
     ['7. Game Mode', 'What game mode would you like? Options are "standard", "spike rush", and "deathmatch".']
   ],
 
