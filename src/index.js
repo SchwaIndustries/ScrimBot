@@ -133,14 +133,16 @@ class MatchEmbed extends ScrimBotEmbed {
  * @property {MatchEmbed} MatchEmbed
  * @property {admin.firestore.Firestore} db
  * @property {Discord.Collection} activeUserRegistration
+ * @property {function} userIsAdmin
+ * @property {function} userIsRegistered
  */
 
 // Global variables accessible from all files
 const GLOBALS = {
-  client: client,
+  client,
   Embed: ScrimBotEmbed,
   MatchEmbed: MatchEmbed,
-  db: db,
+  db,
   activeUserRegistration: new Discord.Collection(),
   activeMatchCreation: new Discord.Collection(),
   /**
@@ -175,8 +177,8 @@ client.on('ready', () => {
 })
 
 /**
- * Reads the command files from src/commands and
- * adds them to the commands collection which
+ * Reads the command files from `src/commands` and
+ * adds them to the `client.commands` collection which
  * allows the bot to use them
  */
 function loadCommands () {
@@ -188,8 +190,8 @@ function loadCommands () {
 }
 
 /**
- * Reads the service files from src/services and
- * adds them to the services collection.
+ * Reads the service files from `src/services` and
+ * adds them to the `client.services` collection.
  * The bot then runs all of the services at startup.
  * This is useful for certain things that need to be run
  * independently of commands.
@@ -227,16 +229,17 @@ client.on('message', async message => {
 if (process.env.TOKEN) {
   client.login(process.env.TOKEN)
 } else {
-  console.error('Bot token not found! Ensure environment variable TOKEN contains the bot token. If you don\'t understand this, go read the documentation.')
+  console.error('Bot token not found! Ensure environment variable TOKEN contains the bot token. Take a look at README.md for more information.')
 }
 
 // /////////////////////////////////////////////////////////////////////////// //
 // MARK: - Error handling
 
+if (process.env.NODE_ENV === 'development') client.on('debug', console.log)
 client.on('error', console.error)
 client.on('shardError', console.error)
-client.on('warn', console.error)
+client.on('warn', console.warn)
 
 process.on('uncaughtException', console.error)
 process.on('unhandledRejection', console.error)
-process.on('warning', console.error)
+process.on('warning', console.warn)
