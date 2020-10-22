@@ -26,9 +26,9 @@
     "moment-timezone": "^0.5.31"
   },
   "devDependencies": {
-    "heroku": "^7.46.0",
-    "nodemon": "^2.0.5",
-    "standard": "^14.3.4"
+    "heroku": "^7.46.1",
+    "nodemon": "^2.0.6",
+    "standard": "^15.0.0"
   },
   "engines": {
     "node": "12.x"
