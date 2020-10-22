@@ -37,6 +37,7 @@ const Discord = require('discord.js')
     }
   })
 require('dotenv').config()
+verifyConfigurationIntegrity()
 const admin = require('firebase-admin')
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS) admin.initializeApp()
   else {
@@ -59,10 +60,11 @@ const admin = require('firebase-admin')
   }
   const db = admin.firestore()
 // ScrimBot specific properties
+/**
+ * @type {Map<string, object>}
+ */
 client.commands = new Map() // Stores all bot commands
 client.services = new Map() // Stores all bot services (functions that run at start)
-if (!process.env.TIME_ZONE) process.env.TIME_ZONE = 'America/Los_Angeles'
-if (!process.env.PREFIX) process.env.PREFIX = 'v!'
 
 class ScrimBotEmbed extends Discord.MessageEmbed {
   constructor (specialColor) {
@@ -226,16 +228,28 @@ client.on('message', async message => {
 // /////////////////////////////////////////////////////////////////////////// //
 // MARK: - Login bot
 
-if (process.env.TOKEN) {
-  client.login(process.env.TOKEN)
-} else {
-  console.error('Bot token not found! Ensure environment variable TOKEN contains the bot token. Take a look at README.md for more information.')
-}
+client.login(process.env.TOKEN)
 
 // /////////////////////////////////////////////////////////////////////////// //
 // MARK: - Error handling
 
-if (process.env.NODE_ENV === 'development') client.on('debug', console.log)
+/**
+ * Make sure that environment variables
+ * contain all the neccessary information.
+ */
+function verifyConfigurationIntegrity () {
+  if (!process.env.TOKEN) throw new Error('Discord bot token not found! Ensure environment variable TOKEN contains the bot token. View README.md for more information')
+  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    const firebaseConfigs = ['FIR_PROJID', 'FIR_CLIENTID', 'FIR_PRIVATEKEY_ID', 'FIR_PRIVATEKEY']
+    firebaseConfigs.forEach(config => {
+      if (!process.env[config]) throw new Error('Firebase config ' + config + ' not found! View README.md for more information.')
+    })
+  }
+  if (!process.env.TIME_ZONE) process.env.TIME_ZONE = 'America/Los_Angeles'
+  if (!process.env.PREFIX) process.env.PREFIX = 'v!'
+}
+
+if (process.env.NODE_ENV === 'development') client.on('debug', console.info)
 client.on('error', console.error)
 client.on('shardError', console.error)
 client.on('warn', console.warn)
