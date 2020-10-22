@@ -62,7 +62,8 @@ const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
 
   switch (userRecord.step) {
     case 0:
-      userRecord.registrationInformation.valorantUsername = userMessage.content
+      if (userMessage.content.match(/\w{3,16}#\w{3,5}/)) userRecord.registrationInformation.valorantUsername = userMessage.content
+      else return userMessage.reply('Please give a valid username!').then(msg => msg.delete({ timeout: 5000 }))
       break
     case 1:
       if (!CONSTANTS.RANKS[userMessage.content.toUpperCase()]) {
