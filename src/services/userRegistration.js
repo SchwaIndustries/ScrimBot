@@ -3,6 +3,9 @@ const CONSTANTS = require('../constants')
 module.exports = exports = {
   name: 'userRegistration',
   enabled: true,
+  /**
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (GLOBALS) => {
     GLOBALS.client.on('message', async message => {
       if (message.author === GLOBALS.client.user || message.author.bot === true) return // ignore messages from the bot itself or other bots
@@ -16,6 +19,11 @@ module.exports = exports = {
   }
 }
 
+/**
+ * @param {import('discord.js').User} user
+ * @param {string} role
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const updateUserRoles = async (user, role, addRole, GLOBALS) => {
   const querySnapshot = await GLOBALS.db.collection('guilds').get().catch(console.error)
   querySnapshot.forEach(async documentSnapshot => {
@@ -45,6 +53,10 @@ const updateUserRankRoles = async (user, rank, GLOBALS) => {
   })
 }
 
+/**
+ * @param {import('discord.js').Message} userMessage
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
   if (userMessage.channel.type !== 'dm') return
 
@@ -91,6 +103,11 @@ const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
   }
 }
 
+/**
+ * @param {import('discord.js').MessageReaction} reaction
+ * @param {import('discord.js').User} user
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const cancelUserRegistration = async (reaction, user, GLOBALS) => {
   if (reaction.emoji.name === '❌') {
     const userRecord = GLOBALS.activeUserRegistration.get(user.id)

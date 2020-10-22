@@ -5,6 +5,9 @@ const chrono = require('chrono-node')
 module.exports = exports = {
   name: 'matchCreation',
   enabled: true,
+  /**
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (GLOBALS) => {
     GLOBALS.client.on('message', async message => {
       if (message.author === GLOBALS.client.user || message.author.bot === true) return // ignore messages from the bot itself or other bots

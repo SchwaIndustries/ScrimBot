@@ -1,6 +1,9 @@
 module.exports = exports = {
   name: 'guildAdd',
   enabled: true,
+  /**
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (GLOBALS) => {
     GLOBALS.client.on('guildCreate', guild => {
       const defaultChannel = (guild.systemChannel || guild.embedChannel || guild.channels.cache.first())

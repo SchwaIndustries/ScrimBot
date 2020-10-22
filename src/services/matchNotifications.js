@@ -1,6 +1,9 @@
 module.exports = exports = {
   name: 'matchNotifications',
   enabled: true,
+  /**
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (GLOBALS) => {
     GLOBALS.client.on('guildMemberAdd', async member => {
       const guildData = await GLOBALS.db.collection('guilds').doc(member.guild.id).get()

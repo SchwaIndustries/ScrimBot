@@ -1,6 +1,9 @@
 module.exports = exports = {
   name: 'matchReactions',
   enabled: true,
+  /**
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (GLOBALS) => {
     addOldMessagesToCache(GLOBALS)
 
@@ -17,6 +20,9 @@ module.exports = exports = {
   }
 }
 
+/**
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const addOldMessagesToCache = async (GLOBALS) => {
   const snapshot = await GLOBALS.db.collection('matches').where('status', '==', 'created').get()
   if (snapshot.empty) return // no open matches found
@@ -31,6 +37,11 @@ const addOldMessagesToCache = async (GLOBALS) => {
   })
 }
 
+/**
+ * @param {import('discord.js').MessageReaction} reaction
+ * @param {import('discord.js').User} user
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const _addPlayerToMatch = async (reaction, user, GLOBALS, matchInformation) => {
   const playerInformationRef = GLOBALS.db.collection('users').doc(user.id)
   let playerInformation = await playerInformationRef.get()
@@ -112,6 +123,11 @@ const _addPlayerToMatch = async (reaction, user, GLOBALS, matchInformation) => {
   return matchInformation
 }
 
+/**
+ * @param {import('discord.js').MessageReaction} reaction
+ * @param {import('discord.js').User} user
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const addPlayerToMatch = async (reaction, user, GLOBALS) => {
   const matchInformationRef = GLOBALS.db.collection('matches').doc(reaction.message.id)
   let matchInformation = await matchInformationRef.get()
@@ -122,6 +138,11 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
   matchInformationRef.update(matchInformation)
 }
 
+/**
+ * @param {import('discord.js').MessageReaction} reaction
+ * @param {import('discord.js').User} user
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const _removePlayerFromMatch = async (reaction, user, GLOBALS, matchInformation) => {
   const playerInformationRef = GLOBALS.db.collection('users').doc(user.id)
   let playerInformation = await playerInformationRef.get()
@@ -177,6 +198,11 @@ const _removePlayerFromMatch = async (reaction, user, GLOBALS, matchInformation)
   return matchInformation
 }
 
+/**
+ * @param {import('discord.js').MessageReaction} reaction
+ * @param {import('discord.js').User} user
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const removePlayerFromMatch = async (reaction, user, GLOBALS) => {
   const matchInformationRef = GLOBALS.db.collection('matches').doc(reaction.message.id)
   let matchInformation = await matchInformationRef.get()
