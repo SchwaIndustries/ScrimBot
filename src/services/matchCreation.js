@@ -59,8 +59,8 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
     case 3: {
       if (!Number(content)) {
         return userMessage.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
-      } else if (Number(content) > CONSTANTS.MAX_TEAM_COUNT) {
-        return userMessage.reply('that number exceeds the amount of players allowed on a team, which is ' + CONSTANTS.MAX_TEAM_COUNT).then(msg => msg.delete({ timeout: 5000 }))
+      } else if (Number(content) > CONSTANTS.MAX_TEAM_COUNT || Number(content) < 1) {
+        return userMessage.reply('that number does not fit the amount of players allowed on a team, which is ' + CONSTANTS.MAX_TEAM_COUNT).then(msg => msg.delete({ timeout: 5000 }))
       } else {
         matchRecord.creationInformation.maxTeamCount = Number(content)
         break
