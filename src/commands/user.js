@@ -111,7 +111,8 @@ const edit = async (message, GLOBALS) => {
 
   switch (editedProperty) {
     case 'username':
-      userInformation.valorantUsername = editedValue
+      if (editedValue.match(/\w{3,16}#\w{3,5}/)) userInformation.valorantUsername = editedValue
+      else return message.reply('Please give a valid username!').then(msg => msg.delete({ timeout: 5000 }))
       break
     case 'rank':
       if (!CONSTANTS.RANKS[editedValue.toUpperCase()]) {
