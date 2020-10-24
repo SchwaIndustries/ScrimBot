@@ -13,6 +13,10 @@ module.exports = exports = {
   name: 'server', // command name
   usage: '<add>', // arguments for the command
   enabled: true, // whether the command should be loaded
+  /**
+   * @param {import('discord.js').Message} message
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (message, GLOBALS) => {
     if (message.content.split(' ')[1] !== 'add') return
     if (!message.guild) return message.reply('This command can only be run in a server!')

@@ -6,6 +6,10 @@ module.exports = exports = {
   name: 'user',
   usage: '<info/edit>',
   enabled: true,
+  /**
+   * @param {import('discord.js').Message} message
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (message, GLOBALS) => {
     switch (message.content.split(' ')[1]) {
       case 'info': info(message, GLOBALS); break
@@ -56,6 +60,10 @@ const updateUserRankRoles = async (user, rank, GLOBALS) => {
   })
 }
 
+/**
+ * @param {import('discord.js').Message} message
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const info = async (message, GLOBALS) => {
   let userID = message.content.split(' ')[2]
 
@@ -84,6 +92,10 @@ const info = async (message, GLOBALS) => {
   message.reply(userEmbed)
 }
 
+/**
+ * @param {import('discord.js').Message} message
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const edit = async (message, GLOBALS) => {
   const attributes = message.content.split(' ')
   const editedProperty = attributes[2]
@@ -99,7 +111,8 @@ const edit = async (message, GLOBALS) => {
 
   switch (editedProperty) {
     case 'username':
-      userInformation.valorantUsername = editedValue
+      if (editedValue.match(/\w{3,16}#\w{3,5}/)) userInformation.valorantUsername = editedValue
+      else return message.reply('Please give a valid username!').then(msg => msg.delete({ timeout: 5000 }))
       break
     case 'rank':
       if (!CONSTANTS.RANKS[editedValue.toUpperCase()]) {

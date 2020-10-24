@@ -2,6 +2,10 @@
 
 [![Add ScrimBot to server](https://img.shields.io/static/v1?label=Add%20ScrimBot&message=to%20server&color=7289DA&logo=Discord&logoColor=white&style=flat-square)](https://discord.com/oauth2/authorize?client_id=715030981894995998&scope=bot&permissions=285355008)
 
+[![ScrimBot Support](https://img.shields.io/static/v1?label=ScrimBot%20Support&message=server&color=7289DA&logo=Discord&logoColor=white&style=flat-square)](https://discord.gg/hfFJxUG)
+
+
+
 
 ScrimBot is Discord bot meant to allow for the easy creation of VALORANT custom matches.
 
@@ -37,7 +41,7 @@ $ cd ScrimBot
 1. Create a file named `.env` in the root directory of the bot with the following contents:
 ```
 TOKEN=<discord bot token>
-TIME_ZONE=<(OPTIONAL) desired time zone (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), default is America/Los_Angeles>
+TIME_ZONE=<(OPTIONAL) desired time zone (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), default is America/Los_Angeles> 
 PREFIX=<(OPTIONAL) desired bot prefix, default is v!>
 ```
 

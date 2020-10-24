@@ -4,6 +4,10 @@ module.exports = exports = {
   name: 'uptime',
   usage: '',
   enabled: true,
+  /**
+   * @param {import('discord.js').Message} message
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (message, GLOBALS) => {
     const duration = moment.duration(GLOBALS.client.uptime).humanize()
     const embed = new GLOBALS.Embed()

@@ -3,6 +3,9 @@ const http = require('http')
 module.exports = exports = {
   name: 'heroku',
   enabled: true,
+  /**
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (GLOBALS) => {
     http.createServer((req, res) => {
       res.writeHead(200)

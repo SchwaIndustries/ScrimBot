@@ -6,6 +6,10 @@ module.exports = exports = {
   name: 'match',
   usage: '',
   enabled: true,
+  /**
+   * @param {import('discord.js').Message} message
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (message, GLOBALS) => {
     switch (message.content.split(' ')[1]) {
       case 'create': create(message, GLOBALS); break
@@ -18,6 +22,10 @@ module.exports = exports = {
   }
 }
 
+/**
+ * @param {import('discord.js').Message} message
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const create = async (message, GLOBALS) => {
   if (!message.guild) return message.reply('This command can only be run in a server!')
   if (await GLOBALS.userIsRegistered(message.author.id) === false) {
@@ -52,6 +60,10 @@ const create = async (message, GLOBALS) => {
   }) // add user to the list of users who are currently creating a match, and set their progress to 0 (none)
 }
 
+/**
+ * @param {import('discord.js').Message} message
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const start = async (message, GLOBALS) => {
   const matchID = message.content.split(' ')[2]
   if (!message.guild) return message.reply('This command can only be run in a server!')
@@ -114,11 +126,26 @@ const start = async (message, GLOBALS) => {
         user: matchInformation.players.b.map(p => p.id)
       })
 
+      const teamAEmbed = new GLOBALS.Embed()
+      teamAEmbed.setTitle('Match Starting!')
+      teamAEmbed.setDescription(`Your match in ${message.guild.name} is starting now! Click [here](${(await teamAVoiceChannel.createInvite({ maxAge: 3600 })).url}) to join the voice channel.`)
       teamAMembers.each(player => {
-        player.voice.setChannel(teamAVoiceChannel).catch()
+        player.voice.setChannel(teamAVoiceChannel)
+          .catch(_ => {
+            player.createDM()
+            player.send(teamAEmbed)
+          })
       })
+
+      const teamBEmbed = new GLOBALS.Embed()
+      teamBEmbed.setTitle('Match Starting!')
+      teamBEmbed.setDescription(`Your match in ${message.guild.name} is starting now! Click [here](${(await teamBVoiceChannel.createInvite({ maxAge: 3600 })).url}) to join the voice channel.`)
       teamBMembers.each(player => {
-        player.voice.setChannel(teamBVoiceChannel).catch()
+        player.voice.setChannel(teamBVoiceChannel)
+          .catch(_ => {
+            player.createDM()
+            player.send(teamBEmbed)
+          })
       })
     }
   }
@@ -135,6 +162,10 @@ const start = async (message, GLOBALS) => {
   })
 }
 
+/**
+ * @param {import('discord.js').Message} message
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const score = async (message, GLOBALS) => {
   const matchID = message.content.split(' ')[2]
   const matchScore = message.content.split(' ')[3]
@@ -202,6 +233,10 @@ const score = async (message, GLOBALS) => {
   }
 }
 
+/**
+ * @param {import('discord.js').Message} message
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const cancel = async (message, GLOBALS) => {
   const matchID = message.content.split(' ')[2]
   if (!message.guild) return message.reply('This command can only be run in a server!')
@@ -241,6 +276,10 @@ const cancel = async (message, GLOBALS) => {
   if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 }
 
+/**
+ * @param {import('discord.js').Message} message
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const info = async (message, GLOBALS) => {
   const matchID = message.content.split(' ')[2]
 
@@ -299,6 +338,10 @@ const info = async (message, GLOBALS) => {
   message.reply(matchEmbed)
 }
 
+/**
+ * @param {import('discord.js').Message} message
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const edit = async (message, GLOBALS) => {
   const attributes = message.content.split(' ')
   const matchID = attributes[2]

@@ -61,17 +61,20 @@ module.exports = exports = {
     99: 'ANY MAX'
   },
 
-  MAPS: ['split', 'bind', 'haven', 'ascent'],
+  MAPS: ['split', 'bind', 'haven', 'ascent', 'icebox'],
   MAPS_THUMBNAILS: {
     split: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt2caea7a88362d6aa/5ecd64b0817e574fa1dcc162/split-minimap-2.png',
     bind: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/bltad4274632c983531/5ecd64d04d187c101f3f2486/bind-minimap-2.png',
     haven: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/bltedb5d57941e4f3f5/5ecd64c14d187c101f3f2484/haven-minimap-2.png',
-    ascent: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt47bef6aa9e43d8ec/5ecd64df96a8996de38bbf8f/ascent-minimap-2.jpg'
+    ascent: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt47bef6aa9e43d8ec/5ecd64df96a8996de38bbf8f/ascent-minimap-2.jpg',
+    icebox: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt9ef7b41910a14118/5f80debff6c586323f8b17a3/icebox_1.jpg'
   },
 
   GAME_MODES: ['standard', 'spike rush', 'deathmatch'],
 
   AFFIRMATIVE_WORDS: ['yes', 'yeah', 'sure', 'true', '1', 'one', 'si', 'yea', 'ok', 'okay', 'mhm', 'k', 'yah', 'on', 'why not', 'alright', 'aight', 'affirmative'],
+
+  MAX_TEAM_COUNT: 5, // maximum amount of players allowed on one team
 
   userRegistrationSteps: [
     ['1. Valorant Username', 'What is your FULL Valorant username? (including tag, e.g. `Username#NA1`)'],
@@ -85,7 +88,7 @@ module.exports = exports = {
     ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
     ['4. Player Count', 'How many players should be on each team? Max 5.'],
     ['5. Spectators', 'Are spectators allowed?'],
-    ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent. If any, type "any"'],
+    ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent, 5 For Icebox. If any, type "any"'],
     ['7. Game Mode', 'What game mode would you like? Options are "standard", "spike rush", and "deathmatch".']
   ],
 

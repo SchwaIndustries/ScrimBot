@@ -37,6 +37,7 @@ const Discord = require('discord.js')
     }
   })
 require('dotenv').config()
+verifyConfigurationIntegrity()
 const admin = require('firebase-admin')
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS) admin.initializeApp()
   else {
@@ -59,10 +60,11 @@ const admin = require('firebase-admin')
   }
   const db = admin.firestore()
 // ScrimBot specific properties
+/**
+ * @type {Map<string, object>}
+ */
 client.commands = new Map() // Stores all bot commands
 client.services = new Map() // Stores all bot services (functions that run at start)
-if (!process.env.TIME_ZONE) process.env.TIME_ZONE = 'America/Los_Angeles'
-if (!process.env.PREFIX) process.env.PREFIX = 'v!'
 
 class ScrimBotEmbed extends Discord.MessageEmbed {
   constructor (specialColor) {
@@ -73,8 +75,9 @@ class ScrimBotEmbed extends Discord.MessageEmbed {
 
 class MatchEmbed extends ScrimBotEmbed {
   async setMatchData (matchData) {
+    const matchCreator = await client.users.fetch(matchData.creator)
     this.setTitle('Match Information')
-    this.setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team and, if enabled, react with 🇸 to be a spectator.')
+    this.setAuthor(matchCreator.tag, matchCreator.avatarURL())
     this.setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchData.map])
     this.setTimestamp(new Date(matchData.date))
     this.addField('Status', CONSTANTS.capitalizeFirstLetter(matchData.status), true)
@@ -111,6 +114,12 @@ class MatchEmbed extends ScrimBotEmbed {
         this.fields[8].value += `\n• ${playerDoc.valorantUsername}`
       }
     }
+
+    if (matchData.status === 'completed') {
+      this.addField('Final Score', `${matchData.score[0]}-${matchData.score[1]}`)
+    } else {
+      this.setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team' + (matchData.spectators instanceof Array ? ', and react with 🇸 to be a spectator.' : '.'))
+    }
   }
 
   constructor (matchData, specialColor) {
@@ -119,12 +128,23 @@ class MatchEmbed extends ScrimBotEmbed {
   }
 }
 
+/**
+ * @typedef {Object} GLOBALS
+ * @property {Discord.Client} client
+ * @property {ScrimBotEmbed} Embed
+ * @property {MatchEmbed} MatchEmbed
+ * @property {admin.firestore.Firestore} db
+ * @property {Discord.Collection} activeUserRegistration
+ * @property {function} userIsAdmin
+ * @property {function} userIsRegistered
+ */
+
 // Global variables accessible from all files
 const GLOBALS = {
-  client: client,
+  client,
   Embed: ScrimBotEmbed,
   MatchEmbed: MatchEmbed,
-  db: db,
+  db,
   activeUserRegistration: new Discord.Collection(),
   activeMatchCreation: new Discord.Collection(),
   /**
@@ -159,8 +179,8 @@ client.on('ready', () => {
 })
 
 /**
- * Reads the command files from src/commands and
- * adds them to the commands collection which
+ * Reads the command files from `src/commands` and
+ * adds them to the `client.commands` collection which
  * allows the bot to use them
  */
 function loadCommands () {
@@ -172,8 +192,8 @@ function loadCommands () {
 }
 
 /**
- * Reads the service files from src/services and
- * adds them to the services collection.
+ * Reads the service files from `src/services` and
+ * adds them to the `client.services` collection.
  * The bot then runs all of the services at startup.
  * This is useful for certain things that need to be run
  * independently of commands.
@@ -208,19 +228,32 @@ client.on('message', async message => {
 // /////////////////////////////////////////////////////////////////////////// //
 // MARK: - Login bot
 
-if (process.env.TOKEN) {
-  client.login(process.env.TOKEN)
-} else {
-  console.error('Bot token not found! Ensure environment variable TOKEN contains the bot token. If you don\'t understand this, go read the documentation.')
-}
+client.login(process.env.TOKEN)
 
 // /////////////////////////////////////////////////////////////////////////// //
 // MARK: - Error handling
 
+/**
+ * Make sure that environment variables
+ * contain all the neccessary information.
+ */
+function verifyConfigurationIntegrity () {
+  if (!process.env.TOKEN) throw new Error('Discord bot token not found! Ensure environment variable TOKEN contains the bot token. View README.md for more information')
+  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    const firebaseConfigs = ['FIR_PROJID', 'FIR_CLIENTID', 'FIR_PRIVATEKEY_ID', 'FIR_PRIVATEKEY']
+    firebaseConfigs.forEach(config => {
+      if (!process.env[config]) throw new Error('Firebase config ' + config + ' not found! View README.md for more information.')
+    })
+  }
+  if (!process.env.TIME_ZONE) process.env.TIME_ZONE = 'America/Los_Angeles'
+  if (!process.env.PREFIX) process.env.PREFIX = 'v!'
+}
+
+if (process.env.NODE_ENV === 'development') client.on('debug', console.info)
 client.on('error', console.error)
 client.on('shardError', console.error)
-client.on('warn', console.error)
+client.on('warn', console.warn)
 
 process.on('uncaughtException', console.error)
 process.on('unhandledRejection', console.error)
-process.on('warning', console.error)
+process.on('warning', console.warn)

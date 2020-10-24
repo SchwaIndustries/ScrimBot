@@ -4,13 +4,12 @@ module.exports = exports = {
   name: 'register',
   usage: '',
   enabled: true,
+  /**
+   * @param {import('discord.js').Message} message
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (message, GLOBALS) => {
-    const existingRecord = await GLOBALS.db.collection('users').doc(message.author.id).get()
-      .catch(console.error)
-    if (existingRecord.exists) {
-      message.reply('You have already registered!')
-      return
-    }
+    if (await GLOBALS.userIsRegistered(message.author.id)) return message.reply('You are already registered!')
 
     const embed = new GLOBALS.Embed()
       .setTitle('ScrimBot Registration')

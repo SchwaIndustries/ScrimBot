@@ -5,6 +5,9 @@ const chrono = require('chrono-node')
 module.exports = exports = {
   name: 'matchCreation',
   enabled: true,
+  /**
+   * @param {import('../index.js').GLOBALS} GLOBALS
+   */
   process: async (GLOBALS) => {
     GLOBALS.client.on('message', async message => {
       if (message.author === GLOBALS.client.user || message.author.bot === true) return // ignore messages from the bot itself or other bots
@@ -54,8 +57,10 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       }
     }
     case 3: {
-      if (!Number(content) || Number(content) > 5 || Number(content) < 0) {
+      if (!Number(content)) {
         return userMessage.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
+      } else if (Number(content) > CONSTANTS.MAX_TEAM_COUNT || Number(content) < 1) {
+        return userMessage.reply('that number does not fit the amount of players allowed on a team, which is ' + CONSTANTS.MAX_TEAM_COUNT).then(msg => msg.delete({ timeout: 5000 }))
       } else {
         matchRecord.creationInformation.maxTeamCount = Number(content)
         break
