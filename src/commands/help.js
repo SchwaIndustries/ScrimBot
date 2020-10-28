@@ -26,7 +26,10 @@ module.exports = exports = {
       v!help: Show this help menu.
       v!invite: Invite the bot to your server!
       v!ping: Play a game of ping pong.
-      v!register: Register to join matches.`)
+      v!register: Register to join matches.
+      
+      **__SUPPORT__**
+      For support, please join Valorant Collective, and head to the Scrimbot Support Channel! https://discord.gg/hfFJxUG`)
     message.channel.send(embed)
   }
 }
