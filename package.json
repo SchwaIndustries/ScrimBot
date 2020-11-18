@@ -18,17 +18,17 @@
   },
   "homepage": "https://github.com/SchwaIndustries/ScrimBot#readme",
   "dependencies": {
-    "chrono-node": "^2.1.8",
+    "chrono-node": "^2.1.9",
     "discord.js": "^12.4.0",
     "dotenv": "^8.2.0",
-    "firebase-admin": "^9.2.0",
+    "firebase-admin": "^9.4.1",
     "moment": "^2.29.1",
-    "moment-timezone": "^0.5.31"
+    "moment-timezone": "^0.5.32"
   },
   "devDependencies": {
-    "heroku": "^7.46.1",
+    "heroku": "^7.47.2",
     "nodemon": "^2.0.6",
-    "standard": "^15.0.0"
+    "standard": "^15.0.1"
   },
   "engines": {
     "node": "12.x"
