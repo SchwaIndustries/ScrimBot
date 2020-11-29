@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "npx standard && npx heroku ps:scale web=0 && npx nodemon src/index.js"
+    "dev": "npx standard && npx nodemon src/index.js"
   },
   "repository": {
     "type": "git",
