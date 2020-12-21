@@ -67,7 +67,7 @@ module.exports = exports = {
     bind: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/bltad4274632c983531/5ecd64d04d187c101f3f2486/bind-minimap-2.png',
     haven: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/bltedb5d57941e4f3f5/5ecd64c14d187c101f3f2484/haven-minimap-2.png',
     ascent: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt47bef6aa9e43d8ec/5ecd64df96a8996de38bbf8f/ascent-minimap-2.jpg',
-    icebox: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt9ef7b41910a14118/5f80debff6c586323f8b17a3/icebox_1.jpg'
+    icebox: 'https://preview.redd.it/sc2cvp60ukr51.jpg?width=3000&format=pjpg&auto=webp&s=efddb43399d680842e1ec85a7a87a174abf048f6'
   },
 
   GAME_MODES: ['standard', 'spike rush', 'deathmatch'],
