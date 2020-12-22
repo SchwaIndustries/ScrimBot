@@ -426,8 +426,3 @@ If you get a 201 code, then your command has been created! It may take up to an 
   ]
 }
 ```
-
-** a Match:**
-```json
-
-```
