@@ -28,7 +28,7 @@
   "devDependencies": {
     "heroku": "^7.47.6",
     "nodemon": "^2.0.6",
-    "standard": "^15.0.1"
+    "standard": "^16.0.3"
   },
   "engines": {
     "node": "12.x"
