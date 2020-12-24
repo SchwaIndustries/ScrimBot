@@ -6,7 +6,7 @@ module.exports = exports = {
    */
   process: async (GLOBALS) => {
     GLOBALS.client.on('guildCreate', guild => {
-      const defaultChannel = (guild.systemChannel || guild.embedChannel || guild.channels.cache.first())
+      const defaultChannel = guild.channels.cache.find(c => c.permissionsFor(GLOBALS.client.user).has('SEND_MESSAGES'))
 
       defaultChannel.send({
         embed: {
