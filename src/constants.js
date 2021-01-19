@@ -26,9 +26,7 @@ module.exports = exports = {
     'DIAMOND 2': 62,
     'DIAMOND 3': 63,
 
-    'IMMORTAL 1': 71,
-    'IMMORTAL 2': 72,
-    'IMMORTAL 3': 73,
+    'IMMORTAL': 71,
 
     'RADIANT': 81, // eslint-disable-line quote-props
 
