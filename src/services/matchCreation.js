@@ -17,6 +17,10 @@ module.exports = exports = {
       if (user.bot) return // ignore messages from the bot itself or other bots
       if (GLOBALS.activeMatchCreation.has(user.id)) cancelMatchCreation(reaction, user, GLOBALS)
     })
+    GLOBALS.client.ws.on('INTERACTION_CREATE', async interaction => {
+      if (interaction.data.name !== 'matchcreate') return
+      await handleSlashCommandMatchCreation(interaction, GLOBALS)
+    })
   }
 }
 
@@ -163,4 +167,76 @@ const cancelMatchCreation = async (reaction, user, GLOBALS) => {
     GLOBALS.activeMatchCreation.delete(userRecord.userID)
     reaction.remove()
   }
+}
+
+async function handleSlashCommandMatchCreation (interaction, GLOBALS) {
+  const options = interaction.data.options.reduce((result, item) => {
+    result[item.name] = item.value
+    return result
+  }, {})
+
+  const matchInformation = {
+    creator: GLOBALS.db.collection('users').doc(interaction.member.user.id),
+    date: chrono.parseDate(`${options.date} ${moment.tz.zone(process.env.TIME_ZONE).abbr(Date.now())}`) ?? new Date(),
+    map: options.map.split('_')[1],
+    maxTeamCount: options.playercount,
+    mode: options.gamemode.split('_')[1],
+    players: {
+      a: [],
+      b: []
+    },
+    status: 'created',
+    timestamp: new Date(),
+    spectators: options.spectators ? [] : false,
+    rankMinimum: options.rankminimum ?? 0,
+    rankMaximum: options.rankmaximum ?? 99
+  }
+
+  const embed = new GLOBALS.Embed()
+    .setTitle('Match Creation Complete')
+    .setDescription('Your match has been made! To start it, type `v!match start <match id>`')
+    .setFooter('This message will self-destruct in 30 seconds.')
+    .toJSON()
+
+  GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post({ data: {
+    type: 4,
+    data: {
+      embeds: [embed]
+    }
+  } })
+
+  let guildInformation = await GLOBALS.db.collection('guilds').doc(interaction.guild_id).get()
+  if (!guildInformation.exists) guildInformation.notificationRole = interaction.guild_id
+  else guildInformation = guildInformation.data()
+
+  const matchEmbed = new GLOBALS.Embed()
+    .setTitle('Match Information')
+    .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team' + (matchInformation.spectators instanceof Array ? ', and react with 🇸 to be a spectator.' : '.'))
+    .setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
+    .setTimestamp(matchInformation.date)
+    .setAuthor(`${interaction.member.user.username}#${interaction.member.user.discriminator}`, `https://cdn.discordapp.com/avatars/${interaction.member.user.id}/${interaction.member.user.avatar}.png`)
+    .addField('Status', CONSTANTS.capitalizeFirstLetter(matchInformation.status), true)
+    .addField('Game Mode', CONSTANTS.capitalizeFirstLetter(matchInformation.mode), true)
+    .addField('Map', CONSTANTS.capitalizeFirstLetter(matchInformation.map), true)
+    .addField('Max Team Count', matchInformation.maxTeamCount + ' players per team', true)
+    .addField('Minimum Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchInformation.rankMinimum]), true)
+    .addField('Maximum Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchInformation.rankMaximum]), true)
+    .addField('Team A', 'None', true)
+    .addField('Team B', 'None', true)
+    .addField('Spectators', matchInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
+  const messageChannel = await GLOBALS.client.channels.fetch(interaction.channel_id)
+  messageChannel.send(`A match has been created! <@&${guildInformation.notificationRole}>`, matchEmbed)
+    .then(async message => {
+      message.react('🇦')
+      message.react('🇧')
+      if (matchInformation.spectators) message.react('🇸')
+      matchEmbed.setFooter('match id: ' + message.id)
+      message.edit(matchEmbed)
+      matchInformation.message = {
+        id: message.id,
+        channel: message.channel.id
+      }
+      await GLOBALS.db.collection('matches').doc(message.id).set(matchInformation)
+      GLOBALS.db.collection('guilds').doc(message.guild.id).collection('matches').doc(message.id).set({ data: GLOBALS.db.collection('matches').doc(message.id) })
+    })
 }
