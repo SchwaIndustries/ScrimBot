@@ -84,7 +84,7 @@ module.exports = exports = {
     ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
     ['4. Player Count', 'How many players should be on each team? Max 5.'],
     ['5. Spectators', 'Are spectators allowed?'],
-    ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent, 5 For Icebox. If any, type "any"'],
+    ['6. Map', 'Which map would you like to play on? Options are "Split", "Bind", "Haven", "Ascent", and "Icebox". If any, type "any"'],
     ['7. Game Mode', 'What game mode would you like? Options are "standard", "spike rush", and "deathmatch".']
   ],
 
