@@ -103,13 +103,13 @@ const start = async (message, GLOBALS) => {
 
     const teamAVoiceChannel = await botMessageChannel.guild.channels.create(`Team A: ${matchID.slice(-4)}`, {
       type: 'voice',
-      userLimit: matchInformation.players.a.length,
+      userLimit: matchInformation.players.a.length + (matchInformation.spectators.length || 0),
       parent: botMessageChannel.parent,
       permissionOverrides: teamAPermissionOverrides
     })
     const teamBVoiceChannel = await botMessageChannel.guild.channels.create(`Team B: ${matchID.slice(-4)}`, {
       type: 'voice',
-      userLimit: matchInformation.players.b.length,
+      userLimit: matchInformation.players.b.length + (matchInformation.spectators.length || 0),
       parent: botMessageChannel.parent,
       permissionOverrides: teamBPermissionOverrides
     })
