@@ -173,9 +173,10 @@ const GLOBALS = {
 // MARK: - Ready listener
 
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}! All systems online.`)
   runServices()
   loadCommands()
+  console.log(`Logged in as ${client.user.tag}! All systems online.`)
+  if (process.env.PREFIX !== 'v!') client.user.setStatus({ name: 'for matches | ' + process.env.PREFIX + 'help', type: 'WATCHING' })
 })
 
 /**
