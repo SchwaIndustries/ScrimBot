@@ -169,7 +169,23 @@ const cancelMatchCreation = async (reaction, user, GLOBALS) => {
   }
 }
 
+/**
+ * @param {import('../constants.js').Interaction} interaction
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 async function handleSlashCommandMatchCreation (interaction, GLOBALS) {
+  if (!interaction.member) {
+    return GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post(
+      {
+        data: {
+          type: 4,
+          data: {
+            content: 'This command can only be run in a server!',
+            flags: 64
+          }
+        }
+      })
+  }
   const options = interaction.data.options.reduce((result, item) => {
     result[item.name] = item.value
     return result
@@ -198,12 +214,16 @@ async function handleSlashCommandMatchCreation (interaction, GLOBALS) {
     .setFooter('This message will self-destruct in 30 seconds.')
     .toJSON()
 
-  GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post({ data: {
-    type: 4,
-    data: {
-      embeds: [embed]
-    }
-  } })
+  GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post(
+    {
+      data: {
+        type: 4,
+        data: {
+          embeds: [embed],
+          flags: 64
+        }
+      }
+    })
 
   let guildInformation = await GLOBALS.db.collection('guilds').doc(interaction.guild_id).get()
   if (!guildInformation.exists) guildInformation.notificationRole = interaction.guild_id

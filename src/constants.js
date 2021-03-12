@@ -97,3 +97,20 @@ module.exports = exports = {
     return string.charAt(0).toUpperCase() + string.slice(1)
   }
 }
+
+/**
+ * @typedef {Object} Interaction
+ * @property {string} id
+ * @property {InteractionType} type
+ * @property {any} data
+ * @property {string} guild_id
+ * @property {string} channel_id
+ * @property {object} member
+ * @property {object} user
+ * @property {string} token
+ * @property {number} version
+ */
+
+/**
+ * @typedef {number} InteractionType
+ */
