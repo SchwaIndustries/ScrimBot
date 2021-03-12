@@ -16,6 +16,11 @@ module.exports = exports = {
       if (user.bot) return // ignore messages from the bot itself or other bots
       if (GLOBALS.activeUserRegistration.has(user.id)) cancelUserRegistration(reaction, user, GLOBALS)
     })
+
+    GLOBALS.client.ws.on('INTERACTION_CREATE', async interaction => {
+      if (interaction.data.name !== 'register') return
+      await handleSlashCommandUserRegistration(interaction, GLOBALS)
+    })
   }
 }
 
@@ -30,7 +35,7 @@ const updateUserRoles = async (user, role, addRole, GLOBALS) => {
     if (!documentSnapshot.exists) return
     if (!GLOBALS.client.guilds.resolve(documentSnapshot.id)) return
 
-    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user.id).catch(console.error)
+    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user).catch(console.error)
     if (!guildMember) return
     if (addRole) guildMember.roles.add(documentSnapshot.get(role))
     else guildMember.roles.remove(documentSnapshot.get(role))
@@ -44,7 +49,7 @@ const updateUserRankRoles = async (user, rank, GLOBALS) => {
     if (!GLOBALS.client.guilds.resolve(documentSnapshot.id)) return
     if (!documentSnapshot.get('valorantRankRoles')) return
 
-    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user.id).catch(console.error)
+    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user).catch(console.error)
     if (!guildMember) return
     const allRankRoles = documentSnapshot.get('valorantRankRoles')
     await guildMember.roles.remove(allRankRoles).catch(console.error)
@@ -70,12 +75,12 @@ const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
         return userMessage.reply('Please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
         userRecord.registrationInformation.valorantRank = CONSTANTS.RANKS[userMessage.content.toUpperCase()] // TODO: cover edge cases
-        updateUserRankRoles(userMessage.author, userRecord.registrationInformation.valorantRank, GLOBALS)
+        updateUserRankRoles(userMessage.author.id, userRecord.registrationInformation.valorantRank, GLOBALS)
         break
       }
     case 2:
       userRecord.registrationInformation.notifications = (CONSTANTS.AFFIRMATIVE_WORDS.includes(userMessage.content.toLowerCase()))
-      if (userRecord.registrationInformation.notifications === true) updateUserRoles(userMessage.author, 'notificationRole', true, GLOBALS)
+      if (userRecord.registrationInformation.notifications === true) updateUserRoles(userMessage.author.id, 'notificationRole', true, GLOBALS)
       break
   }
 
@@ -118,5 +123,65 @@ const cancelUserRegistration = async (reaction, user, GLOBALS) => {
     userRecord.botMessage.edit(embed)
     GLOBALS.activeUserRegistration.delete(userRecord.userID)
     reaction.remove()
+  }
+}
+
+/**
+ * @param {import('../constants.js').Interaction} interaction
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
+async function handleSlashCommandUserRegistration (interaction, GLOBALS) {
+  try {
+    const user = interaction.member.user.id || interaction.user.id
+    if (await GLOBALS.userIsRegistered(user)) throw new Error('User already registered')
+
+    const options = interaction.data.options.reduce((result, item) => {
+      result[item.name] = item.value
+      return result
+    }, {})
+
+    if (!CONSTANTS.RANKS[options.valorantRank.toUpperCase()]) throw new Error('Invalid VALORANT rank')
+    if (!options.valorantUsername.match(/\w{3,16}#\w{3,5}/)) throw new Error('Invalid VALORANT username')
+
+    const userInformation = {
+      discordID: user,
+      matches: [],
+      notifications: options.notifications,
+      valorantRank: CONSTANTS.RANKS[options.valorantRank.toUpperCase()],
+      valorantUsername: options.valorantUsername,
+      timestamp: new Date()
+    }
+
+    updateUserRankRoles(user, userInformation.valorantRank, GLOBALS)
+    if (userInformation.notifications) updateUserRoles(user, 'notificationRole', true, GLOBALS)
+
+    GLOBALS.db.collection('users').doc(user).set(userInformation)
+
+    const embed = new GLOBALS.Embed()
+      .setTitle('ScrimBot Registration Complete')
+      .setDescription('Thanks for registering! Now it\'s time to get playing!')
+      .toJSON()
+
+    GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post(
+      {
+        data: {
+          type: 4,
+          data: {
+            embeds: [embed],
+            flags: 64
+          }
+        }
+      })
+  } catch (error) {
+    GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post(
+      {
+        data: {
+          type: 4,
+          data: {
+            content: 'Sorry, we encountered an error with the command: `' + error + '` Please try again!',
+            flags: 64
+          }
+        }
+      })
   }
 }
