@@ -10,7 +10,7 @@ module.exports = exports = {
     const embed = new GLOBALS.Embed()
       .setTitle('Help')
       .setDescription(`
-      **__MATCH COMMANDS__**
+      **MATCH COMMANDS**
       v!match create: Create a match.
       v!match start <match id>: Start a match (only for match creator)
       v!match cancel <match id>: Cancel a match (must be match creator)
@@ -18,18 +18,19 @@ module.exports = exports = {
       v!match edit <match id> <date, map, minRank, maxRank, teamPlayerCount, spectators, mode> <edited value>: Edit match information (only for match creator)
       v!match info <match id>: Retrieves match information
 
-      **__USER COMMANDS__**
+      **USER COMMANDS**
       v!user info <mention or user id>: Retrieves user information
       v!user edit <username, rank, notifications> <edited value>: Edit user info
 
-      **__MISCELLANEOUS COMMANDS__**
+      **MISCELLANEOUS COMMANDS**
       v!help: Show this help menu.
       v!invite: Invite the bot to your server!
       v!ping: Play a game of ping pong.
+      v!coinflip: Flip a coin.
       v!register: Register to join matches.
-      
-      **__SUPPORT__**
-      For support, please join Valorant Collective, and head to the Scrimbot Support Channel! https://discord.gg/hfFJxUG`)
+
+      **SUPPORT**
+      For support, please join Valorant Collective and head to the ScrimBot Support Channel! https://discord.gg/hfFJxUG`)
     message.channel.send(embed)
   }
 }

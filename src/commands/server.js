@@ -9,6 +9,15 @@ const checkRoleValidity = role => {
   else return false
 }
 
+const checkChannelValidity = channel => {
+  if (channel.startsWith('<#')) {
+    channel = channel.replace(/<&/, '').replace(/>$/, '')
+  }
+
+  if (!isNaN(channel)) return channel
+  else return false
+}
+
 module.exports = exports = {
   name: 'server', // command name
   usage: '<add>', // arguments for the command
@@ -27,21 +36,31 @@ module.exports = exports = {
     const embed = new GLOBALS.Embed()
     embed.setTitle('ScrimBot Initialization')
     embed.setDescription('Thanks for choosing ScrimBot! This setup procedure will only take 30 seconds.')
-    embed.addField('1. Match Notification Role', 'ScrimBot has the feature to mention a role when new matches are created. Please either respond with the role ID of that role or mention it.')
     const reply = await message.reply(embed)
 
+    const promptIndex = { index: 0 } // Field index of current prompt (each prompt is its own field)
+
     // Match Notifications
-    let matchNotifications = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!server add` again.'))
+    let matchNotifications = await promptUser(message, reply, promptIndex, embed, 'Match Notification Role', 'ScrimBot has the feature to mention a role when new matches are created. Please either respond with the role ID of that role or mention it.')
     matchNotifications = checkRoleValidity(matchNotifications.first().content)
     if (!matchNotifications) return message.reply('That is not a valid role! Please run `v!server add` again.')
 
-    // Valorant Rank Roles
-    embed.fields[0].name = '✅ 1. Match Notification Role'
-    embed.addField('2. Valorant Rank Roles', 'ScrimBot has the feature to create and give users a role based on their ranks. Would you like this? (yes or no)')
-    reply.edit(embed)
+    // Match Channel
+    let matchChannelID = await promptUser(message, reply, promptIndex, embed, 'Scrim Match Channel', 'ScrimBot has the feature to select a channel specifically for created matches to be sent. If you would like this, please reply with the channel ID. If you do not want this, please write "no".')
+    matchChannelID = checkChannelValidity(matchChannelID.first().content)
+    if (matchChannelID) {
+      try {
+        const matchChannel = await GLOBALS.client.channels.fetch(matchChannelID)
+        if (!matchChannel.permissionsFor(GLOBALS.client.user).has('SEND_MESSAGES')) throw new Error('Unable to send messages')
+      } catch {
+        return message.reply('ScrimBot does not have the permission to type in that channel or cannot find it. Please change the permissions and run v!server add again.')
+      }
+    }
 
-    let valorantRankRoles = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!server add` again.'))
+    // Valorant Rank Roles
+    let valorantRankRoles = await promptUser(message, reply, promptIndex, embed, 'Valorant Rank Roles', 'ScrimBot has the feature to create and give users a role based on their ranks. Would you like this?')
     valorantRankRoles = CONSTANTS.AFFIRMATIVE_WORDS.includes(valorantRankRoles.first().content.toLowerCase())
+
     let rankRoleIDs
     if (valorantRankRoles) {
       const guild = message.guild
@@ -71,4 +90,12 @@ module.exports = exports = {
       valorantRankRoles: rankRoleIDs || false
     })
   }
+}
+
+async function promptUser (originalMessage, promptMessage, promptIndex, embed, title, question) {
+  if (promptIndex.index > 0) embed.fields[promptIndex.index - 1].name = '✅ ' + embed.fields[promptIndex.index - 1].name
+  embed.addField((promptIndex.index + 1) + '. ' + title, question)
+  await promptMessage.edit(embed)
+  promptIndex.index++
+  return originalMessage.channel.awaitMessages(m => m.author === originalMessage.author, { max: 1, time: 60000, errors: ['time'] }).catch(() => originalMessage.reply('Time has run out. To setup your server, please run `v!server add` again.'))
 }
