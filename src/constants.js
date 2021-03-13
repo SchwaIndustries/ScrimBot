@@ -26,9 +26,7 @@ module.exports = exports = {
     'DIAMOND 2': 62,
     'DIAMOND 3': 63,
 
-    'IMMORTAL 1': 71,
-    'IMMORTAL 2': 72,
-    'IMMORTAL 3': 73,
+    'IMMORTAL': 71, // eslint-disable-line quote-props
 
     'RADIANT': 81, // eslint-disable-line quote-props
 
@@ -54,9 +52,7 @@ module.exports = exports = {
     61: 'DIAMOND 1',
     62: 'DIAMOND 2',
     63: 'DIAMOND 3',
-    71: 'IMMORTAL 1',
-    72: 'IMMORTAL 2',
-    73: 'IMMORTAL 3',
+    71: 'IMMORTAL',
     81: 'RADIANT',
     99: 'ANY MAX'
   },
@@ -88,7 +84,7 @@ module.exports = exports = {
     ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any".'],
     ['4. Player Count', 'How many players should be on each team? Max 5.'],
     ['5. Spectators', 'Are spectators allowed?'],
-    ['6. Map', 'Which map would you like to play on? Respond 1 for Split, 2 for Bind, 3 for Haven, 4 for Ascent, 5 For Icebox. If any, type "any".'],
+    ['6. Map', 'Which map would you like to play on? Options are "Split", "Bind", "Haven", "Ascent", and "Icebox". If any, type "any"'],
     ['7. Game Mode', 'What game mode would you like? Options are "standard", "spike rush", and "deathmatch".']
   ],
 

@@ -1,6 +1,6 @@
 # ScrimBot
 
-[![Add ScrimBot to server](https://img.shields.io/static/v1?label=Add%20ScrimBot&message=to%20server&color=7289DA&logo=Discord&logoColor=white&style=flat-square)](https://discord.com/oauth2/authorize?client_id=715030981894995998&scope=bot&permissions=285355008)
+[![Add ScrimBot to server](https://img.shields.io/static/v1?label=Add%20ScrimBot&message=to%20server&color=7289DA&logo=Discord&logoColor=white&style=flat-square)](https://discord.com/oauth2/authorize?client_id=715030981894995998&scope=bot&permissions=2432904272)
 
 [![ScrimBot Support](https://img.shields.io/static/v1?label=ScrimBot%20Support&message=server&color=7289DA&logo=Discord&logoColor=white&style=flat-square)](https://discord.gg/hfFJxUG)
 
@@ -49,7 +49,9 @@ PREFIX=<(OPTIONAL) desired bot prefix, default is v!>
 
 3. In your Firebase project, navigate to Settings > Service Accounts > Firebase Admin SDK and click **Generate a new key**
 
-4. You now have two options: if you want to store the JSON locally, you can put the file in your project folder and set an additional key which points to it:
+4. In your Firebase project, navigate to Develop > Firestore and make sure Firestore is enabled for your project (NOT Realtime Database)
+
+5. You now have two options: if you want to store the JSON locally, you can put the file in your project folder and set an additional key which points to it:
 ```
 GOOGLE_APPLICATION_CREDENTIALS=</path/to/service-account-file.json>
 ```

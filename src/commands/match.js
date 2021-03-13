@@ -81,6 +81,9 @@ const start = async (message, GLOBALS) => {
 
   matchInformation.status = 'started'
 
+  /**
+   * @type {import('discord.js').TextChannel}
+   */
   const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
   const botMessage = await botMessageChannel.messages.fetch(matchID)
   const botMessageEmbed = botMessage.embeds[0]
@@ -102,15 +105,21 @@ const start = async (message, GLOBALS) => {
       }
     })
 
+    /**
+     * @type {import('discord.js').VoiceChannel}
+     */
     const teamAVoiceChannel = await botMessageChannel.guild.channels.create(`Team A: ${matchID.slice(-4)}`, {
       type: 'voice',
-      userLimit: matchInformation.players.a.length,
+      userLimit: matchInformation.players.a.length + (matchInformation.spectators.length || 0),
       parent: botMessageChannel.parent,
       permissionOverrides: teamAPermissionOverrides
     })
+    /**
+     * @type {import('discord.js').VoiceChannel}
+     */
     const teamBVoiceChannel = await botMessageChannel.guild.channels.create(`Team B: ${matchID.slice(-4)}`, {
       type: 'voice',
-      userLimit: matchInformation.players.b.length,
+      userLimit: matchInformation.players.b.length + (matchInformation.spectators.length || 0),
       parent: botMessageChannel.parent,
       permissionOverrides: teamBPermissionOverrides
     })
@@ -118,35 +127,66 @@ const start = async (message, GLOBALS) => {
     matchInformation.teamAVoiceChannel = teamAVoiceChannel.id
     matchInformation.teamBVoiceChannel = teamBVoiceChannel.id
 
+    const teamAInvite = await teamAVoiceChannel.createInvite({ maxAge: 3600 })
+    const teamBInvite = await teamBVoiceChannel.createInvite({ maxAge: 3600 })
+
+    const teamAEmbed = new GLOBALS.Embed()
+      .setTitle('Match Starting!')
+      .setDescription(`Your match in ${message.guild.name} is starting now! Click [here](${teamAInvite.url}) to join the voice channel.`)
+    const teamBEmbed = new GLOBALS.Embed()
+      .setTitle('Match Starting!')
+      .setDescription(`Your match in ${message.guild.name} is starting now! Click [here](${teamBInvite.url}) to join the voice channel.`)
+
+    /**
+     * @type {import('discord.js').Collection<import('discord.js').Snowflake,import('discord.js').GuildMember>}
+     */
+    const teamAMembers = await message.guild.members.fetch({
+      user: matchInformation.players.a.map(p => p.id)
+    })
+    const teamBMembers = await message.guild.members.fetch({
+      user: matchInformation.players.b.map(p => p.id)
+    })
+
     if (message.guild.me.hasPermission('MOVE_MEMBERS')) {
-      const teamAMembers = await message.guild.members.fetch({
-        user: matchInformation.players.a.map(p => p.id)
-      })
-
-      const teamBMembers = await message.guild.members.fetch({
-        user: matchInformation.players.b.map(p => p.id)
-      })
-
-      const teamAEmbed = new GLOBALS.Embed()
-      teamAEmbed.setTitle('Match Starting!')
-      teamAEmbed.setDescription(`Your match in ${message.guild.name} is starting now! Click [here](${(await teamAVoiceChannel.createInvite({ maxAge: 3600 })).url}) to join the voice channel.`)
       teamAMembers.each(player => {
-        player.voice.setChannel(teamAVoiceChannel)
+        player.voice.setChannel(teamAVoiceChannel, 'ScrimBot match starting')
           .catch(_ => {
             player.createDM()
             player.send(teamAEmbed)
           })
       })
-
-      const teamBEmbed = new GLOBALS.Embed()
-      teamBEmbed.setTitle('Match Starting!')
-      teamBEmbed.setDescription(`Your match in ${message.guild.name} is starting now! Click [here](${(await teamBVoiceChannel.createInvite({ maxAge: 3600 })).url}) to join the voice channel.`)
       teamBMembers.each(player => {
-        player.voice.setChannel(teamBVoiceChannel)
+        player.voice.setChannel(teamBVoiceChannel, 'ScrimBot match starting')
           .catch(_ => {
             player.createDM()
             player.send(teamBEmbed)
           })
+      })
+    } else {
+      teamAMembers.each(player => {
+        player.createDM()
+        player.send(teamAEmbed)
+      })
+      teamBMembers.each(player => {
+        player.createDM()
+        player.send(teamBEmbed)
+      })
+    }
+
+    if (matchInformation.spectators) {
+      const spectatorMembers = await message.guild.members.fetch({
+        user: matchInformation.spectators.map(p => p.id)
+      })
+
+      const spectatorEmbed = new GLOBALS.Embed()
+        .setTitle('Match Starting!')
+        .setDescription(`Your match in ${message.guild.name} is starting now!`)
+        .addField('Team A', `Click [here](${teamAInvite.url}) to join the team A voice channel.`)
+        .addField('Team B', `Click [here](${teamBInvite.url}) to join the team B voice channel.`)
+
+      spectatorMembers.each(player => {
+        player.createDM()
+        player.send(spectatorEmbed)
       })
     }
   }
@@ -157,6 +197,7 @@ const start = async (message, GLOBALS) => {
     .setTitle('Match Started')
     .setDescription('Match with ID `' + matchID + '` has been started. Once complete, use `v!match score <match id> <score>` to report the score!')
     .setFooter('This message will self-destruct in 30 seconds.')
+  if (!message.guild.me.hasPermission('MANAGE_CHANNELS')) embed.addField('Note', 'If you give ScrimBot the `Manage Channels` and `Move Members` permissions, it can automatically create voice channels for each team and move players into them!')
   message.reply(embed).then(msg => {
     msg.delete({ timeout: 30000 })
     message.delete({ timeout: 30000 })
@@ -411,10 +452,10 @@ const edit = async (message, GLOBALS) => {
     case 'map': {
       if (editedValue.toLowerCase() === 'any') {
         matchInformation.map = CONSTANTS.MAPS[Math.floor(Math.random() * Math.floor(CONSTANTS.MAPS.length))]
-      } else if (isNaN(editedValue) || Number(editedValue) > CONSTANTS.MAPS.length) {
-        return message.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
+      } else if (CONSTANTS.MAPS.includes(editedValue.toLowerCase())) {
+        matchInformation.map = CONSTANTS.MAPS.find(e => e === editedValue.toLowerCase()) ?? editedValue.toLowerCase()
       } else {
-        matchInformation.map = CONSTANTS.MAPS[Number(editedValue - 1)]
+        return userMessage.reply('please give a valid map!').then(msg => msg.delete({ timeout: 5000 }))
       }
       matchEmbed.fields[2].value = CONSTANTS.capitalizeFirstLetter(matchInformation.map)
       matchEmbed.setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
