@@ -36,6 +36,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       matchRecord.creationInformation.date = date
       break
     }
+
     case 1: {
       if (content === 'any') {
         matchRecord.creationInformation.rankMinimum = 0
@@ -47,6 +48,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
         break
       }
     }
+
     case 2: {
       if (content === 'any') {
         matchRecord.creationInformation.rankMaximum = 99
@@ -60,6 +62,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
         break
       }
     }
+
     case 3: {
       if (!Number(content)) {
         return userMessage.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
@@ -70,9 +73,11 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
         break
       }
     }
+
     case 4:
       matchRecord.creationInformation.spectators = (CONSTANTS.AFFIRMATIVE_WORDS.includes(content)) ? [] : false
       break
+
     case 5: {
       if (content === 'any') {
         matchRecord.creationInformation.map = CONSTANTS.MAPS[Math.floor(Math.random() * Math.floor(CONSTANTS.MAPS.length))]
@@ -84,6 +89,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
         return userMessage.reply('please give a valid map!').then(msg => msg.delete({ timeout: 5000 }))
       }
     }
+
     case 6: {
       if (CONSTANTS.GAME_MODES.includes(content)) {
         matchRecord.creationInformation.mode = CONSTANTS.GAME_MODES.find(e => e === content) ?? content
@@ -175,16 +181,15 @@ const cancelMatchCreation = async (reaction, user, GLOBALS) => {
  */
 async function handleSlashCommandMatchCreation (interaction, GLOBALS) {
   if (!interaction.member) {
-    return GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post(
-      {
+    return GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post({
+      data: {
+        type: 4,
         data: {
-          type: 4,
-          data: {
-            content: 'This command can only be run in a server!',
-            flags: 64
-          }
+          content: 'This command can only be run in a server!',
+          flags: 64
         }
-      })
+      }
+    })
   }
   const options = interaction.data.options.reduce((result, item) => {
     result[item.name] = item.value
@@ -214,16 +219,15 @@ async function handleSlashCommandMatchCreation (interaction, GLOBALS) {
     .setFooter('This message will self-destruct in 30 seconds.')
     .toJSON()
 
-  GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post(
-    {
+  GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post({
+    data: {
+      type: 4,
       data: {
-        type: 4,
-        data: {
-          embeds: [embed],
-          flags: 64
-        }
+        embeds: [embed],
+        flags: 64
       }
-    })
+    }
+  })
 
   let guildInformation = await GLOBALS.db.collection('guilds').doc(interaction.guild_id).get()
   if (!guildInformation.exists) guildInformation.notificationRole = interaction.guild_id

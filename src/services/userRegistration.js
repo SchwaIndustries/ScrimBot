@@ -162,26 +162,24 @@ async function handleSlashCommandUserRegistration (interaction, GLOBALS) {
       .setDescription('Thanks for registering! Now it\'s time to get playing!')
       .toJSON()
 
-    GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post(
-      {
+    GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post({
+      data: {
+        type: 4,
         data: {
-          type: 4,
-          data: {
-            embeds: [embed],
-            flags: 64
-          }
+          embeds: [embed],
+          flags: 64
         }
-      })
+      }
+    })
   } catch (error) {
-    GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post(
-      {
+    GLOBALS.client.api.interactions(interaction.id, interaction.token).callback.post({
+      data: {
+        type: 4,
         data: {
-          type: 4,
-          data: {
-            content: 'Sorry, we encountered an error with the command: `' + error + '` Please try again!',
-            flags: 64
-          }
+          content: 'Sorry, we encountered an error with the command: `' + error + '` Please try again!',
+          flags: 64
         }
-      })
+      }
+    })
   }
 }

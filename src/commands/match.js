@@ -412,6 +412,7 @@ const edit = async (message, GLOBALS) => {
       matchEmbed.setTimestamp(matchInformation.date)
       break
     }
+
     case 'minRank': {
       if (editedValue.toLowerCase() === 'any') {
         matchInformation.rankMinimum = 0
@@ -423,6 +424,7 @@ const edit = async (message, GLOBALS) => {
       matchEmbed.fields[4].value = CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchInformation.rankMinimum])
       break
     }
+
     case 'maxRank': {
       if (editedValue.toLowerCase() === 'any') {
         matchInformation.rankMaximum = 99
@@ -436,6 +438,7 @@ const edit = async (message, GLOBALS) => {
       matchEmbed.fields[5].value = CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchInformation.rankMaximum])
       break
     }
+
     case 'teamPlayerCount': {
       if (!Number(editedValue) || Number(editedValue) > 5) {
         return message.reply('please give a valid number!').then(msg => msg.delete({ timeout: 5000 }))
@@ -445,22 +448,25 @@ const edit = async (message, GLOBALS) => {
         break
       }
     }
+
     case 'spectators':
       matchInformation.spectators = (CONSTANTS.AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase())) ? [] : false
       matchEmbed.fields[8].value = matchInformation.spectators instanceof Array ? 'None' : 'Not allowed'
       break
+
     case 'map': {
       if (editedValue.toLowerCase() === 'any') {
         matchInformation.map = CONSTANTS.MAPS[Math.floor(Math.random() * Math.floor(CONSTANTS.MAPS.length))]
       } else if (CONSTANTS.MAPS.includes(editedValue.toLowerCase())) {
         matchInformation.map = CONSTANTS.MAPS.find(e => e === editedValue.toLowerCase()) ?? editedValue.toLowerCase()
       } else {
-        return userMessage.reply('please give a valid map!').then(msg => msg.delete({ timeout: 5000 }))
+        return message.reply('please give a valid map!').then(msg => msg.delete({ timeout: 5000 }))
       }
       matchEmbed.fields[2].value = CONSTANTS.capitalizeFirstLetter(matchInformation.map)
       matchEmbed.setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
       break
     }
+
     case 'mode': {
       if (CONSTANTS.GAME_MODES.includes(editedValue.toLowerCase())) {
         matchInformation.mode = editedValue.toLowerCase()
@@ -470,6 +476,7 @@ const edit = async (message, GLOBALS) => {
       }
       break
     }
+
     default:
       return message.reply('Property `' + editedProperty + '` not found! Please try again using a valid property (date, map, minRank, maxRank, teamPlayerCount, spectators, mode).')
   }
