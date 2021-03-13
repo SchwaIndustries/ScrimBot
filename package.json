@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/SchwaIndustries/ScrimBot#readme",
   "dependencies": {
-    "chrono-node": "^2.1.10",
+    "chrono-node": "^2.2.4",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "firebase-admin": "^9.4.2",

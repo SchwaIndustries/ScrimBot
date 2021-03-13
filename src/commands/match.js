@@ -1,6 +1,7 @@
 const CONSTANTS = require('../constants')
 const moment = require('moment-timezone')
 const admin = require('firebase-admin')
+const chrono = require('chrono-node')
 
 module.exports = exports = {
   name: 'match',
@@ -363,14 +364,8 @@ const edit = async (message, GLOBALS) => {
 
   switch (editedProperty) {
     case 'date': {
-      const dateString = editedValue.split(' ')
-      if (dateString.length === 2) {
-        const actualDate = moment().tz(process.env.TIME_ZONE).format('YYYY-MM-DD')
-        dateString.push(actualDate)
-      }
-
-      const date = moment.tz(dateString.join(' '), 'h:mm a YYYY-MM-DD', process.env.TIME_ZONE).toDate()
-      if (isNaN(date)) return message.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
+      const date = chrono.parseDate(`${editedValue} ${moment.tz.zone(process.env.TIME_ZONE).abbr(Date.now())}`)
+      if (!date) return message.reply('please give a valid date!').then(msg => msg.delete({ timeout: 5000 }))
       matchInformation.date = date
 
       matchEmbed.setTimestamp(matchInformation.date)
