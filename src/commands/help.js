@@ -17,6 +17,7 @@ module.exports = exports = {
       ${process.env.PREFIX}match score <match id> <team a score>-<team b score>: Report final match score (only for match creator)
       ${process.env.PREFIX}match edit <match id> <date, map, minRank, maxRank, teamPlayerCount, spectators, mode> <edited value>: Edit match information (only for match creator)
       ${process.env.PREFIX}match info <match id>: Retrieves match information
+      ${process.env.PREFIX}match refresh <match id>: Refreshes a broken match embed
 
       **__USER COMMANDS__**
       ${process.env.PREFIX}user info <mention or user id>: Retrieves user information
