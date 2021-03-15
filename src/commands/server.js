@@ -20,7 +20,7 @@ const checkChannelValidity = channel => {
 
 module.exports = exports = {
   name: 'server', // command name
-  usage: '<add>', // arguments for the command
+  usage: '<add>, <edit>', // arguments for the command
   enabled: true, // whether the command should be loaded
   /**
    * @param {import('discord.js').Message} message
@@ -87,6 +87,7 @@ module.exports = exports = {
     guildInformationRef.set({
       name: message.guild.name,
       notificationRole: matchNotifications,
+      matchAlertChannel: matchChannelID || false,
       valorantRankRoles: rankRoleIDs || false
     })
   }

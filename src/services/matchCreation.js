@@ -144,7 +144,10 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       .addField('Team A', 'None', true)
       .addField('Team B', 'None', true)
       .addField('Spectators', matchRecord.creationInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
-    matchRecord.botMessage.channel.send(`A match has been created! <@&${guildInformation.notificationRole}>`, matchEmbed)
+
+    const matchChannel = guildInformation.matchAlertChannel ? await GLOBALS.client.channels.fetch(guildInformation.matchAlertChannel) : matchRecord.botMessage.channel
+
+    matchChannel.send(`A match has been created! <@&${guildInformation.notificationRole}>`, matchEmbed)
       .then(async message => {
         message.react('🇦')
         message.react('🇧')
