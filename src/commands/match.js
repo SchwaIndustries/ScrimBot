@@ -19,6 +19,7 @@ module.exports = exports = {
       case 'cancel': cancel(message, GLOBALS); break
       case 'info': info(message, GLOBALS); break
       case 'edit': edit(message, GLOBALS); break
+      case 'refresh': refresh(message, GLOBALS); break
     }
   }
 }
@@ -483,5 +484,69 @@ const edit = async (message, GLOBALS) => {
 
   matchInformationRef.update(matchInformation)
   message.reply(`${editedProperty} successfully changed to ${editedValue} for match ${matchID}!`)
+  botMessage.edit(matchEmbed)
+}
+
+/**
+ * @param {import('discord.js').Message} message
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
+const refresh = async (message, GLOBALS) => {
+  const matchID = message.content.split(' ')[2]
+
+  if (!matchID) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
+  let matchInformation = await matchInformationRef.get()
+  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  matchInformation = matchInformation.data()
+  const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
+  const botMessage = await botMessageChannel.messages.fetch(matchID)
+
+  const matchCreator = await GLOBALS.client.users.fetch(matchInformation.creator)
+
+  const matchEmbed = new GLOBALS.Embed()
+    .setTitle('Match Information')
+    .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team' + (matchInformation.spectators instanceof Array ? ', and react with 🇸 to be a spectator.' : '.'))
+    .setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
+    .setTimestamp(matchInformation.date)
+    .setAuthor(matchCreator.tag, matchCreator.avatarURL())
+    .addField('Status', CONSTANTS.capitalizeFirstLetter(matchInformation.status), true)
+    .addField('Game Mode', CONSTANTS.capitalizeFirstLetter(matchInformation.mode), true)
+    .addField('Map', CONSTANTS.capitalizeFirstLetter(matchInformation.map), true)
+    .addField('Max Team Count', matchInformation.maxTeamCount + ' players per team', true)
+    .addField('Minimum Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchInformation.rankMinimum]), true)
+    .addField('Maximum Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[matchInformation.rankMaximum]), true)
+    .addField('Team A', 'None', true)
+    .addField('Team B', 'None', true)
+    .addField('Spectators', matchInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
+  matchEmbed.fields[6].value = ''
+  for (const playerRef of matchInformation.players.a) {
+    let playerDoc = await playerRef.get()
+    playerDoc = playerDoc.data()
+    matchEmbed.fields[6].value += `\n• ${playerDoc.valorantUsername}`
+  }
+  if (matchEmbed.fields[6].value === '') matchEmbed.fields[6].value = 'None'
+
+  matchEmbed.fields[7].value = ''
+  for (const playerRef of matchInformation.players.b) {
+    let playerDoc = await playerRef.get()
+    playerDoc = playerDoc.data()
+    matchEmbed.fields[7].value += `\n• ${playerDoc.valorantUsername}`
+  }
+  if (matchEmbed.fields[7].value === '') matchEmbed.fields[7].value = 'None'
+
+  if (matchInformation.spectators instanceof Array) {
+    matchEmbed.fields[8].value = ''
+    for (const playerRef of matchInformation.spectators) {
+      let playerDoc = await playerRef.get()
+      playerDoc = playerDoc.data()
+      matchEmbed.fields[8].value += `\n• ${playerDoc.valorantUsername}`
+    }
+    if (matchEmbed.fields[8].value === '') matchEmbed.fields[8].value = 'None'
+  }
+
+  if (matchInformation.status === 'completed') {
+    matchEmbed.addField('Final Score', `${matchInformation.score[0]}-${matchInformation.score[1]}`)
+  }
   botMessage.edit(matchEmbed)
 }
