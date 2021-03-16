@@ -508,7 +508,7 @@ const refresh = async (message, GLOBALS) => {
     .setTitle('Match Information')
     .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team' + (matchInformation.spectators instanceof Array ? ', and react with 🇸 to be a spectator.' : '.'))
     .setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
-    .setTimestamp(matchInformation.date)
+    .setTimestamp(matchInformation.date.toDate())
     .setAuthor(matchCreator.tag, matchCreator.avatarURL())
     .addField('Status', CONSTANTS.capitalizeFirstLetter(matchInformation.status), true)
     .addField('Game Mode', CONSTANTS.capitalizeFirstLetter(matchInformation.mode), true)
@@ -519,6 +519,7 @@ const refresh = async (message, GLOBALS) => {
     .addField('Team A', 'None', true)
     .addField('Team B', 'None', true)
     .addField('Spectators', matchInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
+    .setFooter('match id: ' + matchID)
   matchEmbed.fields[6].value = ''
   for (const playerRef of matchInformation.players.a) {
     let playerDoc = await playerRef.get()
