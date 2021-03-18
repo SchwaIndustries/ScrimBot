@@ -458,9 +458,9 @@ const edit = async (message, GLOBALS) => {
       if (editedValue.toLowerCase() === 'any') {
         matchInformation.map = CONSTANTS.MAPS[Math.floor(Math.random() * Math.floor(CONSTANTS.MAPS.length))]
       } else if (CONSTANTS.MAPS.includes(editedValue.toLowerCase())) {
-        matchInformation.map = CONSTANTS.MAPS.find(e => e === editedValue.toLowerCase()) ?? editedValue.toLowerCase()
+        matchInformation.map = CONSTANTS.MAPS.find(e => e === editedValue.toLowerCase()) || editedValue.toLowerCase()
       } else {
-        return userMessage.reply('please give a valid map!').then(msg => msg.delete({ timeout: 5000 }))
+        return message.reply('please give a valid map!').then(msg => msg.delete({ timeout: 5000 }))
       }
       matchEmbed.fields[2].value = CONSTANTS.capitalizeFirstLetter(matchInformation.map)
       matchEmbed.setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])

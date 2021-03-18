@@ -74,7 +74,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
         matchRecord.creationInformation.map = CONSTANTS.MAPS[Math.floor(Math.random() * Math.floor(CONSTANTS.MAPS.length))]
         break
       } else if (CONSTANTS.MAPS.includes(content)) {
-        matchRecord.creationInformation.map = CONSTANTS.MAPS.find(e => e === content) ?? content
+        matchRecord.creationInformation.map = CONSTANTS.MAPS.find(e => e === content) || content
         break
       } else {
         return userMessage.reply('please give a valid map!').then(msg => msg.delete({ timeout: 5000 }))
@@ -82,7 +82,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
     }
     case 6: {
       if (CONSTANTS.GAME_MODES.includes(content)) {
-        matchRecord.creationInformation.mode = CONSTANTS.GAME_MODES.find(e => e === content) ?? content
+        matchRecord.creationInformation.mode = CONSTANTS.GAME_MODES.find(e => e === content) || content
         break
       } else {
         return userMessage.reply('please give a valid game mode!').then(msg => msg.delete({ timeout: 5000 }))
