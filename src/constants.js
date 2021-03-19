@@ -68,25 +68,27 @@ module.exports = exports = {
 
   GAME_MODES: ['standard', 'spike rush', 'deathmatch'],
 
-  AFFIRMATIVE_WORDS: ['yes', 'yeah', 'sure', 'true', '1', 'one', 'si', 'yea', 'ok', 'okay', 'mhm', 'k', 'yah', 'on', 'why not', 'alright', 'aight', 'affirmative'],
+  AFFIRMATIVE_WORDS: ['yes', 'yeah', 'yea', 'ye', 'yah', 'sure', 'true', '1', 'one', 'on', 'si', 'ok', 'okay', 'k', 'mhm', 'why not', 'alright', 'aight', 'affirmative', 'yeet'],
 
   MAX_TEAM_COUNT: 5, // maximum amount of players allowed on one team
 
   userRegistrationSteps: [
     ['1. Valorant Username', 'What is your FULL Valorant username? (including tag, e.g. `Username#NA1`)'],
-    ['2. Valorant Rank', 'What rank are you in Valorant? If you don\'t have a rank, go with "Iron 1"'],
+    ['2. Valorant Rank', 'What rank are you in Valorant? If you don\'t have a rank, go with "Iron 1".'],
     ['3. Notifications', 'Do you want to be notified when matches are created? Respond "yes" if you would like to opt-in.']
   ],
 
-  matchCreationSteps: [
-    ['1. Date & Time', 'When will the match be? If no date is specified the current day is assumed. You can also specify a time zone such as `CST` or `EDT`, defaults to Pacific. Ex: "Today at 4 AM", "8/24/1932 4:00 AM JST", "8:00 PM in 4 years"'],
-    ['2. Rank Minimum', 'What is the **MINIMUM** rank you are allowing into your tournament? If any, type "any"'],
-    ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any"'],
-    ['4. Player Count', 'How many players should be on each team? Max 5.'],
-    ['5. Spectators', 'Are spectators allowed?'],
-    ['6. Map', 'Which map would you like to play on? Options are "Split", "Bind", "Haven", "Ascent", and "Icebox". If any, type "any"'],
-    ['7. Game Mode', 'What game mode would you like? Options are "standard", "spike rush", and "deathmatch".']
-  ],
+  get matchCreationSteps () {
+    return [
+      ['1. Date & Time', 'When will the match be? If no date is specified the current day is assumed. You can also specify a time zone such as `CST` or `EDT`, defaults to Pacific time. Ex: "Today at 10 AM", "12:30 PM on Saturday", "03/14/2021 at 6:28 PM EST"'],
+      ['2. Rank Minimum', 'What is the **MINIMUM** rank you are allowing into your tournament? If any, type "any".'],
+      ['3. Rank Maximum', 'What is the **MAXIMUM** rank you are allowing into your tournament? If any, type "any".'],
+      ['4. Player Count', `How many players should be on each team? Max ${this.MAX_TEAM_COUNT}.`],
+      ['5. Spectators', 'Are spectators allowed?'],
+      ['6. Map', `Which map would you like to play on? Options are "${this.MAPS.map(m => this.capitalizeFirstLetter(m)).join('", "')}". If any, type "any".`],
+      ['7. Game Mode', `What game mode would you like? Options are "${this.GAME_MODES.map(m => this.capitalizeFirstLetter(m)).join('", "')}".`]
+    ]
+  },
 
   capitalizeFirstLetter: string => {
     string = string.toLowerCase()

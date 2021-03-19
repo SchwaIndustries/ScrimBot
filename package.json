@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/SchwaIndustries/ScrimBot#readme",
   "dependencies": {
-    "chrono-node": "^2.2.3",
+    "chrono-node": "^2.2.4",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
     "firebase-admin": "^9.5.0",
@@ -26,11 +26,11 @@
     "moment-timezone": "^0.5.33"
   },
   "devDependencies": {
-    "heroku": "^7.50.0",
+    "heroku": "^7.51.0",
     "nodemon": "^2.0.7",
-    "standard": "^15.0.1"
+    "standard": "^16.0.3"
   },
   "engines": {
-    "node": "14.x"
+    "node": "12.x"
   }
 }

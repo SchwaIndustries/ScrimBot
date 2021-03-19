@@ -114,6 +114,7 @@ const edit = async (message, GLOBALS) => {
       if (editedValue.match(/\S{3,16}#\S{3,5}/)) userInformation.valorantUsername = editedValue
       else return message.reply('Please give a valid username!').then(msg => msg.delete({ timeout: 5000 }))
       break
+
     case 'rank':
       if (!CONSTANTS.RANKS[editedValue.toUpperCase()]) {
         return message.reply('Please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
@@ -122,14 +123,17 @@ const edit = async (message, GLOBALS) => {
         updateUserRankRoles(message.author, userInformation.valorantRank, GLOBALS)
         break
       }
+
     case 'notifications':
       userInformation.notifications = CONSTANTS.AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase())
       if (userInformation.notifications) updateUserRoles(message.author, 'notificationRole', true, GLOBALS)
       else updateUserRoles(message.author, 'notificationRole', false, GLOBALS)
       break
+
     default:
       return message.reply('Requested property not found!')
   }
+
   userInformationRef.update(userInformation)
   message.reply(`${editedProperty} successfully changed to ${editedValue}!`)
 }
