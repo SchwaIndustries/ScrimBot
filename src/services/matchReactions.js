@@ -53,9 +53,9 @@ const _addPlayerToMatch = async (reaction, user, GLOBALS, matchInformation) => {
   playerInformation = playerInformation.data()
 
   if (matchInformation.players.a.find(e => e.id === playerInformationRef.id) || matchInformation.players.b.find(e => e.id === playerInformationRef.id) || (matchInformation.spectators && matchInformation.spectators.find(e => e.id === playerInformationRef.id))) {
-      reaction.message.channel.send(`${user}, you have already joined a team! Please remove that reaction before joining a new one.`).then(msg => msg.delete({ timeout: 5000 }))
-      reaction.users.remove(user.id)
-      return
+    reaction.message.channel.send(`${user}, you have already joined a team! Please remove that reaction before joining a new one.`).then(msg => msg.delete({ timeout: 5000 }))
+    reaction.users.remove(user.id)
+    return
   }
 
   const messageEmbed = reaction.message.embeds[0]
