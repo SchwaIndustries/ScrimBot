@@ -142,6 +142,8 @@ class MatchEmbed extends ScrimBotEmbed {
  * @property {Discord.Collection} activeUserRegistration
  * @property {function} userIsAdmin
  * @property {function} userIsRegistered
+ * @property {function} updateUserRoles
+ * @property {function} updateUserRankRoles
  */
 
 // Global variables accessible from all files
@@ -169,6 +171,44 @@ const GLOBALS = {
     const userData = await mongo.db().collection('users').findOne({ _id: userId })
     if (!userData) return false
     return userData
+  },
+  /**
+   * Updates a user's role across all servers that the user and bot share
+   * @param {Discord.User} user User to update roles for
+   * @param {Discord.RoleResolvable} role The role to update
+   * @param {boolean} addRole Whether to add the role to the user or remove it
+   */
+  updateUserRoles: async (user, role, addRole) => {
+    const querySnapshot = await mongo.db().collection('guilds').find()
+    querySnapshot.forEach(async documentSnapshot => {
+      if (!documentSnapshot) return
+      if (!client.guilds.resolve(documentSnapshot._id)) return
+
+      const guildMember = await client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
+      if (!guildMember) return
+      if (addRole) guildMember.roles.add(documentSnapshot[role])
+      else guildMember.roles.remove(documentSnapshot[role])
+    })
+  },
+  /**
+   * Updates a user's competitive rank across all servers that the user and bot share
+   * @param {Discord.User} user User to update rank roles for
+   * @param {number} rank User's new rank
+   */
+  updateUserRankRoles: async (user, rank) => {
+    const querySnapshot = await mongo.db().collection('guilds').find()
+    querySnapshot.forEach(async documentSnapshot => {
+      if (!documentSnapshot) return
+      if (!client.guilds.resolve(documentSnapshot._id)) return
+      if (!documentSnapshot.valorantRankRoles) return
+
+      const guildMember = await client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
+      if (!guildMember) return
+      const allRankRoles = documentSnapshot.valorantRankRoles
+      await guildMember.roles.remove(allRankRoles).catch(console.error)
+      const rankRole = allRankRoles[rank.toString()[0] - 1]
+      guildMember.roles.add(rankRole)
+    })
   }
 }
 

@@ -19,48 +19,6 @@ module.exports = exports = {
 }
 
 /**
- * Updates a user's role across all servers that the user and bot share
- * @param {Discord.User} user User to update roles for
- * @param {Discord.RoleResolvable} role The role to update
- * @param {boolean} addRole Whether to add the role to the user or remove it
- * @param {Object} GLOBALS GLOBALS object
- */
-const updateUserRoles = async (user, role, addRole, GLOBALS) => {
-  const querySnapshot = await GLOBALS.mongoDb.collection('guilds').find()
-  querySnapshot.forEach(async documentSnapshot => {
-    if (!documentSnapshot) return
-    if (!GLOBALS.client.guilds.resolve(documentSnapshot._id)) return
-
-    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
-    if (!guildMember) return
-    if (addRole) guildMember.roles.add(documentSnapshot[role])
-    else guildMember.roles.remove(documentSnapshot[role])
-  })
-}
-
-/**
- * Updates a user's competitive rank across all servers that the user and bot share
- * @param {Discord.User} user User to update rank roles for
- * @param {Number} rank User's new rank
- * @param {Object} GLOBALS GLOBALS object
- */
-const updateUserRankRoles = async (user, rank, GLOBALS) => {
-  const querySnapshot = await GLOBALS.mongoDb.collection('guilds').find()
-  querySnapshot.forEach(async documentSnapshot => {
-    if (!documentSnapshot) return
-    if (!GLOBALS.client.guilds.resolve(documentSnapshot._id)) return
-    if (!documentSnapshot.valorantRankRoles) return
-
-    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
-    if (!guildMember) return
-    const allRankRoles = documentSnapshot.valorantRankRoles
-    await guildMember.roles.remove(allRankRoles).catch(console.error)
-    const rankRole = allRankRoles[rank.toString()[0] - 1]
-    guildMember.roles.add(rankRole)
-  })
-}
-
-/**
  * @param {import('discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
@@ -116,14 +74,14 @@ const edit = async (message, GLOBALS) => {
         return message.reply('Please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
         userInformation.valorantRank = CONSTANTS.RANKS[editedValue.toUpperCase()] // TODO: cover edge cases
-        updateUserRankRoles(message.author, userInformation.valorantRank, GLOBALS)
+        GLOBALS.updateUserRankRoles(message.author, userInformation.valorantRank)
         break
       }
 
     case 'notifications':
       userInformation.notifications = CONSTANTS.AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase())
-      if (userInformation.notifications) updateUserRoles(message.author, 'notificationRole', true, GLOBALS)
-      else updateUserRoles(message.author, 'notificationRole', false, GLOBALS)
+      if (userInformation.notifications) GLOBALS.updateUserRoles(message.author, 'notificationRole', true)
+      else GLOBALS.updateUserRoles(message.author, 'notificationRole', false)
       break
 
     default:
