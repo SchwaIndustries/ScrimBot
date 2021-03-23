@@ -6,12 +6,12 @@ module.exports = exports = {
    */
   process: async (GLOBALS) => {
     GLOBALS.client.on('guildMemberAdd', async member => {
-      const guildData = await GLOBALS.db.collection('guilds').doc(member.guild.id).get()
-      if (!guildData.exists) return
+      const guildData = await GLOBALS.mongoDb.collection('guilds').findOne({ _id: member.guild.id })
+      if (!guildData) return
 
-      const memberData = await GLOBALS.db.collection('users').doc(member.id).get()
-      if (memberData.exists && memberData.get('notifications')) {
-        member.roles.add(guildData.get('notificationRole'))
+      const memberData = await GLOBALS.mongoDb.collection('users').findOne({ _id: member.id })
+      if (memberData && memberData.notifications) {
+        member.roles.add(guildData.notificationRole)
       }
     })
   }

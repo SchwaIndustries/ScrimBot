@@ -157,18 +157,18 @@ const GLOBALS = {
    * @param {String} userId User ID to check
    */
   userIsAdmin: async userId => {
-    const userData = await db.collection('users').doc(userId).get()
-    if (!userData.exists) return false
-    return userData.get('admin') === true
+    const userData = await mongo.db().collection('users').findOne({ _id: userId })
+    if (!userData) return false
+    return userData.admin === true
   },
   /**
    * Checks whether a specified user is registered with the bot
    * @param {String} userId User ID to check
    */
   userIsRegistered: async userId => {
-    const userData = await db.collection('users').doc(userId).get()
-    if (!userData.exists) return false
-    else return userData
+    const userData = await mongo.db().collection('users').findOne({ _id: userId })
+    if (!userData) return false
+    return userData
   }
 }
 

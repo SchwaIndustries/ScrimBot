@@ -25,28 +25,33 @@ module.exports = exports = {
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const updateUserRoles = async (user, role, addRole, GLOBALS) => {
-  const querySnapshot = await GLOBALS.db.collection('guilds').get().catch(console.error)
+  const querySnapshot = await GLOBALS.mongoDb.collection('guilds').find()
   querySnapshot.forEach(async documentSnapshot => {
-    if (!documentSnapshot.exists) return
-    if (!GLOBALS.client.guilds.resolve(documentSnapshot.id)) return
+    if (!documentSnapshot) return
+    if (!GLOBALS.client.guilds.resolve(documentSnapshot._id)) return
 
-    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user.id).catch(console.error)
+    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
     if (!guildMember) return
-    if (addRole) guildMember.roles.add(documentSnapshot.get(role))
-    else guildMember.roles.remove(documentSnapshot.get(role))
+    if (addRole) guildMember.roles.add(documentSnapshot[role])
+    else guildMember.roles.remove(documentSnapshot[role])
   })
 }
 
+/**
+ * @param {import('discord.js').User} user
+ * @param {number} rank
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const updateUserRankRoles = async (user, rank, GLOBALS) => {
-  const querySnapshot = await GLOBALS.db.collection('guilds').get().catch(console.error)
+  const querySnapshot = await GLOBALS.mongoDb.collection('guilds').find()
   querySnapshot.forEach(async documentSnapshot => {
-    if (!documentSnapshot.exists) return
-    if (!GLOBALS.client.guilds.resolve(documentSnapshot.id)) return
-    if (!documentSnapshot.get('valorantRankRoles')) return
+    if (!documentSnapshot) return
+    if (!GLOBALS.client.guilds.resolve(documentSnapshot._id)) return
+    if (!documentSnapshot.valorantRankRoles) return
 
-    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user.id).catch(console.error)
+    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
     if (!guildMember) return
-    const allRankRoles = documentSnapshot.get('valorantRankRoles')
+    const allRankRoles = documentSnapshot.valorantRankRoles
     await guildMember.roles.remove(allRankRoles).catch(console.error)
     const rankRole = allRankRoles[rank.toString()[0] - 1]
     guildMember.roles.add(rankRole)
@@ -99,7 +104,7 @@ const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
     userRecord.botMessage.edit(embed)
     userRecord.botReaction.users.remove(GLOBALS.client.user)
     userRecord.registrationInformation.timestamp = new Date()
-    GLOBALS.db.collection('users').doc(userRecord.userID).set(userRecord.registrationInformation)
+    GLOBALS.mongoDb.collection('matches').insertOne({ _id: userRecord.userID, ...userRecord.registrationInformation })
     GLOBALS.activeUserRegistration.delete(userRecord.userID)
   }
 }

@@ -26,15 +26,15 @@ module.exports = exports = {
  * @param {Object} GLOBALS GLOBALS object
  */
 const updateUserRoles = async (user, role, addRole, GLOBALS) => {
-  const querySnapshot = await GLOBALS.db.collection('guilds').get().catch(console.error)
+  const querySnapshot = await GLOBALS.mongoDb.collection('guilds').find()
   querySnapshot.forEach(async documentSnapshot => {
-    if (!documentSnapshot.exists) return
-    if (!GLOBALS.client.guilds.resolve(documentSnapshot.id)) return
+    if (!documentSnapshot) return
+    if (!GLOBALS.client.guilds.resolve(documentSnapshot._id)) return
 
-    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user.id).catch(console.error)
+    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
     if (!guildMember) return
-    if (addRole) guildMember.roles.add(documentSnapshot.get(role))
-    else guildMember.roles.remove(documentSnapshot.get(role))
+    if (addRole) guildMember.roles.add(documentSnapshot[role])
+    else guildMember.roles.remove(documentSnapshot[role])
   })
 }
 
@@ -45,15 +45,15 @@ const updateUserRoles = async (user, role, addRole, GLOBALS) => {
  * @param {Object} GLOBALS GLOBALS object
  */
 const updateUserRankRoles = async (user, rank, GLOBALS) => {
-  const querySnapshot = await GLOBALS.db.collection('guilds').get().catch(console.error)
+  const querySnapshot = await GLOBALS.mongoDb.collection('guilds').find()
   querySnapshot.forEach(async documentSnapshot => {
-    if (!documentSnapshot.exists) return
-    if (!GLOBALS.client.guilds.resolve(documentSnapshot.id)) return
-    if (!documentSnapshot.get('valorantRankRoles')) return
+    if (!documentSnapshot) return
+    if (!GLOBALS.client.guilds.resolve(documentSnapshot._id)) return
+    if (!documentSnapshot.valorantRankRoles) return
 
-    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot.id).members.fetch(user.id).catch(console.error)
+    const guildMember = await GLOBALS.client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
     if (!guildMember) return
-    const allRankRoles = documentSnapshot.get('valorantRankRoles')
+    const allRankRoles = documentSnapshot.valorantRankRoles
     await guildMember.roles.remove(allRankRoles).catch(console.error)
     const rankRole = allRankRoles[rank.toString()[0] - 1]
     guildMember.roles.add(rankRole)
@@ -71,10 +71,8 @@ const info = async (message, GLOBALS) => {
   if (userID.startsWith('<@')) {
     userID = userID.replace(/<@!?/, '').replace(/>$/, '')
   }
-  const userInformationRef = GLOBALS.db.collection('users').doc(userID)
-  let userInformation = await userInformationRef.get()
-  if (!userInformation.exists) return message.reply('User not found! Ensure correct user ID is submitted.')
-  userInformation = userInformation.data()
+  const userInformation = await GLOBALS.mongoDb.collection('users').findOne({ _id: userID })
+  if (!userInformation) return message.reply('User not found! Ensure correct user ID is submitted.')
 
   const userDiscordInformation = await GLOBALS.client.users.fetch(userID)
 
@@ -104,10 +102,8 @@ const edit = async (message, GLOBALS) => {
   const editedValue = attributes.slice(3).join(' ')
   if (!editedValue) return message.reply('Please specify a value for ' + editedProperty)
 
-  const userInformationRef = GLOBALS.db.collection('users').doc(message.author.id)
-  let userInformation = await userInformationRef.get()
-  if (!userInformation.exists) return message.reply('User not found! Are you registered with ScrimBot?')
-  userInformation = userInformation.data()
+  const userInformation = await GLOBALS.mongoDb.collection('users').findOne({ _id: message.author.id })
+  if (!userInformation) return message.reply('User not found! Are you registered with ScrimBot?')
 
   switch (editedProperty) {
     case 'username':
@@ -134,6 +130,6 @@ const edit = async (message, GLOBALS) => {
       return message.reply('Requested property not found!')
   }
 
-  userInformationRef.update(userInformation)
+  await GLOBALS.mongoDb.collection('users').replaceOne({ _id: message.author.id }, userInformation)
   message.reply(`${editedProperty} successfully changed to ${editedValue}!`)
 }
