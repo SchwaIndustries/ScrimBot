@@ -253,6 +253,7 @@ function verifyConfigurationIntegrity () {
       if (!process.env[config]) throw new Error('Firebase config ' + config + ' not found! View README.md for more information.')
     })
   }
+  if (!process.env.MONGO_URI) throw new Error('MongoDB connection string not found! Ensure environment variable MONGO_URI contains the connection string. View README.md for more information.')
   if (!process.env.TIME_ZONE) process.env.TIME_ZONE = 'America/Los_Angeles'
   if (!process.env.PREFIX) process.env.PREFIX = 'v!'
 }
