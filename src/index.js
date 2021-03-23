@@ -59,6 +59,10 @@ const admin = require('firebase-admin')
     })
   }
   const db = admin.firestore()
+const Mongo = require('mongodb')
+const mongo = new Mongo.MongoClient(process.env.MONGO_URI, {
+  useUnifiedTopology: true
+})
 // ScrimBot specific properties
 /**
  * @type {Map<string, object>}
@@ -134,6 +138,7 @@ class MatchEmbed extends ScrimBotEmbed {
  * @property {ScrimBotEmbed} Embed
  * @property {MatchEmbed} MatchEmbed
  * @property {admin.firestore.Firestore} db
+ * @property {Mongo.Db} mongoDb
  * @property {Discord.Collection} activeUserRegistration
  * @property {function} userIsAdmin
  * @property {function} userIsRegistered
@@ -172,7 +177,9 @@ const GLOBALS = {
 // /////////////////////////////////////////////////////////////////////////// //
 // MARK: - Ready listener
 
-client.on('ready', () => {
+client.on('ready', async () => {
+  await mongo.connect()
+  GLOBALS.mongoDb = mongo.db()
   runServices()
   loadCommands()
   console.log(`Logged in as ${client.user.tag}! All systems online.`)
