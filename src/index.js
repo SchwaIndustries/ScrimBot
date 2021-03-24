@@ -95,28 +95,16 @@ class MatchEmbed extends ScrimBotEmbed {
     this.addField('Spectators', matchData.spectators instanceof Array ? 'None' : 'Not allowed', true)
 
     if (matchData.players.a.length > 0) {
-      this.fields[6].value = ''
-      for (const playerRef of matchData.players.a) {
-        let playerDoc = await playerRef.get()
-        playerDoc = playerDoc.data()
-        this.fields[6].value += `\n• ${playerDoc.valorantUsername}`
-      }
+      const teamAPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: matchData.players.a })
+      this.fields[6].value = (await teamAPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
     }
     if (matchData.players.b.length > 0) {
-      this.fields[7].value = ''
-      for (const playerRef of matchData.players.b) {
-        let playerDoc = await playerRef.get()
-        playerDoc = playerDoc.data()
-        this.fields[7].value += `\n• ${playerDoc.valorantUsername}`
-      }
+      const teamBPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: matchData.players.b })
+      this.fields[7].value = (await teamBPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
     }
     if (matchData.spectators instanceof Array && matchData.spectators.length > 0) {
-      this.fields[8].value = ''
-      for (const playerRef of matchData.spectators) {
-        let playerDoc = await playerRef.get()
-        playerDoc = playerDoc.data()
-        this.fields[8].value += `\n• ${playerDoc.valorantUsername}`
-      }
+      const spectatorPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: matchData.spectators })
+      this.fields[8].value = (await spectatorPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
     }
 
     if (matchData.status === 'completed') {

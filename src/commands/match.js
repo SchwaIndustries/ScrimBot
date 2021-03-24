@@ -251,23 +251,35 @@ const score = async (message, GLOBALS) => {
   if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 
   for (const playerRef of matchInformation.players.a) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    playerDoc.matches.unshift(matchID)
-    playerRef.update(playerDoc)
+    await GLOBALS.mongoDb.collection('users').updateOne({ _id: playerRef }, {
+      $push: {
+        matches: {
+          $each: [matchID],
+          $position: 0
+        }
+      }
+    })
   }
   for (const playerRef of matchInformation.players.b) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    playerDoc.matches.unshift(matchID)
-    playerRef.update(playerDoc)
+    await GLOBALS.mongoDb.collection('users').updateOne({ _id: playerRef }, {
+      $push: {
+        matches: {
+          $each: [matchID],
+          $position: 0
+        }
+      }
+    })
   }
   if (matchInformation.spectators instanceof Array) {
     for (const playerRef of matchInformation.spectators) {
-      let playerDoc = await playerRef.get()
-      playerDoc = playerDoc.data()
-      playerDoc.matches.unshift(matchID)
-      playerRef.update(playerDoc)
+      await GLOBALS.mongoDb.collection('users').updateOne({ _id: playerRef }, {
+        $push: {
+          matches: {
+            $each: [matchID],
+            $position: 0
+          }
+        }
+      })
     }
   }
 }
@@ -329,7 +341,7 @@ const info = async (message, GLOBALS) => {
   const matchEmbed = new GLOBALS.Embed()
     .setTitle('Retrieved Match Information')
     .setDescription('')
-    .setTimestamp(matchInformation.date.toDate())
+    .setTimestamp(matchInformation.date)
     .setAuthor(matchCreator.tag, matchCreator.avatarURL())
     .setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
     .addField('Status', CONSTANTS.capitalizeFirstLetter(matchInformation.status), true)
@@ -341,30 +353,16 @@ const info = async (message, GLOBALS) => {
     .addField('Team A', 'None', true)
     .addField('Team B', 'None', true)
     .addField('Spectators', matchInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
-  matchEmbed.fields[6].value = ''
-  for (const playerRef of matchInformation.players.a) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    matchEmbed.fields[6].value += `\n• ${playerDoc.valorantUsername}`
-  }
-  if (matchEmbed.fields[6].value === '') matchEmbed.fields[6].value = 'None'
 
-  matchEmbed.fields[7].value = ''
-  for (const playerRef of matchInformation.players.b) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    matchEmbed.fields[7].value += `\n• ${playerDoc.valorantUsername}`
-  }
-  if (matchEmbed.fields[7].value === '') matchEmbed.fields[7].value = 'None'
+  const teamAPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: { $in: matchInformation.players.a } })
+  matchEmbed.fields[6].value = (await teamAPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
+
+  const teamBPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: { $in: matchInformation.players.b } })
+  matchEmbed.fields[7].value = (await teamBPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
 
   if (matchInformation.spectators instanceof Array) {
-    matchEmbed.fields[8].value = ''
-    for (const playerRef of matchInformation.spectators) {
-      let playerDoc = await playerRef.get()
-      playerDoc = playerDoc.data()
-      matchEmbed.fields[8].value += `\n• ${playerDoc.valorantUsername}`
-    }
-    if (matchEmbed.fields[8].value === '') matchEmbed.fields[8].value = 'None'
+    const spectatorPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: { $in: matchInformation.spectators } })
+    matchEmbed.fields[8].value = (await spectatorPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
   }
 
   if (matchInformation.status === 'completed') {
@@ -496,7 +494,7 @@ const refresh = async (message, GLOBALS) => {
     .setTitle('Match Information')
     .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team' + (matchInformation.spectators instanceof Array ? ', and react with 🇸 to be a spectator.' : '.'))
     .setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
-    .setTimestamp(matchInformation.date.toDate())
+    .setTimestamp(matchInformation.date)
     .setAuthor(matchCreator.tag, matchCreator.avatarURL())
     .addField('Status', CONSTANTS.capitalizeFirstLetter(matchInformation.status), true)
     .addField('Game Mode', CONSTANTS.capitalizeFirstLetter(matchInformation.mode), true)
@@ -508,30 +506,16 @@ const refresh = async (message, GLOBALS) => {
     .addField('Team B', 'None', true)
     .addField('Spectators', matchInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
     .setFooter('match id: ' + matchID)
-  matchEmbed.fields[6].value = ''
-  for (const playerRef of matchInformation.players.a) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    matchEmbed.fields[6].value += `\n• ${playerDoc.valorantUsername}`
-  }
-  if (matchEmbed.fields[6].value === '') matchEmbed.fields[6].value = 'None'
 
-  matchEmbed.fields[7].value = ''
-  for (const playerRef of matchInformation.players.b) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    matchEmbed.fields[7].value += `\n• ${playerDoc.valorantUsername}`
-  }
-  if (matchEmbed.fields[7].value === '') matchEmbed.fields[7].value = 'None'
+  const teamAPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: matchInformation.players.a })
+  matchEmbed.fields[6].value = await teamAPlayers.toArray().map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
+
+  const teamBPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: { $in: matchInformation.players.b } })
+  matchEmbed.fields[7].value = (await teamBPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
 
   if (matchInformation.spectators instanceof Array) {
-    matchEmbed.fields[8].value = ''
-    for (const playerRef of matchInformation.spectators) {
-      let playerDoc = await playerRef.get()
-      playerDoc = playerDoc.data()
-      matchEmbed.fields[8].value += `\n• ${playerDoc.valorantUsername}`
-    }
-    if (matchEmbed.fields[8].value === '') matchEmbed.fields[8].value = 'None'
+    const spectatorPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: { $in: matchInformation.spectators } })
+    matchEmbed.fields[8].value = (await spectatorPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
   }
 
   if (matchInformation.status === 'completed') {
