@@ -1,6 +1,5 @@
 const CONSTANTS = require('../constants')
 const moment = require('moment-timezone')
-const admin = require('firebase-admin')
 const chrono = require('chrono-node')
 
 module.exports = exports = {
@@ -226,12 +225,16 @@ const score = async (message, GLOBALS) => {
     GLOBALS.client.channels.fetch(matchInformation.teamBVoiceChannel).then(c => c.delete())
   }
 
-  matchInformation.status = 'completed'
-  matchInformation.score = [matchScore.split('-')[0], matchScore.split('-')[1]]
-  matchInformation.teamAVoiceChannel = admin.firestore.FieldValue.delete()
-  matchInformation.teamBVoiceChannel = admin.firestore.FieldValue.delete()
-
-  await GLOBALS.mongoDb.collection('matches').replaceOne({ _id: matchID }, matchInformation)
+  await GLOBALS.mongoDb.collection('matches').updateOne({ _id: matchID }, {
+    $set: {
+      status: 'complete',
+      score: [matchScore.split('-')[0], matchScore.split('-')[1]]
+    },
+    $unset: {
+      teamAVoiceChannel: '',
+      teamBVoiceChannel: ''
+    }
+  })
 
   const embed = new GLOBALS.Embed()
     .setTitle('Match Completed')
@@ -250,38 +253,14 @@ const score = async (message, GLOBALS) => {
   botMessage.edit('The match has completed!', botMessageEmbed)
   if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 
-  for (const playerRef of matchInformation.players.a) {
-    await GLOBALS.mongoDb.collection('users').updateOne({ _id: playerRef }, {
-      $push: {
-        matches: {
-          $each: [matchID],
-          $position: 0
-        }
+  await GLOBALS.mongoDb.collection('users').updateMany({ $in: { _id: [...matchInformation.players.a, ...matchInformation.players.b, ...(matchInformation.spectators || [])] } }, {
+    $push: {
+      matches: {
+        $each: [matchID],
+        $position: 0
       }
-    })
-  }
-  for (const playerRef of matchInformation.players.b) {
-    await GLOBALS.mongoDb.collection('users').updateOne({ _id: playerRef }, {
-      $push: {
-        matches: {
-          $each: [matchID],
-          $position: 0
-        }
-      }
-    })
-  }
-  if (matchInformation.spectators instanceof Array) {
-    for (const playerRef of matchInformation.spectators) {
-      await GLOBALS.mongoDb.collection('users').updateOne({ _id: playerRef }, {
-        $push: {
-          matches: {
-            $each: [matchID],
-            $position: 0
-          }
-        }
-      })
     }
-  }
+  })
 }
 
 /**

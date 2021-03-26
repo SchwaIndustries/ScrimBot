@@ -141,6 +141,7 @@ const _removePlayerFromMatch = async (reaction, user, GLOBALS, matchInformation)
       }
       if (messageEmbed.fields[6].value === '') messageEmbed.fields[6].value = 'None'
       break
+
     case '🇧':
       matchUpdateQuery.$pullAll['players.b'] = [user.id]
 
@@ -152,6 +153,7 @@ const _removePlayerFromMatch = async (reaction, user, GLOBALS, matchInformation)
       }
       if (messageEmbed.fields[7].value === '') messageEmbed.fields[7].value = 'None'
       break
+
     case '🇸':
       if (matchInformation.spectators) {
         matchUpdateQuery.$pullAll.spectators = [user.id]
