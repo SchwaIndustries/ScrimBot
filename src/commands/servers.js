@@ -13,7 +13,7 @@ module.exports = exports = {
  * Creates an embed with guilds starting from an index.
  * @param 0 start The index to start from.
  */
-
+    if (await GLOBALS.userIsAdmin(message.author.id) === false) return message.reply('This command can only be executed by bot admins.')
     const generateEmbed = start => {
       const current = guilds.slice(start, start + 10)
 
