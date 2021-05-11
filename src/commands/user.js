@@ -89,6 +89,7 @@ const info = async (message, GLOBALS) => {
     .addField('Registration Date', moment(userInformation.timestamp.toMillis()).tz(process.env.TIME_ZONE).format('h:mm a z DD MMM, YYYY'))
     .addField('Notifications Enabled', userInformation.notifications === true ? 'Yes' : 'No', true)
     .addField('Matches Played', userInformation.matches.length, true)
+    .addField('Bot Admin', await GLOBALS.userIsAdmin(userID) === true ? 'Yes' : 'No', true)
   message.reply(userEmbed)
 }
 
