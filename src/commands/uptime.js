@@ -1,4 +1,5 @@
 const moment = require('moment')
+require('moment-duration-format')
 
 module.exports = exports = {
   name: 'uptime',
@@ -9,7 +10,7 @@ module.exports = exports = {
    * @param {import('../index.js').GLOBALS} GLOBALS
    */
   process: async (message, GLOBALS) => {
-    const duration = moment.duration(GLOBALS.client.uptime).humanize()
+    const duration = moment.duration(GLOBALS.client.uptime).format(' D [days], H [hrs], m [mins], s [secs]')
     const embed = new GLOBALS.Embed()
       .setTitle('Uptime')
       .setDescription(`ScrimBot has been online for ${duration}`)

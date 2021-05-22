@@ -1,3 +1,5 @@
+const { TextChannel } = require('discord.js')
+
 module.exports = exports = {
   name: 'restart',
   usage: '',
