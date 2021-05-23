@@ -111,12 +111,12 @@ const edit = async (message, GLOBALS) => {
   userInformation = userInformation.data()
 
   switch (editedProperty) {
-    case 'username':
+    case 'Username':
       if (editedValue.match(/\S{3,16}#\S{3,5}/)) userInformation.valorantUsername = editedValue
       else return message.reply('Please give a valid username!').then(msg => msg.delete({ timeout: 5000 }))
       break
 
-    case 'rank':
+    case 'Rank':
       if (!CONSTANTS.RANKS[editedValue.toUpperCase()]) {
         return message.reply('Please give a valid rank!').then(msg => msg.delete({ timeout: 5000 }))
       } else {
@@ -125,7 +125,7 @@ const edit = async (message, GLOBALS) => {
         break
       }
 
-    case 'notifications':
+    case 'Notifications':
       userInformation.notifications = CONSTANTS.AFFIRMATIVE_WORDS.includes(editedValue.toLowerCase())
       if (userInformation.notifications) updateUserRoles(message.author, 'notificationRole', true, GLOBALS)
       else updateUserRoles(message.author, 'notificationRole', false, GLOBALS)
