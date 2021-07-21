@@ -42,7 +42,7 @@ const info = async (message, GLOBALS) => {
     .setThumbnail(userDiscordInformation.avatarURL())
     .addField('Valorant Username', userInformation.valorantUsername, true)
     .addField('Valorant Rank', CONSTANTS.capitalizeFirstLetter(CONSTANTS.RANKS_REVERSED[userInformation.valorantRank]), true)
-    .addField('Registration Date', moment(userInformation.timestamp.toMillis()).tz(process.env.TIME_ZONE).format('h:mm a z DD MMM, YYYY'))
+    .addField('Registration Date', moment(userInformation.timestamp).tz(process.env.TIME_ZONE).format('h:mm a z DD MMM, YYYY'))
     .addField('Notifications Enabled', userInformation.notifications === true ? 'Yes' : 'No', true)
     .addField('Matches Played', userInformation.matches.length, true)
     .addField('Bot Admin', await GLOBALS.userIsAdmin(userID) === true ? 'Yes' : 'No', true)
