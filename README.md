@@ -20,7 +20,7 @@ _ScrimBot is based off [Mountainz](https://github.com/Kalissaac/Mountainz)._
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ### Requirements:
-1. Firebase Project (https://console.firebase.google.com/)
+1. MongoDB instance (https://www.mongodb.com/cloud/atlas)
 2. Discord Bot Token (https://discord.com/developers/applications)
 3. Node.js Version 12 or higher (https://nodejs.org/en/download/)
 
@@ -43,26 +43,12 @@ $ cd ScrimBot
 TOKEN=<discord bot token>
 TIME_ZONE=<(OPTIONAL) desired time zone (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), default is America/Los_Angeles>
 PREFIX=<(OPTIONAL) desired bot prefix, default is v!>
+MONGO_URI=<mongo uri>
 ```
 
 2. Replace `<discord bot token>` with your bot token
 
-3. In your Firebase project, navigate to Settings > Service Accounts > Firebase Admin SDK and click **Generate a new key**
-
-4. In your Firebase project, navigate to Develop > Firestore and make sure Firestore is enabled for your project (NOT Realtime Database)
-
-5. You now have two options: if you want to store the JSON locally, you can put the file in your project folder and set an additional key which points to it:
-```
-GOOGLE_APPLICATION_CREDENTIALS=</path/to/service-account-file.json>
-```
-or, if you are unable to store a JSON file in your project directory, you can add some specific keys and ScrimBot will do the rest for you.
-```
-FIR_PROJID=<Firebase project ID>
-FIR_CLIENTID=<Firebase client ID>
-FIR_PRIVATEKEY_ID=<Firebase private key ID>
-FIR_PRIVATEKEY=<Firebase private key>
-```
-If both are present, `GOOGLE_APPLICATION_CREDENTIALS` will be preferred.
+3. Replace `<mongo uri>` with your MongoDB connection string
 
 6. Run `npm install` to install bot dependencies
 
