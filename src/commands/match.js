@@ -211,7 +211,12 @@ const score = async (message, GLOBALS) => {
   const matchScore = message.content.split(' ')[3]
   if (!message.guild) return message.reply('This command can only be run in a server!')
 
-  if (/\d{1,2}-\d{1,2}/.test(matchScore) === false) return message.reply('Ensure your score is reported in the format `<team a>-<team b>` (e.g. `13-7`)')
+  if (/\d{1,2}-\d{1,2}/.test(matchScore) === false) {
+    return message.reply('Ensure your score is reported in the format `<team a>-<team b>` (e.g. `13-7`)').then(msg => {
+      msg.delete({ timeout: 30000 })
+      message.delete({ timeout: 30000 })
+    })
+  }
 
   const matchInformation = await GLOBALS.mongoDb.collection('matches').findOne({ _id: matchID })
   if (!matchInformation) return message.reply('Match not found! Ensure correct match ID is submitted.')
