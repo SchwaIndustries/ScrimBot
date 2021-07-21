@@ -38,27 +38,6 @@ const Discord = require('discord.js')
   })
 require('dotenv').config()
 verifyConfigurationIntegrity()
-const admin = require('firebase-admin')
-  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) admin.initializeApp()
-  else {
-    const firebaseCredential = {
-      type: 'service_account',
-      project_id: process.env.FIR_PROJID,
-      private_key_id: process.env.FIR_PRIVATEKEY_ID,
-      private_key: process.env.FIR_PRIVATEKEY.replace(/\\n/g, '\n'), // encoding fix: https://stackoverflow.com/a/41044630
-      client_email: `firebase-adminsdk-time3@${process.env.FIR_PROJID}.iam.gserviceaccount.com`,
-      client_id: process.env.FIR_CLIENTID,
-      auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-      token_uri: 'https://oauth2.googleapis.com/token',
-      auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
-      client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-time3%40${process.env.FIR_PROJID}.iam.gserviceaccount.com`
-    }
-    admin.initializeApp({
-      credential: admin.credential.cert(firebaseCredential),
-      databaseURL: `https://${process.env.FIR_PROJID}.firebaseio.com`
-    })
-  }
-  const db = admin.firestore()
 const Mongo = require('mongodb')
 const mongo = new Mongo.MongoClient(process.env.MONGO_URI, {
   useUnifiedTopology: true
@@ -125,7 +104,6 @@ class MatchEmbed extends ScrimBotEmbed {
  * @property {Discord.Client} client
  * @property {ScrimBotEmbed} Embed
  * @property {MatchEmbed} MatchEmbed
- * @property {admin.firestore.Firestore} db
  * @property {Mongo.Db} mongoDb
  * @property {Discord.Collection} activeUserRegistration
  * @property {function} userIsAdmin
@@ -139,7 +117,6 @@ const GLOBALS = {
   client,
   Embed: ScrimBotEmbed,
   MatchEmbed: MatchEmbed,
-  db,
   activeUserRegistration: new Discord.Collection(),
   activeMatchCreation: new Discord.Collection(),
   /**
@@ -275,12 +252,6 @@ client.login(process.env.TOKEN)
  */
 function verifyConfigurationIntegrity () {
   if (!process.env.TOKEN) throw new Error('Discord bot token not found! Ensure environment variable TOKEN contains the bot token. View README.md for more information')
-  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    const firebaseConfigs = ['FIR_PROJID', 'FIR_CLIENTID', 'FIR_PRIVATEKEY_ID', 'FIR_PRIVATEKEY']
-    firebaseConfigs.forEach(config => {
-      if (!process.env[config]) throw new Error('Firebase config ' + config + ' not found! View README.md for more information.')
-    })
-  }
   if (!process.env.MONGO_URI) throw new Error('MongoDB connection string not found! Ensure environment variable MONGO_URI contains the connection string. View README.md for more information.')
   if (!process.env.TIME_ZONE) process.env.TIME_ZONE = 'America/Los_Angeles'
   if (!process.env.PREFIX) process.env.PREFIX = 'v!'

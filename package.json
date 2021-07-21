@@ -21,7 +21,6 @@
     "chrono-node": "^2.2.4",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
-    "firebase-admin": "^9.5.0",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
     "mongodb": "^3.6.5"
