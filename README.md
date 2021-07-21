@@ -55,3 +55,95 @@ MONGO_URI=<mongo uri>
 7. Run `npm start` and the bot should be online!
 
 8. You can add yourself as a bot admin by modifying your user entry in the database. In the `users` collection, find your user ID and add a field named `admin` with the boolean value of `true`. This will allow you to access certain bot admin commands.
+
+### Migration from Cloud Firestore:
+If you had previously ran an instance of ScrimBot before it migrated to MongoDB, this section will help you transition your data over.
+
+1. Use an existing Google Cloud service account or create a service account key for your project (https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys)
+
+2. Install node-firestore-import-export
+```sh
+npm install -g node-firestore-import-export
+```
+
+3. Export your data to a file
+```sh
+firestore-export --accountCredentials <service account key file> --backupFile firestore-dump.json --prettyPrint
+```
+
+4. Execute the following Node script to clean up the data
+```js
+const fs = require('fs')
+const original = JSON.parse(fs.readFileSync('./firestore-dump.json', { encoding: 'utf8' }))
+
+const converted = {
+  guilds: [],
+  matches: [],
+  users: []
+}
+
+// parse guilds
+for (const guildID in original.__collections__.guilds) {
+  const guild = original.__collections__.guilds[guildID]
+
+  delete guild.__collections__
+
+  // some guilds only have linked matches and have never run v!server add
+  if (guild.name) {
+    converted.guilds.push({
+      _id: guildID,
+      ...guild
+    })
+  }
+}
+
+// parse matches
+for (const matchID in original.__collections__.matches) {
+  const match = original.__collections__.matches[matchID]
+
+  delete match.__collections__
+  match.timestamp = new Date(parseInt(match.timestamp.value._seconds + '' + match.timestamp.value._nanoseconds.toString().slice(0, 3)))
+  if (match.date) match.date = new Date(parseInt(match.date.value._seconds + '000'))
+  match.players.a = match.players.a.map(user => {
+    if (!user.value) console.log(matchID)
+    return user.value.split('/').pop()
+  })
+  match.players.b = match.players.b.map(user => {
+    return user.value.split('/').pop()
+  })
+  if (match.spectators) {
+    match.spectators = match.spectators.map(user => {
+      return user.value.split('/').pop()
+    })
+  }
+
+  converted.matches.push({
+    _id: matchID,
+    ...match
+  })
+}
+
+// parse users
+for (const userID in original.__collections__.users) {
+  const user = original.__collections__.users[userID]
+
+  delete user.__collections__
+  user.timestamp = new Date(parseInt(user.timestamp.value._seconds + '' + user.timestamp.value._nanoseconds.toString().slice(0, 3)))
+  user.matches = user.matches.map(match => {
+    return match.value.split('/').pop()
+  })
+
+  converted.users.push({
+    _id: userID,
+    ...user
+  })
+}
+
+fs.writeFileSync('./converted-guilds.json', JSON.stringify(converted.guilds))
+fs.writeFileSync('./converted-matches.json', JSON.stringify(converted.matches))
+fs.writeFileSync('./converted-users.json', JSON.stringify(converted.users))
+```
+
+5. Log into your MongoDB instance and import your data!
+
+Let us know if you run into any issues migrating your data.
