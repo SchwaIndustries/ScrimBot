@@ -253,7 +253,7 @@ const score = async (message, GLOBALS) => {
   botMessage.edit('The match has completed!', botMessageEmbed)
   if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 
-  await GLOBALS.mongoDb.collection('users').updateMany({ $in: { _id: [...matchInformation.players.a, ...matchInformation.players.b, ...(matchInformation.spectators || [])] } }, {
+  await GLOBALS.mongoDb.collection('users').updateMany({ _id: { $in: [...matchInformation.players.a, ...matchInformation.players.b, ...(matchInformation.spectators || [])] } }, {
     $push: {
       matches: {
         $each: [matchID],
