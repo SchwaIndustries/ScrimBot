@@ -15,17 +15,8 @@
       "description": "Desired bot prefix",
       "required": false
     },
-    "FIR_PROJID": {
-      "description": "Firebase project ID"
-    },
-    "FIR_CLIENTID": {
-      "description": "Firebase client ID"
-    },
-    "FIR_PRIVATEKEY_ID": {
-      "description": "Firebase private key ID"
-    },
-    "FIR_PRIVATEKEY": {
-      "description": "Firebase private key"
+    "MONGO_URI": {
+      "description": "MongoDB connection string (https://www.mongodb.com/cloud/atlas)"
     },
     "DOMAIN": {
       "description": "Heroku domain (to keep bot alive when using free dynos)",

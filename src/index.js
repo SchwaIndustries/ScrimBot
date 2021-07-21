@@ -38,27 +38,10 @@ const Discord = require('discord.js')
   })
 require('dotenv').config()
 verifyConfigurationIntegrity()
-const admin = require('firebase-admin')
-  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) admin.initializeApp()
-  else {
-    const firebaseCredential = {
-      type: 'service_account',
-      project_id: process.env.FIR_PROJID,
-      private_key_id: process.env.FIR_PRIVATEKEY_ID,
-      private_key: process.env.FIR_PRIVATEKEY.replace(/\\n/g, '\n'), // encoding fix: https://stackoverflow.com/a/41044630
-      client_email: `firebase-adminsdk-time3@${process.env.FIR_PROJID}.iam.gserviceaccount.com`,
-      client_id: process.env.FIR_CLIENTID,
-      auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-      token_uri: 'https://oauth2.googleapis.com/token',
-      auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
-      client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-time3%40${process.env.FIR_PROJID}.iam.gserviceaccount.com`
-    }
-    admin.initializeApp({
-      credential: admin.credential.cert(firebaseCredential),
-      databaseURL: `https://${process.env.FIR_PROJID}.firebaseio.com`
-    })
-  }
-  const db = admin.firestore()
+const Mongo = require('mongodb')
+const mongo = new Mongo.MongoClient(process.env.MONGO_URI, {
+  useUnifiedTopology: true
+})
 // ScrimBot specific properties
 /**
  * @type {Map<string, object>}
@@ -91,28 +74,16 @@ class MatchEmbed extends ScrimBotEmbed {
     this.addField('Spectators', matchData.spectators instanceof Array ? 'None' : 'Not allowed', true)
 
     if (matchData.players.a.length > 0) {
-      this.fields[6].value = ''
-      for (const playerRef of matchData.players.a) {
-        let playerDoc = await playerRef.get()
-        playerDoc = playerDoc.data()
-        this.fields[6].value += `\n• ${playerDoc.valorantUsername}`
-      }
+      const teamAPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: matchData.players.a })
+      this.fields[6].value = (await teamAPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
     }
     if (matchData.players.b.length > 0) {
-      this.fields[7].value = ''
-      for (const playerRef of matchData.players.b) {
-        let playerDoc = await playerRef.get()
-        playerDoc = playerDoc.data()
-        this.fields[7].value += `\n• ${playerDoc.valorantUsername}`
-      }
+      const teamBPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: matchData.players.b })
+      this.fields[7].value = (await teamBPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
     }
     if (matchData.spectators instanceof Array && matchData.spectators.length > 0) {
-      this.fields[8].value = ''
-      for (const playerRef of matchData.spectators) {
-        let playerDoc = await playerRef.get()
-        playerDoc = playerDoc.data()
-        this.fields[8].value += `\n• ${playerDoc.valorantUsername}`
-      }
+      const spectatorPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: matchData.spectators })
+      this.fields[8].value = (await spectatorPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
     }
 
     if (matchData.status === 'completed') {
@@ -133,10 +104,12 @@ class MatchEmbed extends ScrimBotEmbed {
  * @property {Discord.Client} client
  * @property {ScrimBotEmbed} Embed
  * @property {MatchEmbed} MatchEmbed
- * @property {admin.firestore.Firestore} db
+ * @property {Mongo.Db} mongoDb
  * @property {Discord.Collection} activeUserRegistration
  * @property {function} userIsAdmin
  * @property {function} userIsRegistered
+ * @property {function} updateUserRoles
+ * @property {function} updateUserRankRoles
  */
 
 // Global variables accessible from all files
@@ -144,7 +117,6 @@ const GLOBALS = {
   client,
   Embed: ScrimBotEmbed,
   MatchEmbed: MatchEmbed,
-  db,
   activeUserRegistration: new Discord.Collection(),
   activeMatchCreation: new Discord.Collection(),
   /**
@@ -152,18 +124,56 @@ const GLOBALS = {
    * @param {String} userId User ID to check
    */
   userIsAdmin: async userId => {
-    const userData = await db.collection('users').doc(userId).get()
-    if (!userData.exists) return false
-    return userData.get('admin') === true
+    const userData = await mongo.db().collection('users').findOne({ _id: userId })
+    if (!userData) return false
+    return userData.admin === true
   },
   /**
    * Checks whether a specified user is registered with the bot
    * @param {String} userId User ID to check
    */
   userIsRegistered: async userId => {
-    const userData = await db.collection('users').doc(userId).get()
-    if (!userData.exists) return false
-    else return userData
+    const userData = await mongo.db().collection('users').findOne({ _id: userId })
+    if (!userData) return false
+    return userData
+  },
+  /**
+   * Updates a user's role across all servers that the user and bot share
+   * @param {Discord.User} user User to update roles for
+   * @param {Discord.RoleResolvable} role The role to update
+   * @param {boolean} addRole Whether to add the role to the user or remove it
+   */
+  updateUserRoles: async (user, role, addRole) => {
+    const querySnapshot = await mongo.db().collection('guilds').find()
+    querySnapshot.forEach(async documentSnapshot => {
+      if (!documentSnapshot) return
+      if (!client.guilds.resolve(documentSnapshot._id)) return
+
+      const guildMember = await client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
+      if (!guildMember) return
+      if (addRole) guildMember.roles.add(documentSnapshot[role])
+      else guildMember.roles.remove(documentSnapshot[role])
+    })
+  },
+  /**
+   * Updates a user's competitive rank across all servers that the user and bot share
+   * @param {Discord.User} user User to update rank roles for
+   * @param {number} rank User's new rank
+   */
+  updateUserRankRoles: async (user, rank) => {
+    const querySnapshot = await mongo.db().collection('guilds').find()
+    querySnapshot.forEach(async documentSnapshot => {
+      if (!documentSnapshot) return
+      if (!client.guilds.resolve(documentSnapshot._id)) return
+      if (!documentSnapshot.valorantRankRoles) return
+
+      const guildMember = await client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
+      if (!guildMember) return
+      const allRankRoles = documentSnapshot.valorantRankRoles
+      await guildMember.roles.remove(allRankRoles).catch(console.error)
+      const rankRole = allRankRoles[rank.toString()[0] - 1]
+      guildMember.roles.add(rankRole)
+    })
   }
 }
 
@@ -172,7 +182,9 @@ const GLOBALS = {
 // /////////////////////////////////////////////////////////////////////////// //
 // MARK: - Ready listener
 
-client.on('ready', () => {
+client.on('ready', async () => {
+  await mongo.connect()
+  GLOBALS.mongoDb = mongo.db()
   runServices()
   loadCommands()
   console.log(`Logged in as ${client.user.tag}! All systems online.`)
@@ -240,12 +252,7 @@ client.login(process.env.TOKEN)
  */
 function verifyConfigurationIntegrity () {
   if (!process.env.TOKEN) throw new Error('Discord bot token not found! Ensure environment variable TOKEN contains the bot token. View README.md for more information')
-  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    const firebaseConfigs = ['FIR_PROJID', 'FIR_CLIENTID', 'FIR_PRIVATEKEY_ID', 'FIR_PRIVATEKEY']
-    firebaseConfigs.forEach(config => {
-      if (!process.env[config]) throw new Error('Firebase config ' + config + ' not found! View README.md for more information.')
-    })
-  }
+  if (!process.env.MONGO_URI) throw new Error('MongoDB connection string not found! Ensure environment variable MONGO_URI contains the connection string. View README.md for more information.')
   if (!process.env.TIME_ZONE) process.env.TIME_ZONE = 'America/Los_Angeles'
   if (!process.env.PREFIX) process.env.PREFIX = 'v!'
 }

@@ -20,7 +20,7 @@ _ScrimBot is based off [Mountainz](https://github.com/Kalissaac/Mountainz)._
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ### Requirements:
-1. Firebase Project (https://console.firebase.google.com/)
+1. MongoDB instance (https://www.mongodb.com/cloud/atlas)
 2. Discord Bot Token (https://discord.com/developers/applications)
 3. Node.js Version 12 or higher (https://nodejs.org/en/download/)
 
@@ -43,29 +43,107 @@ $ cd ScrimBot
 TOKEN=<discord bot token>
 TIME_ZONE=<(OPTIONAL) desired time zone (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), default is America/Los_Angeles>
 PREFIX=<(OPTIONAL) desired bot prefix, default is v!>
+MONGO_URI=<mongo uri>
 ```
 
 2. Replace `<discord bot token>` with your bot token
 
-3. In your Firebase project, navigate to Settings > Service Accounts > Firebase Admin SDK and click **Generate a new key**
-
-4. In your Firebase project, navigate to Develop > Firestore and make sure Firestore is enabled for your project (NOT Realtime Database)
-
-5. You now have two options: if you want to store the JSON locally, you can put the file in your project folder and set an additional key which points to it:
-```
-GOOGLE_APPLICATION_CREDENTIALS=</path/to/service-account-file.json>
-```
-or, if you are unable to store a JSON file in your project directory, you can add some specific keys and ScrimBot will do the rest for you.
-```
-FIR_PROJID=<Firebase project ID>
-FIR_CLIENTID=<Firebase client ID>
-FIR_PRIVATEKEY_ID=<Firebase private key ID>
-FIR_PRIVATEKEY=<Firebase private key>
-```
-If both are present, `GOOGLE_APPLICATION_CREDENTIALS` will be preferred.
+3. Replace `<mongo uri>` with your MongoDB connection string
 
 6. Run `npm install` to install bot dependencies
 
 7. Run `npm start` and the bot should be online!
 
 8. You can add yourself as a bot admin by modifying your user entry in the database. In the `users` collection, find your user ID and add a field named `admin` with the boolean value of `true`. This will allow you to access certain bot admin commands.
+
+### Migration from Cloud Firestore:
+If you had previously ran an instance of ScrimBot before it migrated to MongoDB, this section will help you transition your data over.
+
+1. Use an existing Google Cloud service account or create a service account key for your project (https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys)
+
+2. Install node-firestore-import-export
+```sh
+npm install -g node-firestore-import-export
+```
+
+3. Export your data to a file
+```sh
+firestore-export --accountCredentials <service account key file> --backupFile firestore-dump.json --prettyPrint
+```
+
+4. Execute the following Node script to clean up the data
+```js
+const fs = require('fs')
+const original = JSON.parse(fs.readFileSync('./firestore-dump.json', { encoding: 'utf8' }))
+
+const converted = {
+  guilds: [],
+  matches: [],
+  users: []
+}
+
+// parse guilds
+for (const guildID in original.__collections__.guilds) {
+  const guild = original.__collections__.guilds[guildID]
+
+  delete guild.__collections__
+
+  // some guilds only have linked matches and have never run v!server add
+  if (guild.name) {
+    converted.guilds.push({
+      _id: guildID,
+      ...guild
+    })
+  }
+}
+
+// parse matches
+for (const matchID in original.__collections__.matches) {
+  const match = original.__collections__.matches[matchID]
+
+  delete match.__collections__
+  match.timestamp = new Date(parseInt(match.timestamp.value._seconds + '' + match.timestamp.value._nanoseconds.toString().slice(0, 3)))
+  if (match.date) match.date = new Date(parseInt(match.date.value._seconds + '000'))
+  match.players.a = match.players.a.map(user => {
+    if (!user.value) console.log(matchID)
+    return user.value.split('/').pop()
+  })
+  match.players.b = match.players.b.map(user => {
+    return user.value.split('/').pop()
+  })
+  if (match.spectators) {
+    match.spectators = match.spectators.map(user => {
+      return user.value.split('/').pop()
+    })
+  }
+
+  converted.matches.push({
+    _id: matchID,
+    ...match
+  })
+}
+
+// parse users
+for (const userID in original.__collections__.users) {
+  const user = original.__collections__.users[userID]
+
+  delete user.__collections__
+  user.timestamp = new Date(parseInt(user.timestamp.value._seconds + '' + user.timestamp.value._nanoseconds.toString().slice(0, 3)))
+  user.matches = user.matches.map(match => {
+    return match.value.split('/').pop()
+  })
+
+  converted.users.push({
+    _id: userID,
+    ...user
+  })
+}
+
+fs.writeFileSync('./converted-guilds.json', JSON.stringify(converted.guilds))
+fs.writeFileSync('./converted-matches.json', JSON.stringify(converted.matches))
+fs.writeFileSync('./converted-users.json', JSON.stringify(converted.users))
+```
+
+5. Log into your MongoDB instance and import your data!
+
+Let us know if you run into any issues migrating your data.

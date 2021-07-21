@@ -20,6 +20,9 @@ module.exports = exports = {
   }
 }
 
+/**
+ * @param {import('../index.js').GLOBALS} GLOBALS
+ */
 const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
   if (userMessage.channel !== matchRecord.botMessage.channel) return
 
@@ -121,9 +124,8 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
     else matchRecord.botReaction.remove()
     matchRecord.creationInformation.timestamp = new Date()
 
-    let guildInformation = await GLOBALS.db.collection('guilds').doc(userMessage.guild.id).get()
-    if (!guildInformation.exists) guildInformation.notificationRole = userMessage.guild.id
-    else guildInformation = guildInformation.data()
+    const guildInformation = await GLOBALS.mongoDb.collection('guilds').findOne({ _id: userMessage.guild.id })
+    if (!guildInformation) guildInformation.notificationRole = userMessage.guild.id
 
     const matchEmbed = new GLOBALS.Embed()
       .setTitle('Match Information')
@@ -152,8 +154,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
           id: message.id,
           channel: message.channel.id
         }
-        await GLOBALS.db.collection('matches').doc(message.id).set(matchRecord.creationInformation)
-        GLOBALS.db.collection('guilds').doc(message.guild.id).collection('matches').doc(message.id).set({ data: GLOBALS.db.collection('matches').doc(message.id) })
+        await GLOBALS.mongoDb.collection('matches').insertOne({ _id: message.id, ...matchRecord.creationInformation })
         GLOBALS.activeMatchCreation.delete(matchRecord.userID)
       })
   }

@@ -1,6 +1,5 @@
 const CONSTANTS = require('../constants')
 const moment = require('moment-timezone')
-const admin = require('firebase-admin')
 const chrono = require('chrono-node')
 
 module.exports = exports = {
@@ -70,11 +69,9 @@ const start = async (message, GLOBALS) => {
   const matchID = message.content.split(' ')[2]
   if (!message.guild) return message.reply('This command can only be run in a server!')
   if (!matchID) return message.reply('Match not found! Ensure correct match ID is submitted.')
-  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
-  let matchInformation = await matchInformationRef.get()
-  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  const matchInformation = await GLOBALS.mongoDb.collection('matches').findOne({ _id: matchID })
+  if (!matchInformation) return message.reply('Match not found! Ensure correct match ID is submitted.')
   if (matchInformation.status === 'scored') return message.reply('This match has already been completed.')
-  matchInformation = matchInformation.data()
 
   if (await GLOBALS.userIsAdmin(message.author.id) === false && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to start the match.')
 
@@ -192,7 +189,7 @@ const start = async (message, GLOBALS) => {
     }
   }
 
-  matchInformationRef.update(matchInformation)
+  await GLOBALS.mongoDb.collection('matches').replaceOne({ _id: matchID }, matchInformation)
 
   const embed = new GLOBALS.Embed()
     .setTitle('Match Started')
@@ -221,12 +218,10 @@ const score = async (message, GLOBALS) => {
     })
   }
 
-  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
-  let matchInformation = await matchInformationRef.get()
-  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
+  const matchInformation = await GLOBALS.mongoDb.collection('matches').findOne({ _id: matchID })
+  if (!matchInformation) return message.reply('Match not found! Ensure correct match ID is submitted.')
   if (matchInformation.status === 'created') return message.reply('This match has not been started yet!')
   if (matchInformation.status === 'completed') return message.reply('This match has already been scored. Please ask a bot admin to change the score in the database if changes are required.')
-  matchInformation = matchInformation.data()
 
   if (await GLOBALS.userIsAdmin(message.author.id) === false && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to score the match.')
 
@@ -235,12 +230,16 @@ const score = async (message, GLOBALS) => {
     GLOBALS.client.channels.fetch(matchInformation.teamBVoiceChannel).then(c => c.delete())
   }
 
-  matchInformation.status = 'completed'
-  matchInformation.score = [matchScore.split('-')[0], matchScore.split('-')[1]]
-  matchInformation.teamAVoiceChannel = admin.firestore.FieldValue.delete()
-  matchInformation.teamBVoiceChannel = admin.firestore.FieldValue.delete()
-
-  matchInformationRef.update(matchInformation)
+  await GLOBALS.mongoDb.collection('matches').updateOne({ _id: matchID }, {
+    $set: {
+      status: 'complete',
+      score: [matchScore.split('-')[0], matchScore.split('-')[1]]
+    },
+    $unset: {
+      teamAVoiceChannel: '',
+      teamBVoiceChannel: ''
+    }
+  })
 
   const embed = new GLOBALS.Embed()
     .setTitle('Match Completed')
@@ -259,26 +258,14 @@ const score = async (message, GLOBALS) => {
   botMessage.edit('The match has completed!', botMessageEmbed)
   if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
 
-  for (const playerRef of matchInformation.players.a) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    playerDoc.matches.unshift(matchInformationRef)
-    playerRef.update(playerDoc)
-  }
-  for (const playerRef of matchInformation.players.b) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    playerDoc.matches.unshift(matchInformationRef)
-    playerRef.update(playerDoc)
-  }
-  if (matchInformation.spectators instanceof Array) {
-    for (const playerRef of matchInformation.spectators) {
-      let playerDoc = await playerRef.get()
-      playerDoc = playerDoc.data()
-      playerDoc.matches.unshift(matchInformationRef)
-      playerRef.update(playerDoc)
+  await GLOBALS.mongoDb.collection('users').updateMany({ _id: { $in: [...matchInformation.players.a, ...matchInformation.players.b, ...(matchInformation.spectators || [])] } }, {
+    $push: {
+      matches: {
+        $each: [matchID],
+        $position: 0
+      }
     }
-  }
+  })
 }
 
 /**
@@ -289,10 +276,8 @@ const cancel = async (message, GLOBALS) => {
   const matchID = message.content.split(' ')[2]
   if (!message.guild) return message.reply('This command can only be run in a server!')
 
-  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
-  let matchInformation = await matchInformationRef.get()
-  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
-  matchInformation = matchInformation.data()
+  const matchInformation = await GLOBALS.mongoDb.collection('matches').findOne({ _id: matchID })
+  if (!matchInformation) return message.reply('Match not found! Ensure correct match ID is submitted.')
 
   if (await GLOBALS.userIsAdmin(message.author.id) === false && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to cancel the match.')
 
@@ -305,7 +290,7 @@ const cancel = async (message, GLOBALS) => {
 
   matchInformation.status = 'canceled'
 
-  matchInformationRef.update(matchInformation)
+  await GLOBALS.mongoDb.collection('matches').replaceOne({ _id: matchID }, matchInformation)
 
   const embed = new GLOBALS.Embed()
     .setTitle('Match Cancelled')
@@ -332,17 +317,15 @@ const info = async (message, GLOBALS) => {
   const matchID = message.content.split(' ')[2]
 
   if (!matchID) return message.reply('Match not found! Ensure correct match ID is submitted.')
-  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
-  let matchInformation = await matchInformationRef.get()
-  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
-  matchInformation = matchInformation.data()
+  const matchInformation = await GLOBALS.mongoDb.collection('matches').findOne({ _id: matchID })
+  if (!matchInformation) return message.reply('Match not found! Ensure correct match ID is submitted.')
 
   const matchCreator = await GLOBALS.client.users.fetch(matchInformation.creator)
 
   const matchEmbed = new GLOBALS.Embed()
     .setTitle('Retrieved Match Information')
     .setDescription('')
-    .setTimestamp(matchInformation.date.toDate())
+    .setTimestamp(matchInformation.date)
     .setAuthor(matchCreator.tag, matchCreator.avatarURL())
     .setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
     .addField('Status', CONSTANTS.capitalizeFirstLetter(matchInformation.status), true)
@@ -354,30 +337,16 @@ const info = async (message, GLOBALS) => {
     .addField('Team A', 'None', true)
     .addField('Team B', 'None', true)
     .addField('Spectators', matchInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
-  matchEmbed.fields[6].value = ''
-  for (const playerRef of matchInformation.players.a) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    matchEmbed.fields[6].value += `\n• ${playerDoc.valorantUsername}`
-  }
-  if (matchEmbed.fields[6].value === '') matchEmbed.fields[6].value = 'None'
 
-  matchEmbed.fields[7].value = ''
-  for (const playerRef of matchInformation.players.b) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    matchEmbed.fields[7].value += `\n• ${playerDoc.valorantUsername}`
-  }
-  if (matchEmbed.fields[7].value === '') matchEmbed.fields[7].value = 'None'
+  const teamAPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: { $in: matchInformation.players.a } })
+  matchEmbed.fields[6].value = (await teamAPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
+
+  const teamBPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: { $in: matchInformation.players.b } })
+  matchEmbed.fields[7].value = (await teamBPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
 
   if (matchInformation.spectators instanceof Array) {
-    matchEmbed.fields[8].value = ''
-    for (const playerRef of matchInformation.spectators) {
-      let playerDoc = await playerRef.get()
-      playerDoc = playerDoc.data()
-      matchEmbed.fields[8].value += `\n• ${playerDoc.valorantUsername}`
-    }
-    if (matchEmbed.fields[8].value === '') matchEmbed.fields[8].value = 'None'
+    const spectatorPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: { $in: matchInformation.spectators } })
+    matchEmbed.fields[8].value = (await spectatorPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
   }
 
   if (matchInformation.status === 'completed') {
@@ -401,10 +370,8 @@ const edit = async (message, GLOBALS) => {
   const editedValue = attributes.slice(4).join(' ')
   if (!editedValue) return message.reply('Please specify a value for ' + editedProperty)
 
-  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
-  let matchInformation = await matchInformationRef.get()
-  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
-  matchInformation = matchInformation.data()
+  const matchInformation = await GLOBALS.mongoDb.collection('matches').findOne({ _id: matchID })
+  if (!matchInformation) return message.reply('Match not found! Ensure correct match ID is submitted.')
   const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
   const botMessage = await botMessageChannel.messages.fetch(matchID)
   const matchEmbed = botMessage.embeds[0]
@@ -487,7 +454,7 @@ const edit = async (message, GLOBALS) => {
       return message.reply('Property `' + editedProperty + '` not found! Please try again using a valid property (date, map, minRank, maxRank, teamPlayerCount, spectators, mode).')
   }
 
-  matchInformationRef.update(matchInformation)
+  await GLOBALS.mongoDb.collection('matches').replaceOne({ _id: matchID }, matchInformation)
   message.reply(`${editedProperty} successfully changed to ${editedValue} for match ${matchID}!`)
   botMessage.edit(matchEmbed)
 }
@@ -500,10 +467,8 @@ const refresh = async (message, GLOBALS) => {
   const matchID = message.content.split(' ')[2]
 
   if (!matchID) return message.reply('Match not found! Ensure correct match ID is submitted.')
-  const matchInformationRef = GLOBALS.db.collection('matches').doc(matchID)
-  let matchInformation = await matchInformationRef.get()
-  if (!matchInformation.exists) return message.reply('Match not found! Ensure correct match ID is submitted.')
-  matchInformation = matchInformation.data()
+  const matchInformation = await GLOBALS.mongoDb.collection('matches').findOne({ _id: matchID })
+  if (!matchInformation) return message.reply('Match not found! Ensure correct match ID is submitted.')
   const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
   const botMessage = await botMessageChannel.messages.fetch(matchID)
 
@@ -513,7 +478,7 @@ const refresh = async (message, GLOBALS) => {
     .setTitle('Match Information')
     .setDescription('React with 🇦 to join the A team, react with 🇧 to join the B team' + (matchInformation.spectators instanceof Array ? ', and react with 🇸 to be a spectator.' : '.'))
     .setThumbnail(CONSTANTS.MAPS_THUMBNAILS[matchInformation.map])
-    .setTimestamp(matchInformation.date.toDate())
+    .setTimestamp(matchInformation.date)
     .setAuthor(matchCreator.tag, matchCreator.avatarURL())
     .addField('Status', CONSTANTS.capitalizeFirstLetter(matchInformation.status), true)
     .addField('Game Mode', CONSTANTS.capitalizeFirstLetter(matchInformation.mode), true)
@@ -525,30 +490,16 @@ const refresh = async (message, GLOBALS) => {
     .addField('Team B', 'None', true)
     .addField('Spectators', matchInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
     .setFooter('match id: ' + matchID)
-  matchEmbed.fields[6].value = ''
-  for (const playerRef of matchInformation.players.a) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    matchEmbed.fields[6].value += `\n• ${playerDoc.valorantUsername}`
-  }
-  if (matchEmbed.fields[6].value === '') matchEmbed.fields[6].value = 'None'
 
-  matchEmbed.fields[7].value = ''
-  for (const playerRef of matchInformation.players.b) {
-    let playerDoc = await playerRef.get()
-    playerDoc = playerDoc.data()
-    matchEmbed.fields[7].value += `\n• ${playerDoc.valorantUsername}`
-  }
-  if (matchEmbed.fields[7].value === '') matchEmbed.fields[7].value = 'None'
+  const teamAPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: matchInformation.players.a })
+  matchEmbed.fields[6].value = await teamAPlayers.toArray().map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
+
+  const teamBPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: { $in: matchInformation.players.b } })
+  matchEmbed.fields[7].value = (await teamBPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
 
   if (matchInformation.spectators instanceof Array) {
-    matchEmbed.fields[8].value = ''
-    for (const playerRef of matchInformation.spectators) {
-      let playerDoc = await playerRef.get()
-      playerDoc = playerDoc.data()
-      matchEmbed.fields[8].value += `\n• ${playerDoc.valorantUsername}`
-    }
-    if (matchEmbed.fields[8].value === '') matchEmbed.fields[8].value = 'None'
+    const spectatorPlayers = await GLOBALS.mongoDb.collection('users').find({ _id: { $in: matchInformation.spectators } })
+    matchEmbed.fields[8].value = (await spectatorPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
   }
 
   if (matchInformation.status === 'completed') {
