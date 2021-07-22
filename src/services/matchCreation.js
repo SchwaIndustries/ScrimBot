@@ -125,7 +125,8 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
     matchRecord.creationInformation.timestamp = new Date()
 
     const guildInformation = await GLOBALS.mongoDb.collection('guilds').findOne({ _id: userMessage.guild.id })
-    if (!guildInformation) guildInformation.notificationRole = userMessage.guild.id
+    let notificationRole = userMessage.guild.id
+    if (guildInformation) notificationRole = guildInformation.notificationRole
 
     const matchEmbed = new GLOBALS.Embed()
       .setTitle('Match Information')
@@ -142,7 +143,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       .addField('Team A', 'None', true)
       .addField('Team B', 'None', true)
       .addField('Spectators', matchRecord.creationInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
-    matchRecord.botMessage.channel.send(`A match has been created! <@&${guildInformation.notificationRole}>`, matchEmbed)
+    matchRecord.botMessage.channel.send(`A match has been created! <@&${notificationRole}>`, matchEmbed)
       .then(async message => {
         message.react('🇦')
         message.react('🇧')
