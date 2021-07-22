@@ -145,19 +145,19 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
       .addField('Spectators', matchRecord.creationInformation.spectators instanceof Array ? 'None' : 'Not allowed', true)
     matchRecord.botMessage.channel.send(`A match has been created! <@&${notificationRole}>`, matchEmbed)
       .then(async message => {
-        message.react('🇦')
-        message.react('🇧')
-        if (matchRecord.creationInformation.spectators) message.react('🇸')
+        message.react('🇦').catch(console.error)
+        message.react('🇧').catch(console.error)
+        if (matchRecord.creationInformation.spectators) message.react('🇸').catch(console.error)
         matchEmbed.setFooter('match id: ' + message.id)
-        message.edit(matchEmbed)
-        matchRecord.userMessage.delete()
+        message.edit(matchEmbed).catch(console.error)
+        matchRecord.userMessage.delete().catch(console.error)
         matchRecord.creationInformation.message = {
           id: message.id,
           channel: message.channel.id
         }
         await GLOBALS.mongoDb.collection('matches').insertOne({ _id: message.id, ...matchRecord.creationInformation })
         GLOBALS.activeMatchCreation.delete(matchRecord.userID)
-      })
+      }).catch(console.error)
   }
 }
 
