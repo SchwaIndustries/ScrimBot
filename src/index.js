@@ -106,10 +106,10 @@ class MatchEmbed extends ScrimBotEmbed {
  * @property {MatchEmbed} MatchEmbed
  * @property {Mongo.Db} mongoDb
  * @property {Discord.Collection} activeUserRegistration
- * @property {function} userIsAdmin
- * @property {function} userIsRegistered
- * @property {function} updateUserRoles
- * @property {function} updateUserRankRoles
+ * @property {(userId: string) => Promise<boolean>} userIsAdmin
+ * @property {(userId: string) => Promise<false | Mongo.Document>} userIsRegistered
+ * @property {(user: Discord.User, role: Discord.RoleResolvable, addRole: boolean) => Promise<void>} updateUserRoles
+ * @property {(user: Discord.User, rank: number) => Promise<void>} updateUserRankRoles
  */
 
 // Global variables accessible from all files
