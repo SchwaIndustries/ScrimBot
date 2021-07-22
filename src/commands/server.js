@@ -91,6 +91,18 @@ const add = async (message, GLOBALS) => {
 const info = async (message, GLOBALS) => {
   const guildInformation = await GLOBALS.mongoDb.collection('guilds').findOne({ _id: message.guild.id })
   if (!guildInformation) return message.reply('This server has not been configured yet. Please run v!server add')
+
+  const guildDiscordInformation = await GLOBALS.client.guilds.fetch(message.guild.id)
+
+  const serverEmbed = new GLOBALS.Embed()
+    .setTitle('Retrieved Server Information')
+    .setDescription('')
+    .setTimestamp(new Date())
+    .setAuthor(message.author.tag, message.author.avatarURL())
+    .setThumbnail(guildDiscordInformation.iconURL())
+    .addField('Notifications Role', `<@&${guildInformation.notificationRole}>`, true)
+    .addField('VALORANT Rank Roles', guildInformation.valorantRankRoles ? 'Yes' : 'No', true)
+  message.reply(serverEmbed)
 }
 
 /**
