@@ -149,7 +149,7 @@ const GLOBALS = {
       if (!documentSnapshot) return
       if (!client.guilds.resolve(documentSnapshot._id)) return
 
-      const guildMember = await client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
+      const guildMember = await client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch()
       if (!guildMember) return
       if (addRole) guildMember.roles.add(documentSnapshot[role])
       else guildMember.roles.remove(documentSnapshot[role])
@@ -167,7 +167,7 @@ const GLOBALS = {
       if (!client.guilds.resolve(documentSnapshot._id)) return
       if (!documentSnapshot.valorantRankRoles) return
 
-      const guildMember = await client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch(console.error)
+      const guildMember = await client.guilds.resolve(documentSnapshot._id).members.fetch(user.id).catch()
       if (!guildMember) return
       const allRankRoles = documentSnapshot.valorantRankRoles
       await guildMember.roles.remove(allRankRoles).catch(console.error)
