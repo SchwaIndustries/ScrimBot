@@ -65,7 +65,7 @@ const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
     userRecord.botMessage.edit(embed)
     userRecord.botReaction.users.remove(GLOBALS.client.user)
     userRecord.registrationInformation.timestamp = new Date()
-    GLOBALS.mongoDb.collection('matches').insertOne({ _id: userRecord.userID, ...userRecord.registrationInformation })
+    GLOBALS.mongoDb.collection('users').insertOne({ _id: userRecord.userID, ...userRecord.registrationInformation })
     GLOBALS.activeUserRegistration.delete(userRecord.userID)
   }
 }
