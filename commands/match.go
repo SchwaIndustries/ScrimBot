@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"log"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -137,31 +139,169 @@ func init() {
 			},
 		},
 	}, func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		options := i.ApplicationCommandData().Options
-		content := ""
-
-		switch options[0].Name {
+		switch i.ApplicationCommandData().Options[0].Name {
 		case "create":
-			content = "create match"
+			createMatchHandler(s, i)
 		case "start":
-			content = "start match"
+			startMatchHandler(s, i)
 		case "cancel":
-			content = "cancel match"
+			cancelMatchHandler(s, i)
 		case "score":
-			content = "score match"
+			scoreMatchHandler(s, i)
 		case "edit":
-			content = "edit match"
+			editMatchHandler(s, i)
 		case "info":
-			content = "info match"
+			infoMatchHandler(s, i)
 		case "refresh":
-			content = "refresh match"
+			refreshMatchHandler(s, i)
 		}
+	})
 
+	AddComponentHandler("join-teama", func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: content,
-			},
+			Type: discordgo.InteractionResponseUpdateMessage,
 		})
 	})
+	AddComponentHandler("join-teamb", func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseUpdateMessage,
+		})
+	})
+	AddComponentHandler("join-spectators", func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseUpdateMessage,
+		})
+	})
+}
+
+func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Title:       "Match Details",
+					Description: "match",
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:   "Team A",
+							Value:  "None",
+							Inline: true,
+						},
+						{
+							Name:   "Team B",
+							Value:  "None",
+							Inline: true,
+						},
+						{
+							Name:   "Spectators",
+							Value:  "None",
+							Inline: true,
+						},
+					},
+				},
+			},
+			Components: []discordgo.MessageComponent{
+				discordgo.ActionsRow{
+					Components: []discordgo.MessageComponent{
+						discordgo.Button{
+							Label:    "Join Team A",
+							CustomID: "join-teama",
+						},
+						discordgo.Button{
+							Label:    "Join Team B",
+							CustomID: "join-teamb",
+						},
+						discordgo.Button{
+							Label:    "Join Spectators",
+							CustomID: "join-spectators",
+						},
+					},
+				},
+			},
+		},
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func startMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "start match",
+		},
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func cancelMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "cancel match",
+		},
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func scoreMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "score match",
+		},
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func editMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "edit match",
+		},
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func infoMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "info match",
+		},
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+// TODO: convert this to a message component action, not a slash command
+func refreshMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "refresh match",
+		},
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
 }
