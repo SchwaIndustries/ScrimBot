@@ -10,7 +10,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"scrimbot.schwa.tech/commands"
+	"schwa.tech/scrimbot/commands"
 )
 
 var (

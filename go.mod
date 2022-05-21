@@ -1,4 +1,4 @@
-module scrimbot.schwa.tech
+module schwa.tech/scrimbot
 
 go 1.18
 
