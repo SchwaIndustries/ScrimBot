@@ -17,17 +17,8 @@ func init() {
 				Name:        "rank",
 				Description: "VALORANT Rank",
 				Type:        discordgo.ApplicationCommandOptionString,
-				Choices: []*discordgo.ApplicationCommandOptionChoice{
-					{
-						Name:  "Iron 1",
-						Value: "iron1",
-					},
-					{
-						Name:  "Iron 2",
-						Value: "iron2",
-					},
-				},
-				Required: true,
+				Choices:     rankChoices,
+				Required:    true,
 			},
 			{
 				Name:        "notifications",

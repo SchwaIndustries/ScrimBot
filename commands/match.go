@@ -12,6 +12,7 @@ func init() {
 		MinValue:    &zero,
 		Required:    true,
 	}
+	one := 1.0
 
 	AddCommand(&discordgo.ApplicationCommand{
 		Name:        "match",
@@ -21,6 +22,56 @@ func init() {
 				Name:        "create",
 				Description: "Create a new match",
 				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Options: []*discordgo.ApplicationCommandOption{
+					{
+						Name:        "date",
+						Description: "Date & Time of Match",
+						Type:        discordgo.ApplicationCommandOptionString,
+						Required:    true,
+					},
+					{
+						Name:        "playercount",
+						Description: "Number of players on each team",
+						Type:        discordgo.ApplicationCommandOptionInteger,
+						MinValue:    &one,
+						MaxValue:    5,
+						Required:    true,
+					},
+					{
+						Name:        "spectators",
+						Description: "Whether to allow spectators in the match",
+						Type:        discordgo.ApplicationCommandOptionBoolean,
+						Required:    true,
+					},
+					{
+						Name:        "map",
+						Description: "Map for the match",
+						Type:        discordgo.ApplicationCommandOptionString,
+						Choices:     mapChoices,
+						Required:    true,
+					},
+					{
+						Name:        "mode",
+						Description: "Game mode for the match",
+						Type:        discordgo.ApplicationCommandOptionString,
+						Choices:     gameModeChoices,
+						Required:    true,
+					},
+					{
+						Name:        "rankmin",
+						Description: "Minimum rank allowed in the match",
+						Type:        discordgo.ApplicationCommandOptionString,
+						Choices:     rankChoices,
+						Required:    false,
+					},
+					{
+						Name:        "rankmax",
+						Description: "Maximum rank allowed in the match",
+						Type:        discordgo.ApplicationCommandOptionString,
+						Choices:     rankChoices,
+						Required:    false,
+					},
+				},
 			},
 			{
 				Name:        "start",
