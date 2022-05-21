@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -9,13 +10,14 @@ import (
 	"github.com/bwmarrin/discordgo"
 	_ "github.com/joho/godotenv/autoload"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"schwa.tech/scrimbot/commands"
+	"schwa.tech/scrimbot/database"
 )
 
 var (
-	s  *discordgo.Session
-	db *mongo.Database
+	s              *discordgo.Session
+	db             *mongo.Database
+	updateCommands = flag.Bool("updatecommands", false, "Update application commands on Discord")
 )
 
 func init() {
@@ -31,22 +33,12 @@ func init() {
 }
 
 func init() {
-	connectionString := os.Getenv("MONGO_URI")
-	if connectionString == "" {
-		log.Fatal("No MongoDB connection string provided!")
-	}
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(connectionString))
-	if err != nil {
-		log.Fatalf("Error connecting to MongoDB: %v", err)
-	}
-	dbName := os.Getenv("MONGO_DB")
-	if dbName == "" {
-		log.Fatal("No MongoDB database provided!")
-	}
-	db = client.Database(dbName)
+	db = database.GetDB()
 }
 
 func main() {
+	flag.Parse()
+
 	defer func() {
 		if err := db.Client().Disconnect(context.TODO()); err != nil {
 			panic(err)
@@ -61,11 +53,13 @@ func main() {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
 
-	log.Println("Adding commands...")
-	for _, v := range commands.CommandDatas {
-		_, err := s.ApplicationCommandCreate(s.State.User.ID, "", v)
-		if err != nil {
-			log.Panicf("Cannot create '%v' command: %v", v.Name, err)
+	if *updateCommands {
+		log.Println("Adding commands...")
+		for _, v := range commands.CommandDatas {
+			_, err := s.ApplicationCommandCreate(s.State.User.ID, "", v)
+			if err != nil {
+				log.Panicf("Cannot create '%v' command: %v", v.Name, err)
+			}
 		}
 	}
 
