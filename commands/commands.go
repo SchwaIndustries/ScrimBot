@@ -3,8 +3,9 @@ package commands
 import "github.com/bwmarrin/discordgo"
 
 var (
-	CommandDatas map[string]*discordgo.ApplicationCommand                              = make(map[string]*discordgo.ApplicationCommand)
-	Handlers     map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) = make(map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate))
+	CommandDatas      map[string]*discordgo.ApplicationCommand                              = make(map[string]*discordgo.ApplicationCommand)
+	CommandHandlers   map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) = make(map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate))
+	ComponentHandlers map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) = make(map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate))
 )
 
 var (
@@ -139,5 +140,9 @@ var (
 
 func AddCommand(data *discordgo.ApplicationCommand, handler func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	CommandDatas[data.Name] = data
-	Handlers[data.Name] = handler
+	CommandHandlers[data.Name] = handler
+}
+
+func AddComponentHandler(id string, handler func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	ComponentHandlers[id] = handler
 }
