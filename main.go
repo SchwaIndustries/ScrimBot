@@ -47,6 +47,19 @@ func main() {
 
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Printf("Logged in as: %v#%v", s.State.User.Username, s.State.User.Discriminator)
+		err := s.UpdateStatusComplex(discordgo.UpdateStatusData{
+			Activities: []*discordgo.Activity{
+				{
+					Type: discordgo.ActivityTypeWatching,
+					Name: "for matches",
+					URL:  "",
+				},
+			},
+			Status: "online",
+		})
+		if err != nil {
+			log.Println(err)
+		}
 	})
 	err := s.Open()
 	if err != nil {
