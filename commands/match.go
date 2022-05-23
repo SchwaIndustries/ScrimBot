@@ -1,9 +1,14 @@
 package commands
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"schwa.tech/scrimbot/database"
+	"schwa.tech/scrimbot/utils"
 )
 
 func init() {
@@ -175,32 +180,115 @@ func init() {
 }
 
 func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.Member == nil || i.GuildID == "" {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "This command can only be used in servers!",
+			},
+		})
+		return
+	}
+
+	interactionData := i.ApplicationCommandData()
+	matchData := database.Match{
+		Status:      "created",
+		Creator:     i.Member.User.ID,
+		Mode:        "standard",
+		RankMinimum: database.Iron1,
+		RankMaximum: database.Radiant,
+		Timestamp:   time.Now().Format(time.RFC3339),
+	}
+	matchData.Players.A = make([]string, 0)
+	matchData.Players.B = make([]string, 0)
+
+	for _, option := range interactionData.Options[0].Options {
+		switch option.Name {
+		case "date":
+			matchData.Date = option.StringValue()
+		case "playercount":
+			matchData.MaxTeamCount = option.UintValue()
+		case "spectators":
+			if option.BoolValue() {
+				matchData.Spectators = make([]string, 0)
+			} else {
+				matchData.Spectators = nil
+			}
+		case "map":
+			matchData.Map = option.StringValue()
+		case "mode":
+			matchData.Mode = option.StringValue()
+		case "rankmin":
+			matchData.RankMinimum = utils.RankNameToID(option.StringValue())
+		case "rankmax":
+			matchData.RankMaximum = utils.RankNameToID(option.StringValue())
+		}
+	}
+
+	matchEmbed := discordgo.MessageEmbed{
+		Title:       "Match Information",
+		Description: "Press one of the buttons below this message to join a team!",
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: utils.MapThumbnailURL(matchData.Map),
+		},
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    fmt.Sprintf("%s#%s", i.Member.User.Username, i.Member.User.Discriminator),
+			IconURL: i.Member.AvatarURL(""),
+		},
+		Timestamp: matchData.Date,
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name:   "Status",
+				Value:  utils.CapitalizeFirstLetter(matchData.Status),
+				Inline: true,
+			},
+			{
+				Name:   "Game Mode",
+				Value:  utils.CapitalizeFirstLetter(matchData.Mode),
+				Inline: true,
+			},
+			{
+				Name:   "Map",
+				Value:  utils.CapitalizeFirstLetter(matchData.Map),
+				Inline: true,
+			},
+			{
+				Name:   "Max Team Count",
+				Value:  fmt.Sprintf("%d players per team", matchData.MaxTeamCount),
+				Inline: true,
+			},
+			{
+				Name:   "Minimum Rank",
+				Value:  utils.RankIDToName(matchData.RankMinimum),
+				Inline: true,
+			},
+			{
+				Name:   "Maximum Rank",
+				Value:  utils.RankIDToName(matchData.RankMaximum),
+				Inline: true,
+			},
+			{
+				Name:   "Team A",
+				Value:  "None",
+				Inline: true,
+			},
+			{
+				Name:   "Team B",
+				Value:  "None",
+				Inline: true,
+			},
+			{
+				Name:   "Spectators",
+				Value:  "None",
+				Inline: true,
+			},
+		},
+	}
+
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{
-				{
-					Title:       "Match Details",
-					Description: "match",
-					Fields: []*discordgo.MessageEmbedField{
-						{
-							Name:   "Team A",
-							Value:  "None",
-							Inline: true,
-						},
-						{
-							Name:   "Team B",
-							Value:  "None",
-							Inline: true,
-						},
-						{
-							Name:   "Spectators",
-							Value:  "None",
-							Inline: true,
-						},
-					},
-				},
-			},
+			Embeds: []*discordgo.MessageEmbed{&matchEmbed},
 			Components: []discordgo.MessageComponent{
 				discordgo.ActionsRow{
 					Components: []discordgo.MessageComponent{
@@ -221,7 +309,31 @@ func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			},
 		},
 	})
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
+	message, err := s.InteractionResponse(i.Interaction)
+	if err != nil {
+		log.Println(err)
+	}
+
+	matchData.ID = message.ID
+	matchData.Message.Channel = message.ChannelID
+	matchData.Message.ID = message.ID
+	matchEmbed.Footer = &discordgo.MessageEmbedFooter{
+		Text: "match id: " + matchData.ID,
+	}
+
+	_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+		Embeds: []*discordgo.MessageEmbed{&matchEmbed},
+	})
+	if err != nil {
+		log.Println(err)
+	}
+
+	_, err = database.GetDB().Collection("matches").InsertOne(context.TODO(), matchData)
 	if err != nil {
 		log.Println(err)
 	}
