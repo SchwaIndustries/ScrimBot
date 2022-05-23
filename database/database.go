@@ -15,7 +15,6 @@ var (
 )
 
 func init() {
-	log.Println("call db init")
 	if d != nil {
 		return
 	}

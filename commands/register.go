@@ -60,7 +60,7 @@ func init() {
 			ID:        user.ID,
 			DiscordID: user.ID,
 			Matches:   make([]string, 0),
-			Timestamp: time.Now().Format(time.RFC3339),
+			Timestamp: time.Now(),
 		}
 
 		for _, option := range interactionData.Options[0].Options {

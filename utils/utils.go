@@ -10,6 +10,23 @@ import (
 	"schwa.tech/scrimbot/database"
 )
 
+func GetUser(id string) (database.User, bool) {
+	var result database.User
+	err := database.GetDB().Collection("users").FindOne(context.TODO(), bson.M{
+		"_id": id,
+	}).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return result, false
+		} else {
+			log.Println(err)
+		}
+	}
+
+	return result, true
+}
+
 func UserIsRegistered(id string) bool {
 	var result bson.M
 	err := database.GetDB().Collection("users").FindOne(context.TODO(), bson.M{

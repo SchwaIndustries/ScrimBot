@@ -1,6 +1,14 @@
 package commands
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"fmt"
+	"log"
+	"strconv"
+	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"schwa.tech/scrimbot/utils"
+)
 
 func init() {
 	AddCommand(&discordgo.ApplicationCommand{
@@ -13,10 +21,9 @@ func init() {
 				Type:        discordgo.ApplicationCommandOptionSubCommand,
 				Options: []*discordgo.ApplicationCommandOption{
 					{
-						Name:        "id",
-						Description: "User ID",
-						Type:        discordgo.ApplicationCommandOptionInteger,
-						MinValue:    &zero,
+						Name:        "user",
+						Description: "User",
+						Type:        discordgo.ApplicationCommandOptionUser,
 						Required:    false,
 					},
 				},
@@ -49,21 +56,113 @@ func init() {
 			},
 		},
 	}, func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		options := i.ApplicationCommandData().Options
-		content := ""
-
-		switch options[0].Name {
+		switch i.ApplicationCommandData().Options[0].Name {
 		case "info":
-			content = "info user"
+			options := i.ApplicationCommandData().Options[0].Options
+			var userID string
+			if len(options) > 0 {
+				userID = options[0].UserValue(s).ID
+			} else {
+				if i.Member != nil {
+					userID = i.Member.User.ID
+				} else {
+					userID = i.User.ID
+				}
+			}
+			infoUserHandler(s, i, userID)
 		case "edit":
-			content = "edit user"
+			editUserHandler(s, i)
 		}
+	})
 
+	AddCommand(&discordgo.ApplicationCommand{
+		Name: "User Info",
+		Type: discordgo.UserApplicationCommand,
+	}, func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		infoUserHandler(s, i, i.ApplicationCommandData().TargetID)
+	})
+}
+
+func infoUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate, userID string) {
+	discordUser, err := s.User(userID)
+	if err != nil {
+		log.Println(err)
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: content,
+				Content: "Could not fetch user with ID " + userID,
 			},
 		})
+		return
+	}
+
+	user, ok := utils.GetUser(userID)
+	if !ok {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "User is not registered with ScrimBot!",
+			},
+		})
+		return
+	}
+
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{{
+				Title: "Retrieved User Information",
+				Author: &discordgo.MessageEmbedAuthor{
+					Name:    fmt.Sprintf("%v#%v", discordUser.Username, discordUser.Discriminator),
+					IconURL: discordUser.AvatarURL(""),
+				},
+				Thumbnail: &discordgo.MessageEmbedThumbnail{
+					URL: discordUser.AvatarURL(""),
+				},
+				Fields: []*discordgo.MessageEmbedField{
+					{
+						Name:   "Valorant Username",
+						Value:  user.ValorantUsername,
+						Inline: true,
+					},
+					{
+						Name:   "Valorant Rank",
+						Value:  utils.RankIDToName(user.ValorantRank),
+						Inline: true,
+					},
+					{
+						Name:   "Registration Date",
+						Value:  user.Timestamp.Format(time.RFC1123),
+						Inline: false,
+					},
+					{
+						Name:   "Notifications Enabled",
+						Value:  strconv.FormatBool(user.Notifications),
+						Inline: true,
+					},
+					{
+						Name:   "Matches Played",
+						Value:  strconv.Itoa(len(user.Matches)),
+						Inline: true,
+					},
+				},
+			}},
+		},
 	})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func editUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "start match",
+		},
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
 }

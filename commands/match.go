@@ -210,7 +210,7 @@ func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Mode:        "standard",
 		RankMinimum: database.Iron1,
 		RankMaximum: database.Radiant,
-		Timestamp:   time.Now().Format(time.RFC3339),
+		Timestamp:   time.Now(),
 	}
 	matchData.Players.A = make([]string, 0)
 	matchData.Players.B = make([]string, 0)
@@ -228,7 +228,7 @@ func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				})
 				return
 			}
-			matchData.Date = r.Time.Format(time.RFC3339)
+			matchData.Date = r.Time
 		case "playercount":
 			matchData.MaxTeamCount = option.UintValue()
 		case "spectators":
@@ -258,7 +258,7 @@ func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Name:    fmt.Sprintf("%s#%s", i.Member.User.Username, i.Member.User.Discriminator),
 			IconURL: i.Member.AvatarURL(""),
 		},
-		Timestamp: matchData.Date,
+		Timestamp: matchData.Date.Format(time.RFC3339),
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:   "Status",
@@ -362,6 +362,7 @@ func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
+// TODO: convert this to a message component action, not a slash command
 func startMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,

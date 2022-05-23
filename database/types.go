@@ -1,5 +1,7 @@
 package database
 
+import "time"
+
 type Map uint8
 
 const (
@@ -56,24 +58,24 @@ const (
 )
 
 type User struct {
-	ID               string   `bson:"_id" json:"_id"`
-	ValorantUsername string   `bson:"valorantUsername" json:"valorantUsername"`
-	ValorantRank     Rank     `bson:"valorantRank" json:"valorantRank"`
-	DiscordID        string   `bson:"discordID" json:"discordID"`
-	Notifications    bool     `bson:"notifications" json:"notifications"`
-	Matches          []string `bson:"matches" json:"matches"`
-	Admin            bool     `bson:"admin,omitempty" json:"admin,omitempty"`
-	Timestamp        string   `bson:"timestamp" json:"timestamp"`
+	ID               string    `bson:"_id" json:"_id"`
+	ValorantUsername string    `bson:"valorantUsername" json:"valorantUsername"`
+	ValorantRank     Rank      `bson:"valorantRank" json:"valorantRank"`
+	DiscordID        string    `bson:"discordID" json:"discordID"`
+	Notifications    bool      `bson:"notifications" json:"notifications"`
+	Matches          []string  `bson:"matches" json:"matches"`
+	Admin            bool      `bson:"admin,omitempty" json:"admin,omitempty"`
+	Timestamp        time.Time `bson:"timestamp" json:"timestamp"`
 }
 
 type Match struct {
-	ID           string `bson:"_id" json:"_id"`
-	Date         string `bson:"date" json:"date"`
-	Status       string `bson:"status" json:"status"`
-	Creator      string `bson:"creator" json:"creator"`
-	Map          string `bson:"map" json:"map"`
-	Mode         string `bson:"mode" json:"mode"`
-	MaxTeamCount uint64 `bson:"maxTeamCount" json:"maxTeamCount"`
+	ID           string    `bson:"_id" json:"_id"`
+	Date         time.Time `bson:"date" json:"date"`
+	Status       string    `bson:"status" json:"status"`
+	Creator      string    `bson:"creator" json:"creator"`
+	Map          string    `bson:"map" json:"map"`
+	Mode         string    `bson:"mode" json:"mode"`
+	MaxTeamCount uint64    `bson:"maxTeamCount" json:"maxTeamCount"`
 	Players      struct {
 		A []string `bson:"a" json:"a"`
 		B []string `bson:"b" json:"b"`
@@ -85,7 +87,7 @@ type Match struct {
 		Channel string `bson:"channel" json:"channel"`
 		ID      string `bson:"id" json:"id"`
 	} `bson:"message" json:"message"`
-	Timestamp string `bson:"timestamp" json:"timestamp"`
+	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
 }
 
 type Guild struct {
