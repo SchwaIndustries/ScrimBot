@@ -10,9 +10,9 @@ import (
 	"schwa.tech/scrimbot/database"
 )
 
-func UserIsRegistered(db *mongo.Database, id string) bool {
+func UserIsRegistered(id string) bool {
 	var result bson.M
-	err := db.Collection("users").FindOne(context.TODO(), bson.M{
+	err := database.GetDB().Collection("users").FindOne(context.TODO(), bson.M{
 		"_id": id,
 	}).Decode(&result)
 
@@ -26,9 +26,9 @@ func UserIsRegistered(db *mongo.Database, id string) bool {
 	return true
 }
 
-func UserIsAdmin(db *mongo.Database, id string) bool {
+func UserIsAdmin(id string) bool {
 	var result bson.M
-	err := db.Collection("users").FindOne(context.TODO(), bson.M{
+	err := database.GetDB().Collection("users").FindOne(context.TODO(), bson.M{
 		"_id":   id,
 		"admin": true,
 	}).Decode(&result)
