@@ -5,10 +5,12 @@ go 1.18
 require (
 	github.com/bwmarrin/discordgo v0.25.0
 	github.com/joho/godotenv v1.4.0
+	github.com/olebedev/when v0.0.0-20211212231525-59bd4edcf9d6
 	go.mongodb.org/mongo-driver v1.9.1
 )
 
 require (
+	github.com/AlekSi/pointer v1.0.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect

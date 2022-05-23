@@ -7,8 +7,15 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/olebedev/when"
+	"github.com/olebedev/when/rules/common"
+	"github.com/olebedev/when/rules/en"
 	"schwa.tech/scrimbot/database"
 	"schwa.tech/scrimbot/utils"
+)
+
+var (
+	w *when.Parser
 )
 
 func init() {
@@ -179,6 +186,12 @@ func init() {
 	})
 }
 
+func init() {
+	w = when.New(nil)
+	w.Add(en.All...)
+	w.Add(common.All...)
+}
+
 func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if i.Member == nil || i.GuildID == "" {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -205,7 +218,17 @@ func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	for _, option := range interactionData.Options[0].Options {
 		switch option.Name {
 		case "date":
-			matchData.Date = option.StringValue()
+			r, err := w.Parse(option.StringValue(), time.Now())
+			if err != nil || r == nil {
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "Unknown date or time format!",
+					},
+				})
+				return
+			}
+			matchData.Date = r.Time.Format(time.RFC3339)
 		case "playercount":
 			matchData.MaxTeamCount = option.UintValue()
 		case "spectators":
@@ -352,6 +375,7 @@ func startMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
+// TODO: convert this to a message component action, not a slash command
 func cancelMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -365,6 +389,7 @@ func cancelMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
+// TODO: convert this to a message component action, not a slash command
 func scoreMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
