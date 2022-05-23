@@ -1,6 +1,14 @@
 package commands
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"context"
+	"log"
+	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"schwa.tech/scrimbot/database"
+	"schwa.tech/scrimbot/utils"
+)
 
 func init() {
 	AddCommand(&discordgo.ApplicationCommand{
@@ -28,11 +36,57 @@ func init() {
 			},
 		},
 	}, func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		user := i.User
+		if user == nil {
+			// If used in guild instead of DM
+			user = i.Member.User
+		}
+
+		if utils.UserIsRegistered(user.ID) {
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "You are already registered with ScrimBot! If you would like to modify your profile, use `/user edit`.",
+				},
+			})
+			if err != nil {
+				log.Println(err)
+			}
+			return
+		}
+
+		interactionData := i.ApplicationCommandData()
+		userData := database.User{
+			ID:        user.ID,
+			DiscordID: user.ID,
+			Matches:   make([]string, 0),
+			Timestamp: time.Now().Format(time.RFC3339),
+		}
+
+		for _, option := range interactionData.Options[0].Options {
+			switch option.Name {
+			case "username":
+				userData.ValorantUsername = option.StringValue()
+			case "rank":
+				userData.ValorantRank = utils.RankNameToID(option.StringValue())
+			case "notifications":
+				userData.Notifications = option.BoolValue()
+			}
+		}
+
+		_, err := database.GetDB().Collection("users").InsertOne(context.TODO(), userData)
+		if err != nil {
+			log.Println(err)
+		}
+
+		err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "go here to add scrimbot https://discord.com/oauth2/authorize?client_id=715030981894995998&scope=bot&permissions=2432904272",
+				Content: "ScrimBot registration is complete! Now it's time to get playing!",
 			},
 		})
+		if err != nil {
+			log.Println(err)
+		}
 	})
 }
