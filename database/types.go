@@ -55,6 +55,17 @@ const (
 	Radiant Rank = 81 + iota
 )
 
+type User struct {
+	ID               string   `bson:"_id" json:"_id"`
+	ValorantUsername string   `bson:"valorantUsername" json:"valorantUsername"`
+	ValorantRank     Rank     `bson:"valorantRank" json:"valorantRank"`
+	DiscordID        string   `bson:"discordID" json:"discordID"`
+	Notifications    bool     `bson:"notifications" json:"notifications"`
+	Matches          []string `bson:"matches" json:"matches"`
+	Admin            bool     `bson:"admin,omitempty" json:"admin,omitempty"`
+	Timestamp        string   `bson:"timestamp" json:"timestamp"`
+}
+
 type Match struct {
 	ID           string `bson:"_id" json:"_id"`
 	Date         string `bson:"date" json:"date"`
@@ -75,4 +86,11 @@ type Match struct {
 		ID      string `bson:"id" json:"id"`
 	} `bson:"message" json:"message"`
 	Timestamp string `bson:"timestamp" json:"timestamp"`
+}
+
+type Guild struct {
+	ID                string   `bson:"_id" json:"_id"`
+	Name              string   `bson:"name" json:"name"`
+	NotificationRole  string   `bson:"notificationRole" json:"notificationRole"`
+	ValorantRankRoles []string `bson:"valorantRankRoles" json:"valorantRankRoles"`
 }
