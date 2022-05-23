@@ -10,7 +10,7 @@ func init() {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "go here to add scrimbot https://discord.com/oauth2/authorize?client_id=715030981894995998&scope=bot&permissions=2432904272",
+				Content: "ScrimBot invite link: https://discord.com/oauth2/authorize?client_id=715030981894995998&scope=bot&permissions=2432904272",
 			},
 		})
 	})

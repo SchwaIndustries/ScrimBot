@@ -10,7 +10,7 @@ func init() {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "join the scrimbot support server https://discord.gg/nRE9Ex7ptd",
+				Content: "Join the ScrimBot support server: https://discord.gg/nRE9Ex7ptd",
 			},
 		})
 	})
