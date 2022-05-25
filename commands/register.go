@@ -74,7 +74,7 @@ func init() {
 			}
 		}
 
-		_, err := database.GetDB().Collection("users").InsertOne(context.TODO(), userData)
+		_, err := database.GetDB().Collection("users").InsertOne(context.Background(), userData)
 		if err != nil {
 			log.Println(err)
 		}

@@ -23,7 +23,7 @@ func init() {
 		log.Fatal("No MongoDB connection string provided!")
 	}
 	var err error
-	c, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(connectionString))
+	c, err = mongo.Connect(context.Background(), options.Client().ApplyURI(connectionString))
 	if err != nil {
 		log.Fatalf("Error connecting to MongoDB: %v", err)
 	}

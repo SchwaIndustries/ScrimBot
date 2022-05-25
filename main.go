@@ -40,7 +40,7 @@ func main() {
 	flag.Parse()
 
 	defer func() {
-		if err := db.Client().Disconnect(context.TODO()); err != nil {
+		if err := db.Client().Disconnect(context.Background()); err != nil {
 			panic(err)
 		}
 	}()

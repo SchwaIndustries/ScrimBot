@@ -12,7 +12,7 @@ import (
 
 func GetUser(id string) (database.User, bool) {
 	var result database.User
-	err := database.GetDB().Collection("users").FindOne(context.TODO(), bson.M{
+	err := database.GetDB().Collection("users").FindOne(context.Background(), bson.M{
 		"_id": id,
 	}).Decode(&result)
 
@@ -29,7 +29,7 @@ func GetUser(id string) (database.User, bool) {
 
 func UserIsRegistered(id string) bool {
 	var result bson.M
-	err := database.GetDB().Collection("users").FindOne(context.TODO(), bson.M{
+	err := database.GetDB().Collection("users").FindOne(context.Background(), bson.M{
 		"_id": id,
 	}).Decode(&result)
 
@@ -45,7 +45,7 @@ func UserIsRegistered(id string) bool {
 
 func UserIsAdmin(id string) bool {
 	var result bson.M
-	err := database.GetDB().Collection("users").FindOne(context.TODO(), bson.M{
+	err := database.GetDB().Collection("users").FindOne(context.Background(), bson.M{
 		"_id":   id,
 		"admin": true,
 	}).Decode(&result)

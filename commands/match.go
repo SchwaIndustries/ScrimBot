@@ -356,7 +356,7 @@ func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		log.Println(err)
 	}
 
-	_, err = database.GetDB().Collection("matches").InsertOne(context.TODO(), matchData)
+	_, err = database.GetDB().Collection("matches").InsertOne(context.Background(), matchData)
 	if err != nil {
 		log.Println(err)
 	}
