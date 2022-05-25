@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"schwa.tech/scrimbot/database"
@@ -58,6 +59,64 @@ func UserIsAdmin(id string) bool {
 	}
 
 	return true
+}
+
+func GetMatch(id string) (database.Match, bool) {
+	var result database.Match
+	err := database.GetDB().Collection("matches").FindOne(context.Background(), bson.M{
+		"_id": id,
+	}).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return result, false
+		} else {
+			log.Println(err)
+		}
+	}
+
+	return result, true
+}
+
+func UpdateDocument(id string, collection string, data *bson.M) bool {
+	result, err := database.GetDB().Collection(collection).UpdateOne(context.Background(), bson.M{
+		"_id": id,
+	}, data)
+
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+
+	if result.MatchedCount == 0 {
+		return false
+	}
+
+	return true
+}
+
+func InteractionRespond(s *discordgo.Session, i *discordgo.InteractionCreate, content string, ephemeral bool) {
+	responseData := &discordgo.InteractionResponseData{
+		Content: content,
+	}
+
+	if ephemeral {
+		responseData.Flags = uint64(discordgo.MessageFlagsEphemeral)
+	}
+
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: responseData,
+	})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func InteractionRespondEmpty(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseUpdateMessage,
+	})
 }
 
 func CapitalizeFirstLetter(str string) string {
