@@ -57,6 +57,14 @@ const (
 	Radiant Rank = 81 + iota
 )
 
+type Team uint8
+
+const (
+	TeamA Team = iota
+	TeamB
+	Spectators
+)
+
 type User struct {
 	ID               string    `bson:"_id" json:"_id"`
 	ValorantUsername string    `bson:"valorantUsername" json:"valorantUsername"`
