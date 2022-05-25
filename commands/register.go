@@ -82,7 +82,7 @@ func init() {
 		err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "ScrimBot registration is complete! Now it's time to get playing!",
+				Content: "Your ScrimBot registration is now complete! It's time to get playing!",
 			},
 		})
 		if err != nil {
