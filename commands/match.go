@@ -10,6 +10,8 @@ import (
 	"github.com/olebedev/when"
 	"github.com/olebedev/when/rules/common"
 	"github.com/olebedev/when/rules/en"
+	"go.mongodb.org/mongo-driver/bson"
+	"golang.org/x/exp/slices"
 	"schwa.tech/scrimbot/database"
 	"schwa.tech/scrimbot/utils"
 )
@@ -22,8 +24,7 @@ func init() {
 	matchIdOption := discordgo.ApplicationCommandOption{
 		Name:        "id",
 		Description: "Match ID",
-		Type:        discordgo.ApplicationCommandOptionInteger,
-		MinValue:    &zero,
+		Type:        discordgo.ApplicationCommandOptionString,
 		Required:    true,
 	}
 	one := 1.0
@@ -170,20 +171,91 @@ func init() {
 	})
 
 	AddComponentHandler("join-teama", func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseUpdateMessage,
-		})
+		joinTeamHandler(s, i, "a") // TODO: add enum
 	})
 	AddComponentHandler("join-teamb", func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseUpdateMessage,
-		})
+		joinTeamHandler(s, i, "b")
 	})
 	AddComponentHandler("join-spectators", func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseUpdateMessage,
-		})
+		joinTeamHandler(s, i, "spectators")
 	})
+}
+
+func joinTeamHandler(s *discordgo.Session, i *discordgo.InteractionCreate, team string) {
+	match, ok := utils.GetMatch(i.Message.ID)
+	if !ok {
+		utils.InteractionRespondEmpty(s, i)
+		return
+	}
+
+	user, ok := utils.GetUser(i.Member.User.ID)
+	if !ok {
+		utils.InteractionRespond(s, i, i.Member.Mention()+", you are not registered with ScrimBot. Please run `/register` before attempting to join a team!", true)
+		return
+	}
+
+	if slices.Contains(match.Players.A, user.ID) || slices.Contains(match.Players.B, user.ID) || (match.Spectators != nil && slices.Contains(match.Spectators, user.ID)) {
+		utils.InteractionRespond(s, i, i.Member.Mention()+", you have already joined a team! Please leave that team before joining a new one.", true)
+		return
+	}
+
+	if team == "spectators" && match.Spectators == nil {
+		utils.InteractionRespondEmpty(s, i)
+		return
+	}
+
+	var matchUpdateDiff bson.M
+
+	matchEmbed := i.Message.Embeds[0]
+	switch team {
+	case "a":
+		matchUpdateDiff = bson.M{
+			"players.a": user.ID,
+		}
+		if len(match.Players.A) == 0 {
+			matchEmbed.Fields[6].Value = "• " + user.ValorantUsername
+		} else {
+			matchEmbed.Fields[6].Value += "\n• " + user.ValorantUsername
+		}
+	case "b":
+		matchUpdateDiff = bson.M{
+			"players.b": user.ID,
+		}
+		if len(match.Players.B) == 0 {
+			matchEmbed.Fields[7].Value = "• " + user.ValorantUsername
+		} else {
+			matchEmbed.Fields[7].Value += "\n• " + user.ValorantUsername
+		}
+	case "spectators":
+		matchUpdateDiff = bson.M{
+			"spectators": user.ID,
+		}
+		if match.Spectators != nil && len(match.Spectators) == 0 {
+			matchEmbed.Fields[8].Value = "• " + user.ValorantUsername
+		} else {
+			matchEmbed.Fields[8].Value += "\n• " + user.ValorantUsername
+		}
+	}
+
+	ok = utils.UpdateDocument(match.ID, "matches", &bson.M{
+		"$push": matchUpdateDiff,
+	})
+	if !ok {
+		utils.InteractionRespondEmpty(s, i)
+		return
+	}
+
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseUpdateMessage,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: []*discordgo.MessageEmbed{
+				matchEmbed,
+			},
+		},
+	})
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func init() {
