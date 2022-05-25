@@ -59,17 +59,17 @@ func init() {
 		switch i.ApplicationCommandData().Options[0].Name {
 		case "info":
 			options := i.ApplicationCommandData().Options[0].Options
-			var userID string
+			var user *discordgo.User
 			if len(options) > 0 {
-				userID = options[0].UserValue(s).ID
+				user = options[0].UserValue(s)
 			} else {
 				if i.Member != nil {
-					userID = i.Member.User.ID
+					user = i.Member.User
 				} else {
-					userID = i.User.ID
+					user = i.User
 				}
 			}
-			infoUserHandler(s, i, userID)
+			infoUserHandler(s, i, user)
 		case "edit":
 			editUserHandler(s, i)
 		}
@@ -79,24 +79,13 @@ func init() {
 		Name: "User Info",
 		Type: discordgo.UserApplicationCommand,
 	}, func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		infoUserHandler(s, i, i.ApplicationCommandData().TargetID)
+		commandData := i.ApplicationCommandData()
+		infoUserHandler(s, i, commandData.Resolved.Users[commandData.TargetID])
 	})
 }
 
-func infoUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate, userID string) {
-	discordUser, err := s.User(userID)
-	if err != nil {
-		log.Println(err)
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Could not fetch user with ID " + userID,
-			},
-		})
-		return
-	}
-
-	user, ok := utils.GetUser(userID)
+func infoUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate, discordUser *discordgo.User) {
+	user, ok := utils.GetUser(discordUser.ID)
 	if !ok {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -107,7 +96,7 @@ func infoUserHandler(s *discordgo.Session, i *discordgo.InteractionCreate, userI
 		return
 	}
 
-	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds: []*discordgo.MessageEmbed{{
