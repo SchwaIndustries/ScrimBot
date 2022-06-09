@@ -139,10 +139,10 @@ const start = async (message, GLOBALS) => {
      * @type {import('discord.js').Collection<import('discord.js').Snowflake,import('discord.js').GuildMember>}
      */
     const teamAMembers = await message.guild.members.fetch({
-      user: matchInformation.players.a.map(p => p.id)
+      user: matchInformation.players.a
     })
     const teamBMembers = await message.guild.members.fetch({
-      user: matchInformation.players.b.map(p => p.id)
+      user: matchInformation.players.b
     })
 
     if (message.guild.me.hasPermission('MOVE_MEMBERS')) {
@@ -173,7 +173,7 @@ const start = async (message, GLOBALS) => {
 
     if (matchInformation.spectators) {
       const spectatorMembers = await message.guild.members.fetch({
-        user: matchInformation.spectators.map(p => p.id)
+        user: matchInformation.spectators
       })
 
       const spectatorEmbed = new GLOBALS.Embed()
