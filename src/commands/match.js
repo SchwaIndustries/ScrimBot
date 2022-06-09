@@ -92,13 +92,13 @@ const start = async (message, GLOBALS) => {
   if (message.guild.me.hasPermission('MANAGE_CHANNELS')) {
     const teamAPermissionOverrides = matchInformation.players.a.map(p => {
       return {
-        id: p.id,
+        id: p,
         allow: ['VIEW_CHANNEL', 'CONNECT', 'SPEAK', 'USE_VAD']
       }
     })
     const teamBPermissionOverrides = matchInformation.players.b.map(p => {
       return {
-        id: p.id,
+        id: p,
         allow: ['VIEW_CHANNEL', 'CONNECT', 'SPEAK', 'USE_VAD']
       }
     })
