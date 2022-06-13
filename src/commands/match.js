@@ -7,7 +7,7 @@ module.exports = exports = {
   usage: '',
   enabled: true,
   /**
-   * @param {import('discord.js').Message} message
+   * @param {import('@kalissaac/discord.js').Message} message
    * @param {import('../index.js').GLOBALS} GLOBALS
    */
   process: async (message, GLOBALS) => {
@@ -24,7 +24,7 @@ module.exports = exports = {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const create = async (message, GLOBALS) => {
@@ -62,7 +62,7 @@ const create = async (message, GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const start = async (message, GLOBALS) => {
@@ -80,7 +80,7 @@ const start = async (message, GLOBALS) => {
   matchInformation.status = 'started'
 
   /**
-   * @type {import('discord.js').TextChannel}
+   * @type {import('@kalissaac/discord.js').TextChannel}
    */
   const botMessageChannel = await GLOBALS.client.channels.fetch(matchInformation.message.channel)
   const botMessage = await botMessageChannel.messages.fetch(matchID)
@@ -104,7 +104,7 @@ const start = async (message, GLOBALS) => {
     })
 
     /**
-     * @type {import('discord.js').VoiceChannel}
+     * @type {import('@kalissaac/discord.js').VoiceChannel}
      */
     const teamAVoiceChannel = await botMessageChannel.guild.channels.create(`Team A: ${matchID.slice(-4)}`, {
       type: 'voice',
@@ -113,7 +113,7 @@ const start = async (message, GLOBALS) => {
       permissionOverrides: teamAPermissionOverrides
     })
     /**
-     * @type {import('discord.js').VoiceChannel}
+     * @type {import('@kalissaac/discord.js').VoiceChannel}
      */
     const teamBVoiceChannel = await botMessageChannel.guild.channels.create(`Team B: ${matchID.slice(-4)}`, {
       type: 'voice',
@@ -136,7 +136,7 @@ const start = async (message, GLOBALS) => {
       .setDescription(`Your match in ${message.guild.name} is starting now! Click [here](${teamBInvite.url}) to join the voice channel.`)
 
     /**
-     * @type {import('discord.js').Collection<import('discord.js').Snowflake,import('discord.js').GuildMember>}
+     * @type {import('@kalissaac/discord.js').Collection<import('@kalissaac/discord.js').Snowflake,import('@kalissaac/discord.js').GuildMember>}
      */
     const teamAMembers = await message.guild.members.fetch({
       user: matchInformation.players.a
@@ -203,7 +203,7 @@ const start = async (message, GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const score = async (message, GLOBALS) => {
@@ -269,7 +269,7 @@ const score = async (message, GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const cancel = async (message, GLOBALS) => {
@@ -310,7 +310,7 @@ const cancel = async (message, GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const info = async (message, GLOBALS) => {
@@ -356,7 +356,7 @@ const info = async (message, GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const edit = async (message, GLOBALS) => {
@@ -460,7 +460,7 @@ const edit = async (message, GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const refresh = async (message, GLOBALS) => {

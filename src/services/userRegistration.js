@@ -20,7 +20,7 @@ module.exports = exports = {
 }
 
 /**
- * @param {import('discord.js').Message} userMessage
+ * @param {import('@kalissaac/discord.js').Message} userMessage
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
@@ -71,8 +71,8 @@ const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').MessageReaction} reaction
- * @param {import('discord.js').User} user
+ * @param {import('@kalissaac/discord.js').MessageReaction} reaction
+ * @param {import('@kalissaac/discord.js').User} user
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const cancelUserRegistration = async (reaction, user, GLOBALS) => {

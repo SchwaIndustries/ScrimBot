@@ -36,8 +36,8 @@ const addOldMessagesToCache = async (GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').MessageReaction} reaction
- * @param {import('discord.js').User} user
+ * @param {import('@kalissaac/discord.js').MessageReaction} reaction
+ * @param {import('@kalissaac/discord.js').User} user
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const _addPlayerToMatch = async (reaction, user, GLOBALS, matchInformation) => {
@@ -104,8 +104,8 @@ const _addPlayerToMatch = async (reaction, user, GLOBALS, matchInformation) => {
 }
 
 /**
- * @param {import('discord.js').MessageReaction} reaction
- * @param {import('discord.js').User} user
+ * @param {import('@kalissaac/discord.js').MessageReaction} reaction
+ * @param {import('@kalissaac/discord.js').User} user
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const addPlayerToMatch = async (reaction, user, GLOBALS) => {
@@ -117,8 +117,8 @@ const addPlayerToMatch = async (reaction, user, GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').MessageReaction} reaction
- * @param {import('discord.js').User} user
+ * @param {import('@kalissaac/discord.js').MessageReaction} reaction
+ * @param {import('@kalissaac/discord.js').User} user
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const _removePlayerFromMatch = async (reaction, user, GLOBALS, matchInformation) => {
@@ -175,8 +175,8 @@ const _removePlayerFromMatch = async (reaction, user, GLOBALS, matchInformation)
 }
 
 /**
- * @param {import('discord.js').MessageReaction} reaction
- * @param {import('discord.js').User} user
+ * @param {import('@kalissaac/discord.js').MessageReaction} reaction
+ * @param {import('@kalissaac/discord.js').User} user
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const removePlayerFromMatch = async (reaction, user, GLOBALS) => {

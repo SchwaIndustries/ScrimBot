@@ -14,7 +14,7 @@ module.exports = exports = {
   usage: '<add/info/edit>', // arguments for the command
   enabled: true, // whether the command should be loaded
   /**
-   * @param {import('discord.js').Message} message
+   * @param {import('@kalissaac/discord.js').Message} message
    * @param {import('../index.js').GLOBALS} GLOBALS
    */
   process: async (message, GLOBALS) => {
@@ -28,7 +28,7 @@ module.exports = exports = {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const add = async (message, GLOBALS) => {
@@ -85,7 +85,7 @@ const add = async (message, GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const info = async (message, GLOBALS) => {
@@ -106,7 +106,7 @@ const info = async (message, GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const edit = async (message, GLOBALS) => {

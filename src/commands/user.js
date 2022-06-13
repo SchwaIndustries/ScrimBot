@@ -1,13 +1,13 @@
 const moment = require('moment-timezone')
 const CONSTANTS = require('../constants')
-const Discord = require('discord.js') // eslint-disable-line
+const Discord = require('@kalissaac/discord.js') // eslint-disable-line
 
 module.exports = exports = {
   name: 'user',
   usage: '<info/edit>',
   enabled: true,
   /**
-   * @param {import('discord.js').Message} message
+   * @param {import('@kalissaac/discord.js').Message} message
    * @param {import('../index.js').GLOBALS} GLOBALS
    */
   process: async (message, GLOBALS) => {
@@ -19,7 +19,7 @@ module.exports = exports = {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const info = async (message, GLOBALS) => {
@@ -50,7 +50,7 @@ const info = async (message, GLOBALS) => {
 }
 
 /**
- * @param {import('discord.js').Message} message
+ * @param {import('@kalissaac/discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const edit = async (message, GLOBALS) => {
