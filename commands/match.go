@@ -390,10 +390,29 @@ func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			},
 			{
 				Name:   "Spectators",
-				Value:  "None",
+				Value:  "N/A",
 				Inline: true,
 			},
 		},
+	}
+
+	matchMessageComponents := []discordgo.MessageComponent{
+		discordgo.Button{
+			Label:    "Join Team A",
+			CustomID: "join-teama",
+		},
+		discordgo.Button{
+			Label:    "Join Team B",
+			CustomID: "join-teamb",
+		},
+	}
+
+	if matchData.Spectators != nil {
+		matchMessageComponents = append(matchMessageComponents, discordgo.Button{
+			Label:    "Join Spectators",
+			CustomID: "join-spectators",
+		})
+		matchEmbed.Fields[8].Value = "None"
 	}
 
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -402,20 +421,7 @@ func createMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Embeds: []*discordgo.MessageEmbed{&matchEmbed},
 			Components: []discordgo.MessageComponent{
 				discordgo.ActionsRow{
-					Components: []discordgo.MessageComponent{
-						discordgo.Button{
-							Label:    "Join Team A",
-							CustomID: "join-teama",
-						},
-						discordgo.Button{
-							Label:    "Join Team B",
-							CustomID: "join-teamb",
-						},
-						discordgo.Button{
-							Label:    "Join Spectators",
-							CustomID: "join-spectators",
-						},
-					},
+					Components: matchMessageComponents,
 				},
 			},
 		},
