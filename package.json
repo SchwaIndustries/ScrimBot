@@ -19,7 +19,7 @@
   "homepage": "https://github.com/SchwaIndustries/ScrimBot#readme",
   "dependencies": {
     "chrono-node": "^2.3.1",
-    "@kalissaac/discord.js": "^12.5.3-2",
+    "@kalissaac/discord.js": "^12.5.3-3",
     "dotenv": "^10.0.0",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
