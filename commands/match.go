@@ -209,6 +209,14 @@ func joinTeamHandler(s *discordgo.Session, i *discordgo.InteractionCreate, team 
 	matchEmbed := i.Message.Embeds[0]
 	switch team {
 	case "a":
+		if len(match.Players.A) == int(match.MaxTeamCount) {
+			utils.InteractionRespond(s, i, i.Member.Mention()+", the selected team is full! Please choose a different one.", true)
+			return
+		}
+		if user.ValorantRank < match.RankMinimum || user.ValorantRank > match.RankMaximum {
+			utils.InteractionRespond(s, i, i.Member.Mention()+", you do not meet the match rank requirements! Please try a different mach or ask the creator to adjust them.", true)
+			return
+		}
 		matchUpdateDiff = bson.M{
 			"players.a": user.ID,
 		}
@@ -218,6 +226,14 @@ func joinTeamHandler(s *discordgo.Session, i *discordgo.InteractionCreate, team 
 			matchEmbed.Fields[6].Value += "\n• " + user.ValorantUsername
 		}
 	case "b":
+		if len(match.Players.B) == int(match.MaxTeamCount) {
+			utils.InteractionRespond(s, i, i.Member.Mention()+", the selected team is full! Please choose a different one.", true)
+			return
+		}
+		if user.ValorantRank < match.RankMinimum || user.ValorantRank > match.RankMaximum {
+			utils.InteractionRespond(s, i, i.Member.Mention()+", you do not meet the match rank requirements! Please try a different mach or ask the creator to adjust them.", true)
+			return
+		}
 		matchUpdateDiff = bson.M{
 			"players.b": user.ID,
 		}
