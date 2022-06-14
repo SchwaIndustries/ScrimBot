@@ -95,7 +95,9 @@ type Match struct {
 		Channel string `bson:"channel" json:"channel"`
 		ID      string `bson:"id" json:"id"`
 	} `bson:"message" json:"message"`
-	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
+	TeamAVoiceChannel string    `bson:"teamAVoiceChannel,omitempty" json:"teamAVoiceChannel,omitempty"`
+	TeamBVoiceChannel string    `bson:"teamBVoiceChannel,omitempty" json:"teamBVoiceChannel,omitempty"`
+	Timestamp         time.Time `bson:"timestamp" json:"timestamp"`
 }
 
 type Guild struct {
