@@ -544,10 +544,76 @@ func editMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func infoMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	matchData, ok := utils.GetMatch(i.ApplicationCommandData().Options[0].Options[0].StringValue())
+	if !ok {
+		utils.InteractionRespond(s, i, "Invalid match ID!", true)
+		return
+	}
+
+	matchEmbed := discordgo.MessageEmbed{
+		Title:       "Match Information",
+		Description: "Press one of the buttons below this message to join a team!",
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: utils.MapThumbnailURL(matchData.Map),
+		},
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    fmt.Sprintf("%s#%s", i.Member.User.Username, i.Member.User.Discriminator),
+			IconURL: i.Member.AvatarURL(""),
+		},
+		Timestamp: matchData.Date.Format(time.RFC3339),
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name:   "Status",
+				Value:  utils.CapitalizeFirstLetter(matchData.Status),
+				Inline: true,
+			},
+			{
+				Name:   "Game Mode",
+				Value:  utils.CapitalizeFirstLetter(matchData.Mode),
+				Inline: true,
+			},
+			{
+				Name:   "Map",
+				Value:  utils.CapitalizeFirstLetter(matchData.Map),
+				Inline: true,
+			},
+			{
+				Name:   "Max Team Count",
+				Value:  fmt.Sprintf("%d players per team", matchData.MaxTeamCount),
+				Inline: true,
+			},
+			{
+				Name:   "Minimum Rank",
+				Value:  utils.RankIDToName(matchData.RankMinimum),
+				Inline: true,
+			},
+			{
+				Name:   "Maximum Rank",
+				Value:  utils.RankIDToName(matchData.RankMaximum),
+				Inline: true,
+			},
+			{
+				Name:   "Team A",
+				Value:  "None",
+				Inline: true,
+			},
+			{
+				Name:   "Team B",
+				Value:  "None",
+				Inline: true,
+			},
+			{
+				Name:   "Spectators",
+				Value:  "None",
+				Inline: true,
+			},
+		},
+	}
+
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: "info match",
+			Embeds: []*discordgo.MessageEmbed{&matchEmbed},
 		},
 	})
 
