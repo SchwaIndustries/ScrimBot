@@ -67,7 +67,7 @@ func main() {
 	}
 
 	if *updateCommands {
-		log.Println("Adding commands...")
+		log.Println("Updating commands...")
 		for _, v := range commands.CommandDatas {
 			_, err := s.ApplicationCommandCreate(s.State.User.ID, "", v)
 			if err != nil {
