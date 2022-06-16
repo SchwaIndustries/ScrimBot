@@ -584,13 +584,58 @@ func startMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 // TODO: convert this to a message component action, not a slash command
 func cancelMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "cancel match",
+	if i.Member == nil {
+		utils.InteractionRespond(s, i, "This command can only be run in a server!", true)
+		return
+	}
+
+	match, ok := utils.GetMatch(i.ApplicationCommandData().Options[0].Options[0].StringValue())
+	if !ok {
+		utils.InteractionRespond(s, i, "Invalid match ID!", true)
+		return
+	}
+
+	if !utils.UserIsAdmin(i.Member.User.ID) && match.Creator != i.Member.User.ID {
+		utils.InteractionRespond(s, i, "You are not the match creator! Please ask them to start the match.", false)
+		return
+	}
+
+	if match.Status == "scored" {
+		utils.InteractionRespond(s, i, "This match has already been completed.", true)
+		return
+	}
+
+	guild, err := s.Guild(i.GuildID)
+	if err == nil && match.Status == "started" && guild.Permissions&discordgo.PermissionManageChannels != 0 {
+		s.ChannelDelete(match.TeamAVoiceChannel)
+		s.ChannelDelete(match.TeamBVoiceChannel)
+	}
+
+	match.Status = "canceled"
+
+	utils.UpdateDocument(match.ID, "matches", &bson.M{
+		"$set": bson.M{
+			"status": match.Status,
 		},
 	})
 
+	message, err := s.ChannelMessage(match.Message.Channel, match.Message.ID)
+	if err != nil {
+		utils.InteractionRespond(s, i, "Could not fetch match message!", false)
+		return
+	}
+	matchEmbed := message.Embeds[0]
+	matchEmbed.Fields[0].Value = utils.CapitalizeFirstLetter(match.Status)
+
+	_, err = s.ChannelMessageEditEmbed(match.Message.Channel, match.Message.ID, matchEmbed)
+	if err != nil {
+		utils.InteractionRespond(s, i, "Could not edit match message!", false)
+		return
+	}
+
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponsePong,
+	})
 	if err != nil {
 		log.Println(err)
 	}
