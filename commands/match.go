@@ -488,24 +488,98 @@ func startMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	message, err := s.ChannelMessage(match.Message.Channel, match.Message.ID)
 	if err != nil {
+		log.Println(err)
 		utils.InteractionRespond(s, i, "Could not fetch match message!", false)
 		return
 	}
 	matchEmbed := message.Embeds[0]
 	matchEmbed.Fields[0].Value = utils.CapitalizeFirstLetter(match.Status)
 
-	_, err = s.ChannelMessageEditEmbed(match.Message.Channel, match.Message.ID, matchEmbed)
+	content := "The match has started!"
+	_, err = s.ChannelMessageEditComplex(&discordgo.MessageEdit{
+		ID:      match.Message.ID,
+		Channel: match.Message.Channel,
+		Content: &content,
+		Embeds:  []*discordgo.MessageEmbed{matchEmbed},
+	})
 	if err != nil {
+		log.Println(err)
 		utils.InteractionRespond(s, i, "Could not edit match message!", false)
 		return
 	}
 
-	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponsePong,
+	spectatorsAmount := 0
+	if match.Spectators != nil {
+		spectatorsAmount = len(match.Spectators)
+	}
+
+	voiceChannelPermissions := int64(discordgo.PermissionViewChannel | discordgo.PermissionVoiceConnect | discordgo.PermissionVoiceSpeak | discordgo.PermissionVoiceUseVAD)
+
+	teamAPermissionOverwrites := make([]*discordgo.PermissionOverwrite, len(match.Players.A)+spectatorsAmount)
+	for i, p := range match.Players.A {
+		teamAPermissionOverwrites[i] = &discordgo.PermissionOverwrite{
+			ID:    p,
+			Type:  discordgo.PermissionOverwriteTypeMember,
+			Allow: voiceChannelPermissions,
+		}
+	}
+
+	teamBPermissionOverwrites := make([]*discordgo.PermissionOverwrite, len(match.Players.B)+spectatorsAmount)
+	for i, p := range match.Players.B {
+		teamBPermissionOverwrites[i] = &discordgo.PermissionOverwrite{
+			ID:    p,
+			Type:  discordgo.PermissionOverwriteTypeMember,
+			Allow: voiceChannelPermissions,
+		}
+	}
+
+	if match.Spectators != nil {
+		for i, p := range match.Spectators {
+			teamAPermissionOverwrites[len(teamAPermissionOverwrites)+i] = &discordgo.PermissionOverwrite{
+				ID:    p,
+				Type:  discordgo.PermissionOverwriteTypeMember,
+				Allow: voiceChannelPermissions,
+			}
+			teamBPermissionOverwrites[len(teamBPermissionOverwrites)+i] = &discordgo.PermissionOverwrite{
+				ID:    p,
+				Type:  discordgo.PermissionOverwriteTypeMember,
+				Allow: voiceChannelPermissions,
+			}
+		}
+	}
+
+	updateDiff := bson.M{
+		"status": match.Status,
+	}
+
+	teamAVoiceChannel, err := s.GuildChannelCreateComplex(i.GuildID, discordgo.GuildChannelCreateData{
+		Name:                 "Team A: #" + utils.Substr(match.ID, len(match.ID)-4, 4),
+		Type:                 discordgo.ChannelTypeGuildVoice,
+		UserLimit:            len(match.Players.A) + spectatorsAmount,
+		PermissionOverwrites: teamAPermissionOverwrites,
 	})
 	if err != nil {
 		log.Println(err)
+	} else {
+		updateDiff["teamAVoiceChannel"] = teamAVoiceChannel.ID
 	}
+	teamBVoiceChannel, err := s.GuildChannelCreateComplex(i.GuildID, discordgo.GuildChannelCreateData{
+		Name:                 "Team B: #" + utils.Substr(match.ID, len(match.ID)-4, 4),
+		Type:                 discordgo.ChannelTypeGuildVoice,
+		UserLimit:            len(match.Players.B) + spectatorsAmount,
+		PermissionOverwrites: teamBPermissionOverwrites,
+	})
+	if err != nil {
+		log.Println(err)
+	} else {
+		updateDiff["teamBVoiceChannel"] = teamBVoiceChannel.ID
+	}
+
+	utils.UpdateDocument(match.ID, "matches", &bson.M{
+		"$set": updateDiff,
+	})
+
+	utils.InteractionRespond(s, i, "Match with ID `"+match.ID+"` has been started. Once complete, use `/match score <match id> <score>` to report the score!", true)
 }
 
 // TODO: convert this to a message component action, not a slash command
