@@ -655,7 +655,7 @@ func scoreMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	if !utils.UserIsAdmin(i.Member.User.ID) && match.Creator != i.Member.User.ID {
-		utils.InteractionRespond(s, i, "You are not the match creator! Please ask them to start the match.", false)
+		utils.InteractionRespond(s, i, "You are not the match creator! Please ask them to score the match.", false)
 		return
 	}
 
@@ -667,10 +667,16 @@ func scoreMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	guild, err := s.Guild(i.GuildID)
 	if err == nil && match.Status == "started" && guild.Permissions&discordgo.PermissionManageChannels != 0 {
 		if match.TeamAVoiceChannel != "" {
-			s.ChannelDelete(match.TeamAVoiceChannel)
+			_, err = s.ChannelDelete(match.TeamAVoiceChannel)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 		if match.TeamBVoiceChannel != "" {
-			s.ChannelDelete(match.TeamBVoiceChannel)
+			_, err = s.ChannelDelete(match.TeamBVoiceChannel)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 	}
 
