@@ -693,6 +693,10 @@ func scoreMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	matchEmbed := message.Embeds[0]
 	matchEmbed.Fields[0].Value = utils.CapitalizeFirstLetter(match.Status)
+	matchEmbed.Fields = append(matchEmbed.Fields, &discordgo.MessageEmbedField{
+		Name:  "Final Score",
+		Value: fmt.Sprintf("%d-%d", teamAScore, teamBScore),
+	})
 
 	_, err = s.ChannelMessageEditEmbed(match.Message.Channel, match.Message.ID, matchEmbed)
 	if err != nil {
@@ -781,6 +785,13 @@ func infoMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				Inline: true,
 			},
 		},
+	}
+
+	if matchData.Status == "scored" {
+		matchEmbed.Fields = append(matchEmbed.Fields, &discordgo.MessageEmbedField{
+			Name:  "Final Score",
+			Value: fmt.Sprintf("%d-%d", matchData.Score[0], matchData.Score[1]),
+		})
 	}
 
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
