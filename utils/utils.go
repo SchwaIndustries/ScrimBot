@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 
@@ -146,11 +147,86 @@ func MapThumbnailURL(name string) string {
 }
 
 func RankNameToID(name string) database.Rank {
-	return 0
+	switch name {
+	case "anymin":
+		return database.AnyMin
+	case "iron1":
+		return database.Iron1
+	case "iron2":
+		return database.Iron2
+	case "iron3":
+		return database.Iron3
+	case "bronze1":
+		return database.Bronze1
+	case "bronze2":
+		return database.Bronze2
+	case "bronze3":
+		return database.Bronze3
+	case "silver1":
+		return database.Silver1
+	case "silver2":
+		return database.Silver2
+	case "silver3":
+		return database.Silver3
+	case "gold1":
+		return database.Gold1
+	case "gold2":
+		return database.Gold2
+	case "gold3":
+		return database.Gold3
+	case "platinum1":
+		return database.Platinum1
+	case "platinum2":
+		return database.Platinum2
+	case "platinum3":
+		return database.Platinum3
+	case "diamond1":
+		return database.Diamond1
+	case "diamond2":
+		return database.Diamond2
+	case "diamond3":
+		return database.Diamond3
+	case "immortal":
+		return database.Immortal
+	case "radiant":
+		return database.Radiant
+	case "anymax":
+		return database.AnyMax
+	}
+	return database.AnyMin
 }
 
 func RankIDToName(id database.Rank) string {
-	return "rank"
+	if id == database.AnyMin {
+		return "Any Min"
+	}
+	if id == database.AnyMax {
+		return "Any Max"
+	}
+	if id == database.Immortal {
+		return "Immortal"
+	}
+	if id == database.Radiant {
+		return "Radiant"
+	}
+
+	rankName := ""
+	switch id / 10 {
+	case 1:
+		rankName += "Iron"
+	case 2:
+		rankName += "Bronze"
+	case 3:
+		rankName += "Silver"
+	case 4:
+		rankName += "Gold"
+	case 5:
+		rankName += "Platinum"
+	case 6:
+		rankName += "Diamond"
+	}
+	rankName += fmt.Sprintf(" %d", id%10)
+	return rankName
 }
 
 func Substr(input string, start int, length int) string {
