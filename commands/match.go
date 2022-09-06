@@ -674,11 +674,15 @@ func scoreMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
+	teamAScore := i.ApplicationCommandData().Options[0].Options[1].IntValue()
+	teamBScore := i.ApplicationCommandData().Options[0].Options[2].IntValue()
+
 	match.Status = "scored"
 
 	utils.UpdateDocument(match.ID, "matches", &bson.M{
 		"$set": bson.M{
 			"status": match.Status,
+			"score":  []int64{teamAScore, teamBScore},
 		},
 	})
 
@@ -696,12 +700,7 @@ func scoreMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponsePong,
-	})
-	if err != nil {
-		log.Println(err)
-	}
+	utils.InteractionRespond(s, i, "Match scored. Use /match create to start another one!", false)
 }
 
 func editMatchHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
