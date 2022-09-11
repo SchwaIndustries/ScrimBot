@@ -3,7 +3,7 @@ module.exports = exports = {
   usage: '<enable/disable> <command name>', // arguments for the command
   enabled: true, // whether the command should be loaded
   /**
-   * @param {import('@kalissaac/discord.js').Message} message
+   * @param {import('discord.js').Message} message
    * @param {import('../index.js').GLOBALS} GLOBALS
    */
   process: async (message, GLOBALS) => {
@@ -16,7 +16,7 @@ module.exports = exports = {
 }
 
 /**
- * @param {import('@kalissaac/discord.js').Message} message
+ * @param {import('discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const enable = async (message, GLOBALS) => {
@@ -29,7 +29,7 @@ const enable = async (message, GLOBALS) => {
 }
 
 /**
- * @param {import('@kalissaac/discord.js').Message} message
+ * @param {import('discord.js').Message} message
  * @param {import('../index.js').GLOBALS} GLOBALS
  */
 const disable = async (message, GLOBALS) => {

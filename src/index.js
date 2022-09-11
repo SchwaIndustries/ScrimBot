@@ -30,7 +30,7 @@
 const CONSTANTS = require('./constants')
 const fs = require('fs')
 const path = require('path')
-const Discord = require('@kalissaac/discord.js')
+const Discord = require('discord.js')
   const client = new Discord.Client({
     presence: {
       activity: { name: 'for matches | v!help', type: 'WATCHING' }

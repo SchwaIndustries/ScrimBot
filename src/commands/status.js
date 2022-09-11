@@ -5,7 +5,7 @@ module.exports = exports = {
   usage: '',
   enabled: true,
   /**
-   * @param {import('@kalissaac/discord.js').Message} message
+   * @param {import('discord.js').Message} message
    * @param {import('../index.js').GLOBALS} GLOBALS
    */
   process: async (message, GLOBALS) => {
