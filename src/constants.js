@@ -82,7 +82,7 @@ module.exports = exports = {
 
   GAME_MODES: ['standard', 'spike rush', 'deathmatch'],
 
-  AFFIRMATIVE_WORDS: ['yes', 'yeah', 'yea', 'ye', 'yah', 'sure', 'true', '1', 'one', 'on', 'si', 'ok', 'okay', 'k', 'mhm', 'why not', 'alright', 'aight', 'affirmative', 'yeet' 'eh'],
+  AFFIRMATIVE_WORDS: ['yes', 'yeah', 'yea', 'ye', 'yah', 'sure', 'true', '1', 'one', 'on', 'si', 'ok', 'okay', 'k', 'mhm', 'why not', 'alright', 'aight', 'affirmative', 'yeet', 'eh'],
 
   MAX_TEAM_COUNT: 5, // maximum amount of players allowed on one team
 
