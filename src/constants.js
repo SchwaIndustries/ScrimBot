@@ -36,7 +36,7 @@ module.exports = exports = {
 
     'RADIANT': 91, // eslint-disable-line quote-props
 
-    'ANY MAX': 99
+    'ANY MAX': 199
   },
   RANKS_REVERSED: {
     0: 'ANY MIN',
@@ -65,7 +65,7 @@ module.exports = exports = {
     82: 'IMMORTAL 2',
     83: 'IMMORTAL 3',
     91: 'RADIANT',
-    99: 'ANY MAX'
+    199: 'ANY MAX'
   },
 
   MAPS: ['Split', 'Bind', 'Haven', 'Ascent', 'Icebox', 'Breeze', 'Fracture', 'Pearl'],
