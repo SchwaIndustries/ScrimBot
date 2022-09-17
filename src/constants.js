@@ -25,10 +25,16 @@ module.exports = exports = {
     'DIAMOND 1': 61,
     'DIAMOND 2': 62,
     'DIAMOND 3': 63,
+    
+    'ASCENDANT 1': 71,
+    'ASCENDANT 2': 72,
+    'ASCENDANT 3': 73,
 
-    'IMMORTAL': 71, // eslint-disable-line quote-props
+    'IMMORTAL 1': 81,
+    'IMMORTAL 2': 82,
+    'IMMORTAL 3': 83,
 
-    'RADIANT': 81, // eslint-disable-line quote-props
+    'RADIANT': 91, // eslint-disable-line quote-props
 
     'ANY MAX': 99
   },
@@ -52,24 +58,31 @@ module.exports = exports = {
     61: 'DIAMOND 1',
     62: 'DIAMOND 2',
     63: 'DIAMOND 3',
-    71: 'IMMORTAL',
-    81: 'RADIANT',
+    71: 'ASCENDANT 1',
+    72: 'ASCENDANT 2',
+    73: 'ASCENDANT 3',   
+    81: 'IMMORTAL 1',
+    82: 'IMMORTAL 2',
+    83: 'IMMORTAL 3',
+    91: 'RADIANT',
     99: 'ANY MAX'
   },
 
-  MAPS: ['split', 'bind', 'haven', 'ascent', 'icebox', 'breeze'],
+  MAPS: ['Split', 'Bind', 'Haven', 'Ascent', 'Icebox', 'Breeze', 'Fracture', 'Pearl'],
   MAPS_THUMBNAILS: {
-    split: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt2caea7a88362d6aa/5ecd64b0817e574fa1dcc162/split-minimap-2.png',
-    bind: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/bltad4274632c983531/5ecd64d04d187c101f3f2486/bind-minimap-2.png',
-    haven: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/bltedb5d57941e4f3f5/5ecd64c14d187c101f3f2484/haven-minimap-2.png',
-    ascent: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt47bef6aa9e43d8ec/5ecd64df96a8996de38bbf8f/ascent-minimap-2.jpg',
-    icebox: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt727aeefa1875f8ce/5fc9954afd99385ff600b0f6/Icebox_1a.jpg',
-    breeze: 'https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt1aa82531c6b3a04b/607fa05b33cf413db790d632/breeze_1a.jpg'
+    Split: 'https://static.wikia.nocookie.net/valorant/images/d/d6/Loading_Screen_Split.png/revision/latest?cb=20200620202349',
+    Bind: 'https://static.wikia.nocookie.net/valorant/images/2/23/Loading_Screen_Bind.png/revision/latest?cb=20200620202316',
+    Haven: 'https://cdn1.dotesports.com/wp-content/uploads/2020/06/30204333/Loading_Screen_Haven.png',
+    Ascent: 'https://static.wikia.nocookie.net/valorant/images/e/e7/Loading_Screen_Ascent.png/revision/latest?cb=20200607180020',
+    Icebox: 'https://static.wikia.nocookie.net/valorant/images/1/13/Loading_Screen_Icebox.png/revision/latest?cb=20201015084446',
+    Breeze: 'https://static.wikia.nocookie.net/valorant/images/1/10/Loading_Screen_Breeze.png/revision/latest?cb=20210427160616',
+    Fracture: 'https://static.wikia.nocookie.net/valorant/images/f/fc/Loading_Screen_Fracture.png/revision/latest?cb=20210908143656',
+    Pearl: 'https://cdnportal.mobalytics.gg/production/2022/06/a3647df7-pearl-map-splash.jpg'
   },
 
   GAME_MODES: ['standard', 'spike rush', 'deathmatch'],
 
-  AFFIRMATIVE_WORDS: ['yes', 'yeah', 'yea', 'ye', 'yah', 'sure', 'true', '1', 'one', 'on', 'si', 'ok', 'okay', 'k', 'mhm', 'why not', 'alright', 'aight', 'affirmative', 'yeet'],
+  AFFIRMATIVE_WORDS: ['yes', 'yeah', 'yea', 'ye', 'yah', 'sure', 'true', '1', 'one', 'on', 'si', 'ok', 'okay', 'k', 'mhm', 'why not', 'alright', 'aight', 'affirmative', 'yeet' 'eh'],
 
   MAX_TEAM_COUNT: 5, // maximum amount of players allowed on one team
 
