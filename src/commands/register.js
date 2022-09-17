@@ -14,7 +14,7 @@ module.exports = exports = {
     const embed = new GLOBALS.Embed()
       .setTitle('ScrimBot Registration')
       .setAuthor(message.author.tag, message.author.avatarURL())
-      .setDescription('Welcome to ScrimBot! We will ask you a set of questions to get started. At any time, you can cancel by reacting with the x below. You can either respond to these questions in the current channel or through DMs with the bot.')
+      .setDescription('Welcome to VHT ScrimBot! We will ask you a set of questions to get started. At any time, you can cancel by reacting with the x below. You can either respond to these questions in the current channel or through DMs with the bot.')
       .addField(CONSTANTS.userRegistrationSteps[0][0], CONSTANTS.userRegistrationSteps[0][1])
     await message.author.createDM()
     message.author.send(embed)
