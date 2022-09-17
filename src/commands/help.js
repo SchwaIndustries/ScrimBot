@@ -27,7 +27,7 @@ module.exports = exports = {
       ${process.env.PREFIX}help: Show this help menu.
       ${process.env.PREFIX}ping: Play a game of ping pong.
       ${process.env.PREFIX}register: Register to join matches.
-      ${process.env.PREFIX}coinflip: Flips a coin after 7 Seconds (Call Heads or Tails in Chat) [This is laggy as shit and will most likely take double the time]`)
+      ${process.env.PREFIX}coinflip: Flips a coin after 7 Seconds (Call Heads or Tails in Chat) [This is laggy as shit and will most likely take double the time. I'll fix it eventually just not right now -Spin]`)
     message.channel.send(embed)
   }
 }
