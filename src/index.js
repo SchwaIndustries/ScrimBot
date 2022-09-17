@@ -33,7 +33,7 @@ const path = require('path')
 const Discord = require('discord.js')
   const client = new Discord.Client({
     presence: {
-      activity: { name: 'for matches | v!help', type: 'WATCHING' }
+      activity: { name: 'for matches | -help', type: 'WATCHING' }
     },
     ws: {
       intents: Discord.Intents.NON_PRIVILEGED | Discord.Intents.resolve('MESSAGE_CONTENT')
