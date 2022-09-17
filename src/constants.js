@@ -26,17 +26,17 @@ module.exports = exports = {
     'DIAMOND 2': 62,
     'DIAMOND 3': 63,
     
-    'ASCENDANT 1': 71,
-    'ASCENDANT 2': 72,
-    'ASCENDANT 3': 73,
+    'ASCENDANT 1': 101,
+    'ASCENDANT 2': 102,
+    'ASCENDANT 3': 103,
 
-    'IMMORTAL 1': 81,
-    'IMMORTAL 2': 82,
-    'IMMORTAL 3': 83,
+    'IMMORTAL 1': 71,
+    'IMMORTAL 2': 72,
+    'IMMORTAL 3': 73,
 
-    'RADIANT': 91, // eslint-disable-line quote-props
+    'RADIANT': 81, // eslint-disable-line quote-props
 
-    'ANY MAX': 199
+    'ANY MAX': 91
   },
   RANKS_REVERSED: {
     0: 'ANY MIN',
@@ -57,15 +57,15 @@ module.exports = exports = {
     53: 'PLATINUM 3',
     61: 'DIAMOND 1',
     62: 'DIAMOND 2',
-    63: 'DIAMOND 3',
-    71: 'ASCENDANT 1',
-    72: 'ASCENDANT 2',
-    73: 'ASCENDANT 3',   
-    81: 'IMMORTAL 1',
-    82: 'IMMORTAL 2',
-    83: 'IMMORTAL 3',
-    91: 'RADIANT',
-    199: 'ANY MAX'
+    63: 'DIAMOND 3',  
+    71: 'IMMORTAL 1',
+    72: 'IMMORTAL 2',
+    73: 'IMMORTAL 3',
+    81: 'RADIANT',
+    91: 'ANY MAX'
+    101: 'ASCENDANT 1',
+    102: 'ASCENDANT 2',
+    103: 'ASCENDANT 3', 
   },
 
   MAPS: ['Split', 'Bind', 'Haven', 'Ascent', 'Icebox', 'Breeze', 'Fracture', 'Pearl'],
