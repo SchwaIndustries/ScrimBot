@@ -25,8 +25,10 @@ module.exports = exports = {
 
       **__MISCELLANEOUS COMMANDS__**
       ${process.env.PREFIX}help: Show this help menu.
+      ${process.env.PREFIX}
       ${process.env.PREFIX}ping: Play a game of ping pong.
       ${process.env.PREFIX}register: Register to join matches.
+      ${process.env.PREFIX}
     message.channel.send(embed)
   }
 }
