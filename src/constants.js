@@ -26,9 +26,9 @@ module.exports = exports = {
     'DIAMOND 2': 62,
     'DIAMOND 3': 63,
     
-    'ASCENDANT 1': 101,
-    'ASCENDANT 2': 102,
-    'ASCENDANT 3': 103,
+    'ASCENDANT 1': 64,
+    'ASCENDANT 2': 65,
+    'ASCENDANT 3': 66,
 
     'IMMORTAL 1': 71,
     'IMMORTAL 2': 72,
@@ -57,15 +57,15 @@ module.exports = exports = {
     53: 'PLATINUM 3',
     61: 'DIAMOND 1',
     62: 'DIAMOND 2',
-    63: 'DIAMOND 3',  
+    63: 'DIAMOND 3',
+    64: 'ASCENDANT 1',
+    65: 'ASCENDANT 2',
+    66: 'ASCENDANT 3', 
     71: 'IMMORTAL 1',
     72: 'IMMORTAL 2',
     73: 'IMMORTAL 3',
     81: 'RADIANT',
     91: 'ANY MAX'
-    101: 'ASCENDANT 1',
-    102: 'ASCENDANT 2',
-    103: 'ASCENDANT 3', 
   },
 
   MAPS: ['Split', 'Bind', 'Haven', 'Ascent', 'Icebox', 'Breeze', 'Fracture', 'Pearl'],
