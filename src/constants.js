@@ -2,6 +2,10 @@ module.exports = exports = {
   RANKS: {
     'ANY MIN': 0,
 
+    'ASCENDANT 1': 9,
+    'ASCENDANT 2': 8,
+    'ASCENDANT 3': 10,
+    
     'IRON 1': 11,
     'IRON 2': 12,
     'IRON 3': 13,
@@ -25,10 +29,6 @@ module.exports = exports = {
     'DIAMOND 1': 61,
     'DIAMOND 2': 62,
     'DIAMOND 3': 63,
-    
-    'ASCENDANT 1': 64,
-    'ASCENDANT 2': 65,
-    'ASCENDANT 3': 66,
 
     'IMMORTAL 1': 71,
     'IMMORTAL 2': 72,
@@ -40,6 +40,9 @@ module.exports = exports = {
   },
   RANKS_REVERSED: {
     0: 'ANY MIN',
+    8: 'ASCENDANT 1',
+    9: 'ASCENDANT 2',
+    10: 'ASCENDANT 3', 
     11: 'IRON 1',
     12: 'IRON 2',
     13: 'IRON 3',
@@ -58,9 +61,6 @@ module.exports = exports = {
     61: 'DIAMOND 1',
     62: 'DIAMOND 2',
     63: 'DIAMOND 3',
-    64: 'ASCENDANT 1',
-    65: 'ASCENDANT 2',
-    66: 'ASCENDANT 3', 
     71: 'IMMORTAL 1',
     72: 'IMMORTAL 2',
     73: 'IMMORTAL 3',
