@@ -502,7 +502,7 @@ const refresh = async (message, GLOBALS) => {
     matchEmbed.fields[8].value = (await spectatorPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
   }
 
-  if (matchInformation.status === 'completed') {
+  if (matchInformation.status === 'complete') {
     matchEmbed.addField('Final Score', `${matchInformation.score[0]}-${matchInformation.score[1]}`)
   }
   botMessage.edit(matchEmbed)
