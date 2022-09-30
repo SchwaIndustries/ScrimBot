@@ -49,7 +49,6 @@ const info = async (message, GLOBALS) => {
     .addField('Notifications Enabled', userInformation.notifications === true ? 'Yes' : 'No', true)
     .addField('Matches Played', userInformation.matches.length, true)
     .addField('Matches Won', userInformation.matchesWon.length, true)
-    .addField('Matches Lost', userInformation.matches.length - userInformation.matchesWon.length, true)
     .addField('Win Percentage', winPercentage + '%', true)
     .addField('Bot Admin', await GLOBALS.userIsAdmin(userID) === true ? 'Yes' : 'No', true)
   message.reply(userEmbed)
