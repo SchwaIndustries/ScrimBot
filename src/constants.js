@@ -2,10 +2,6 @@ module.exports = exports = {
   RANKS: {
     'ANY MIN': 0,
 
-    'ASCENDANT 1': 9,
-    'ASCENDANT 2': 8,
-    'ASCENDANT 3': 10,
-    
     'IRON 1': 11,
     'IRON 2': 12,
     'IRON 3': 13,
@@ -30,19 +26,20 @@ module.exports = exports = {
     'DIAMOND 2': 62,
     'DIAMOND 3': 63,
 
+    'ASCENDANT 1': 67,
+    'ASCENDANT 2': 68,
+    'ASCENDANT 3': 69,
+
     'IMMORTAL 1': 71,
     'IMMORTAL 2': 72,
     'IMMORTAL 3': 73,
 
     'RADIANT': 81, // eslint-disable-line quote-props
 
-    'ANY MAX': 91
+    'ANY MAX': 100
   },
   RANKS_REVERSED: {
     0: 'ANY MIN',
-    8: 'ASCENDANT 1',
-    9: 'ASCENDANT 2',
-    10: 'ASCENDANT 3', 
     11: 'IRON 1',
     12: 'IRON 2',
     13: 'IRON 3',
@@ -61,11 +58,14 @@ module.exports = exports = {
     61: 'DIAMOND 1',
     62: 'DIAMOND 2',
     63: 'DIAMOND 3',
+    67: 'ASCENDANT 1',
+    68: 'ASCENDANT 2',
+    69: 'ASCENDANT 3',
     71: 'IMMORTAL 1',
     72: 'IMMORTAL 2',
     73: 'IMMORTAL 3',
     81: 'RADIANT',
-    91: 'ANY MAX'
+    100: 'ANY MAX'
   },
 
   MAPS: ['Split', 'Bind', 'Haven', 'Ascent', 'Icebox', 'Breeze', 'Fracture', 'Pearl'],
@@ -92,7 +92,7 @@ module.exports = exports = {
     ['3. Notifications', 'Do you want to be notified when matches are created? Respond "yes" if you would like to opt-in.']
   ],
 
-  get matchCreationSteps () {
+  get matchCreationSteps() {
     return [
       ['1. Date & Time', 'When will the match be? If no date is specified the current day is assumed. You can also specify a time zone such as `CST` or `EDT`, defaults to Pacific time. Ex: "Today at 10 AM", "12:30 PM on Saturday", "03/14/2021 at 6:28 PM EST"'],
       ['2. Rank Minimum', 'What is the **MINIMUM** rank you are allowing into your tournament? If any, type "any".'],

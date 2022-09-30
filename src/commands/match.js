@@ -30,7 +30,7 @@ module.exports = exports = {
 const create = async (message, GLOBALS) => {
   if (!message.guild) return message.reply('This command can only be run in a server!')
   if (await GLOBALS.userIsRegistered(message.author.id) === false) {
-    message.reply('You are not registered with ScrimBot. Please type `v!register` before creating a match!')
+    message.reply('You are not registered with ScrimBot. Please type `+register` before creating a match!')
     return
   }
 
@@ -190,10 +190,11 @@ const start = async (message, GLOBALS) => {
   }
 
   await GLOBALS.mongoDb.collection('matches').replaceOne({ _id: matchID }, matchInformation)
+  await GLOBALS.mongoDb.collection('matchesWon').replaceOne({ _id: matchID }, matchInformation)
 
   const embed = new GLOBALS.Embed()
     .setTitle('Match Started')
-    .setDescription('Match with ID `' + matchID + '` has been started. Once complete, use `v!match score <match id> <score>` to report the score!')
+    .setDescription('Match with ID `' + matchID + '` has been started. Once complete, use `+match score <match id> <score>` to report the score!')
     .setFooter('This message will self-destruct in 30 seconds.')
   if (!message.guild.me.hasPermission('MANAGE_CHANNELS')) embed.addField('Note', 'If you give ScrimBot the `Manage Channels` and `Move Members` permissions, it can automatically create voice channels for each team and move players into them!')
   message.reply(embed).then(msg => {
@@ -221,7 +222,7 @@ const score = async (message, GLOBALS) => {
   const matchInformation = await GLOBALS.mongoDb.collection('matches').findOne({ _id: matchID })
   if (!matchInformation) return message.reply('Match not found! Ensure correct match ID is submitted.')
   if (matchInformation.status === 'created') return message.reply('This match has not been started yet!')
-  if (matchInformation.status === 'completed') return message.reply('This match has already been scored. Please ask a bot admin to change the score in the database if changes are required.')
+  if (matchInformation.status === 'complete') return message.reply('This match has already been scored. Please ask a bot admin to change the score in the database if changes are required.')
 
   if (await GLOBALS.userIsAdmin(message.author.id) === false && message.author.id !== matchInformation.creator) return message.reply('You are not the match creator! Please ask them to score the match.')
 
@@ -243,7 +244,7 @@ const score = async (message, GLOBALS) => {
 
   const embed = new GLOBALS.Embed()
     .setTitle('Match Completed')
-    .setDescription('Match with ID `' + matchID + '` has been completed. Thanks for using ScrimBot, to create a new match type `v!match create`')
+    .setDescription('Match with ID `' + matchID + '` has been completed. Thanks for using ScrimBot, to create a new match type `+match create`')
     .setFooter('This message will self-destruct in 30 seconds.')
   message.reply(embed).then(msg => {
     msg.delete({ timeout: 30000 })
@@ -257,6 +258,27 @@ const score = async (message, GLOBALS) => {
   botMessageEmbed.addField('Final Score', matchScore)
   botMessage.edit('The match has completed!', botMessageEmbed)
   if (message.guild.me.hasPermission('MANAGE_MESSAGES')) botMessage.reactions.removeAll()
+
+
+  if (matchScore.split('-')[0] > matchScore.split('-')[1]) {
+    await GLOBALS.mongoDb.collection('users').updateOne({ _id: { $in: [...matchInformation.players.a] } }, {
+      $push: {
+        matchesWon: {
+          $each: [matchID],
+          $position: 0
+        }
+      }
+    })
+  } else if (matchScore.split('-')[0] < matchScore.split('-')[1]) {
+    await GLOBALS.mongoDb.collection('users').updateOne({ _id: { $in: [...matchInformation.players.b] } }, {
+      $push: {
+        matchesWon: {
+          $each: [matchID],
+          $position: 0
+        }
+      }
+    })
+  }
 
   await GLOBALS.mongoDb.collection('users').updateMany({ _id: { $in: [...matchInformation.players.a, ...matchInformation.players.b, ...(matchInformation.spectators || [])] } }, {
     $push: {
@@ -294,7 +316,7 @@ const cancel = async (message, GLOBALS) => {
 
   const embed = new GLOBALS.Embed()
     .setTitle('Match Cancelled')
-    .setDescription('Match with ID `' + matchID + '` has been cancelled. Thanks for using ScrimBot, to create a new match type `v!match create`')
+    .setDescription('Match with ID `' + matchID + '` has been cancelled. Thanks for using ScrimBot, to create a new match type `+match create`')
     .setFooter('This message will self-destruct in 30 seconds.')
   message.reply(embed).then(msg => {
     msg.delete({ timeout: 30000 })
@@ -349,7 +371,7 @@ const info = async (message, GLOBALS) => {
     matchEmbed.fields[8].value = (await spectatorPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
   }
 
-  if (matchInformation.status === 'completed') {
+  if (matchInformation.status === 'complete') {
     matchEmbed.addField('Final Score', `${matchInformation.score[0]}-${matchInformation.score[1]}`)
   }
   message.reply(matchEmbed)
@@ -502,7 +524,7 @@ const refresh = async (message, GLOBALS) => {
     matchEmbed.fields[8].value = (await spectatorPlayers.toArray()).map(p => `• ${p.valorantUsername}`).join('\n') || 'None'
   }
 
-  if (matchInformation.status === 'completed') {
+  if (matchInformation.status === 'complete') {
     matchEmbed.addField('Final Score', `${matchInformation.score[0]}-${matchInformation.score[1]}`)
   }
   botMessage.edit(matchEmbed)

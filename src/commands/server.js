@@ -42,21 +42,21 @@ const add = async (message, GLOBALS) => {
   const reply = await message.reply(embed)
 
   // Match Notifications
-  let matchNotifications = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!server add` again.'))
+  let matchNotifications = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `+server add` again.'))
   matchNotifications = checkRoleValidity(matchNotifications.first().content)
-  if (!matchNotifications) return message.reply('That is not a valid role! Please run `v!server add` again.')
+  if (!matchNotifications) return message.reply('That is not a valid role! Please run `+server add` again.')
 
   // Valorant Rank Roles
   embed.fields[0].name = '✅ 1. Match Notification Role'
   embed.addField('2. Valorant Rank Roles', 'ScrimBot has the feature to create and give users a role based on their ranks. Would you like this? (yes or no)')
   reply.edit(embed)
 
-  let valorantRankRoles = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `v!server add` again.'))
+  let valorantRankRoles = await message.channel.awaitMessages(m => m.author === message.author, { max: 1, time: 60000, errors: ['time'] }).catch(e => message.reply('Time has run out. To setup your server, please run `+server add` again.'))
   valorantRankRoles = CONSTANTS.AFFIRMATIVE_WORDS.includes(valorantRankRoles.first().content.toLowerCase())
   let rankRoleIDs
   if (valorantRankRoles) {
     const guild = message.guild
-    if (!guild.me.hasPermission('MANAGE_ROLES')) return message.reply('ScrimBot does not have the manage roles permission and is unable to create roles. Please change the permissions and run v!server add again.')
+    if (!guild.me.hasPermission('MANAGE_ROLES')) return message.reply('ScrimBot does not have the manage roles permission and is unable to create roles. Please change the permissions and run +server add again.')
     const rolesToCreate = ['Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Immortal', 'Radiant']
     rankRoleIDs = []
     for (const role of rolesToCreate.reverse()) {
@@ -73,7 +73,7 @@ const add = async (message, GLOBALS) => {
 
   const completionEmbed = new GLOBALS.Embed()
   completionEmbed.setTitle('ScrimBot Initialization Complete')
-  completionEmbed.setDescription('Your setup is complete, thanks for bearing with us! Don\'t forget to put the "ScrimBot" role above Match Notifications for role management to work properly. Run `v!match create` to start your first match.')
+  completionEmbed.setDescription('Your setup is complete, thanks for bearing with us! Don\'t forget to put the "ScrimBot" role above Match Notifications for role management to work properly. Run `+!match create` to start your first match.')
   reply.edit(completionEmbed)
 
   await GLOBALS.mongoDb.collection('guilds').insertOne({
@@ -90,7 +90,7 @@ const add = async (message, GLOBALS) => {
  */
 const info = async (message, GLOBALS) => {
   const guildInformation = await GLOBALS.mongoDb.collection('guilds').findOne({ _id: message.guild.id })
-  if (!guildInformation) return message.reply('This server has not been configured yet. Please run v!server add')
+  if (!guildInformation) return message.reply('This server has not been configured yet. Please run +server add')
 
   const guildDiscordInformation = await GLOBALS.client.guilds.fetch(message.guild.id)
 
@@ -111,5 +111,5 @@ const info = async (message, GLOBALS) => {
  */
 const edit = async (message, GLOBALS) => {
   const guildInformation = await GLOBALS.mongoDb.collection('guilds').findOne({ _id: message.guild.id })
-  if (!guildInformation) return message.reply('This server has not been configured yet. Please run v!server add')
+  if (!guildInformation) return message.reply('This server has not been configured yet. Please run +server add')
 }

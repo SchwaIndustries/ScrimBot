@@ -10,6 +10,6 @@ module.exports = exports = {
     const embed = new GLOBALS.Embed()
       .setTitle('Join Our Support Server!')
     message.reply(embed)
-    message.channel.send('https://discord.gg/nRE9Ex7ptd')
+    message.channel.send('https://discord.gg/VHT')
   }
 }

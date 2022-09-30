@@ -43,7 +43,7 @@ const addOldMessagesToCache = async (GLOBALS) => {
 const _addPlayerToMatch = async (reaction, user, GLOBALS, matchInformation) => {
   const playerInformation = await GLOBALS.mongoDb.collection('users').findOne({ _id: user.id })
   if (!playerInformation) {
-    reaction.message.channel.send(`${user}, you are not registered with ScrimBot. Please type \`v!register\` before reacting!`).then(msg => msg.delete({ timeout: 5000 }))
+    reaction.message.channel.send(`${user}, you are not registered with VHT ScrimBot. Please type \`+register\` before reacting!`).then(msg => msg.delete({ timeout: 5000 }))
     reaction.users.remove(user.id)
     return
   }

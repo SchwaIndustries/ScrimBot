@@ -30,6 +30,7 @@ module.exports = exports = {
             discordID: message.author.id,
             notifications: false,
             matches: [],
+            matchesWon: [],
             timestamp: undefined,
             valorantRank: 0,
             valorantUsername: ''

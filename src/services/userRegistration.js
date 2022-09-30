@@ -39,6 +39,7 @@ const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
         GLOBALS.updateUserRankRoles(userMessage.author, userRecord.registrationInformation.valorantRank)
         break
       }
+
     case 2:
       userRecord.registrationInformation.notifications = (CONSTANTS.AFFIRMATIVE_WORDS.includes(userMessage.content.toLowerCase()))
       if (userRecord.registrationInformation.notifications === true) GLOBALS.updateUserRoles(userMessage.author, 'notificationRole', true)
@@ -60,7 +61,7 @@ const handleUserRegistration = (userRecord, userMessage, GLOBALS) => {
     GLOBALS.activeUserRegistration.set(userRecord.userID, userRecord)
   } else {
     const embed = new GLOBALS.Embed()
-      .setTitle('ScrimBot Registration Complete')
+      .setTitle('VHT ScrimBot Registration Complete')
       .setDescription('Thanks for registering! Now it\'s time to get playing!')
     userRecord.botMessage.edit(embed)
     userRecord.botReaction.users.remove(GLOBALS.client.user)
@@ -80,7 +81,7 @@ const cancelUserRegistration = async (reaction, user, GLOBALS) => {
     const userRecord = GLOBALS.activeUserRegistration.get(user.id)
     const embed = new GLOBALS.Embed()
       .setTitle('ScrimBot Registration Cancelled')
-      .setDescription('Your registration has been cancelled. If you want to try again, just type v!register.')
+      .setDescription('Your registration has been cancelled. If you want to try again, just type +register.')
     userRecord.botMessage.edit(embed)
     GLOBALS.activeUserRegistration.delete(userRecord.userID)
     reaction.remove()

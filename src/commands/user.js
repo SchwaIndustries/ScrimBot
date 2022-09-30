@@ -29,10 +29,13 @@ const info = async (message, GLOBALS) => {
   if (userID.startsWith('<@')) {
     userID = userID.replace(/<@!?/, '').replace(/>$/, '')
   }
+
   const userInformation = await GLOBALS.mongoDb.collection('users').findOne({ _id: userID })
   if (!userInformation) return message.reply('User not found! Ensure correct user ID is submitted.')
 
   const userDiscordInformation = await GLOBALS.client.users.fetch(userID)
+
+  const winPercentage = (userInformation.matchesWon.length / userInformation.matches.length * 100).toFixed(1)
 
   const userEmbed = new GLOBALS.Embed()
     .setTitle('Retrieved User Information')
@@ -45,6 +48,9 @@ const info = async (message, GLOBALS) => {
     .addField('Registration Date', moment(userInformation.timestamp).tz(process.env.TIME_ZONE).format('h:mm a z DD MMM, YYYY'))
     .addField('Notifications Enabled', userInformation.notifications === true ? 'Yes' : 'No', true)
     .addField('Matches Played', userInformation.matches.length, true)
+    .addField('Matches Won', userInformation.matchesWon.length, true)
+    .addField('Matches Lost', userInformation.matches.length - userInformation.matchesWon.length, true)
+    .addField('Win Percentage', winPercentage + '%', true)
     .addField('Bot Admin', await GLOBALS.userIsAdmin(userID) === true ? 'Yes' : 'No', true)
   message.reply(userEmbed)
 }

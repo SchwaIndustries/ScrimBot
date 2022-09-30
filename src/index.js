@@ -31,14 +31,14 @@ const CONSTANTS = require('./constants')
 const fs = require('fs')
 const path = require('path')
 const Discord = require('discord.js')
-  const client = new Discord.Client({
-    presence: {
-      activity: { name: 'for matches | -help', type: 'WATCHING' }
-    },
-    ws: {
-      intents: Discord.Intents.NON_PRIVILEGED | Discord.Intents.resolve('MESSAGE_CONTENT')
-    }
-  })
+const client = new Discord.Client({
+  presence: {
+    activity: { name: 'for matches | +help', type: 'WATCHING' }
+  },
+  ws: {
+    intents: Discord.Intents.NON_PRIVILEGED | Discord.Intents.resolve('MESSAGE_CONTENT')
+  }
+})
 require('dotenv').config()
 verifyConfigurationIntegrity()
 const Mongo = require('mongodb')
@@ -53,14 +53,14 @@ client.commands = new Map() // Stores all bot commands
 client.services = new Map() // Stores all bot services (functions that run at start)
 
 class ScrimBotEmbed extends Discord.MessageEmbed {
-  constructor (specialColor) {
+  constructor(specialColor) {
     super()
     this.setColor(specialColor || 'PURPLE')
   }
 }
 
 class MatchEmbed extends ScrimBotEmbed {
-  async setMatchData (matchData) {
+  async setMatchData(matchData) {
     const matchCreator = await client.users.fetch(matchData.creator)
     this.setTitle('Match Information')
     this.setAuthor(matchCreator.tag, matchCreator.avatarURL())
@@ -96,7 +96,7 @@ class MatchEmbed extends ScrimBotEmbed {
     }
   }
 
-  constructor (matchData, specialColor) {
+  constructor(matchData, specialColor) {
     super(specialColor)
     this.setMatchData(matchData)
   }
@@ -191,7 +191,7 @@ client.on('ready', async () => {
   runServices()
   loadCommands()
   console.log(`Logged in as ${client.user.tag}! All systems online.`)
-  if (process.env.PREFIX !== 'v!') client.user.setStatus({ name: 'for matches | ' + process.env.PREFIX + 'help', type: 'WATCHING' })
+  if (process.env.PREFIX !== '+') client.user.setStatus({ name: 'for matches | ' + process.env.PREFIX + 'help', type: 'WATCHING' })
 })
 
 /**
@@ -199,7 +199,7 @@ client.on('ready', async () => {
  * adds them to the `client.commands` collection which
  * allows the bot to use them
  */
-function loadCommands () {
+function loadCommands() {
   for (const file of fs.readdirSync(path.join(__dirname, 'commands'))) { // get all files in commands folder
     if (!file.endsWith('.js')) return // only look for .js files
     const command = require(`./commands/${file}`)
@@ -214,7 +214,7 @@ function loadCommands () {
  * This is useful for certain things that need to be run
  * independently of commands.
  */
-function runServices () {
+function runServices() {
   for (const file of fs.readdirSync(path.join(__dirname, 'services'))) {
     if (!file.endsWith('.js')) return // only look for .js files
     const service = require(`./services/${file}`)
@@ -253,7 +253,7 @@ client.login(process.env.TOKEN)
  * Make sure that environment variables
  * contain all the neccessary information.
  */
-function verifyConfigurationIntegrity () {
+function verifyConfigurationIntegrity() {
   if (!process.env.TOKEN) throw new Error('Discord bot token not found! Ensure environment variable TOKEN contains the bot token. View README.md for more information')
   if (!process.env.MONGO_URI) throw new Error('MongoDB connection string not found! Ensure environment variable MONGO_URI contains the connection string. View README.md for more information.')
   if (!process.env.TIME_ZONE) process.env.TIME_ZONE = 'America/Los_Angeles'

@@ -116,7 +116,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
     const embed = new GLOBALS.Embed()
       .setAuthor(userMessage.author.tag, userMessage.author.avatarURL())
       .setTitle('Match Creation Complete')
-      .setDescription('Your match has been made! To start it, type `v!match start <match id>`')
+      .setDescription('Your match has been made! To start it, type `+match start <match id>`')
       .setFooter('This message will self-destruct in 30 seconds.')
     matchRecord.botMessage.edit(embed)
     matchRecord.botMessage.delete({ timeout: 30000 })
@@ -157,6 +157,7 @@ const handleMatchCreation = async (matchRecord, userMessage, GLOBALS) => {
         }
         await GLOBALS.mongoDb.collection('matches').insertOne({ _id: message.id, ...matchRecord.creationInformation })
         GLOBALS.activeMatchCreation.delete(matchRecord.userID)
+        GLOBALS.activeMatchCreation.delete(matchRecord.userID)
       }).catch(console.error)
   }
 }
@@ -166,7 +167,7 @@ const cancelMatchCreation = async (reaction, user, GLOBALS) => {
     const userRecord = GLOBALS.activeMatchCreation.get(user.id)
     const embed = new GLOBALS.Embed()
       .setTitle('ScrimBot Match Creation Cancelled')
-      .setDescription('Your Match Creation has been cancelled. If you want to try again, just type v!match create.')
+      .setDescription('Your Match Creation has been cancelled. If you want to try again, just type +match create.')
     userRecord.botMessage.edit(embed)
     GLOBALS.activeMatchCreation.delete(userRecord.userID)
     reaction.remove()
