@@ -1,3 +1,5 @@
+⚠️ This project is not actively maintained. Forks or PRs encouraged (PRs will be reviewed)
+
 # ScrimBot
 
 [![Add ScrimBot to server](https://img.shields.io/static/v1?label=Add%20ScrimBot&message=to%20server&color=7289DA&logo=Discord&logoColor=white&style=flat-square)](https://discord.com/oauth2/authorize?client_id=715030981894995998&scope=bot&permissions=2432904272)
