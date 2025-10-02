@@ -29,8 +29,8 @@
 
 const CONSTANTS = require('./constants')
 const packageJSON = require('../package.json')
-const fs = require('fs')
-const path = require('node:path')
+const fs = require('fs');
+const path = require('node:path');
 const {
   Client,
   Collection, // eslint-disable-line no-unused-vars
